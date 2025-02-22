@@ -2,6 +2,6 @@
 
 int main()
 {
-	std::cout << "belyaev.veniamin" << "\n";
-	return 0;
+  std::cout << "belyaev.veniamin" << "\n";
+  return 0;
 }
