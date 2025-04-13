@@ -28,7 +28,7 @@ std::istream &pilugina::operator>>(std::istream &in, UnsignedLongLongOCT &&dest)
 
   char prefix = 0;
   if (!(in >> prefix) || prefix != '0')
-  { 
+  {
     in.setstate(std::ios::failbit);
     return in;
   }
