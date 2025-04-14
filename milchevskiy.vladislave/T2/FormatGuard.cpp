@@ -1,5 +1,4 @@
 #include "FormatGuard.hpp"
-
 milchevskiy::FormatGuard::FormatGuard(std::basic_ios< char >& s) :
     s_(s),
     width_(s.width()),
@@ -8,7 +7,6 @@ milchevskiy::FormatGuard::FormatGuard(std::basic_ios< char >& s) :
     fmt_(s.flags())
 {
 }
-
 milchevskiy::FormatGuard::~FormatGuard()
 {
     s_.width(width_);
