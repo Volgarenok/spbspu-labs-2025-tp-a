@@ -72,4 +72,4 @@ std::istream& milchevskiy::operator>>(std::istream& in, DataStruct& dest)
         dest = temp;
     }
     return in;
-}
+};

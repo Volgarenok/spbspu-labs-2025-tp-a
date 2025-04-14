@@ -17,4 +17,4 @@ namespace milchevskiy
     bool operator<(const DataStruct& a, const DataStruct& b);
 }
 
-#endif
+#endif;

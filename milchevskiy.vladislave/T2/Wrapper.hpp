@@ -27,4 +27,4 @@ namespace milchevskiy
     std::istream& operator>>(std::istream& in, UnsignedLongLongULL&& dest);
     std::istream& operator>>(std::istream& in, StringIO&& dest);
 }
-#endif
+#endif;

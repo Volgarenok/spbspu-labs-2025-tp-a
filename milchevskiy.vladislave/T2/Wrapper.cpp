@@ -102,4 +102,4 @@ std::istream& milchevskiy::operator>>(std::istream& in, StringIO&& dest)
     }
 
     return std::getline(in >> DelimiterIO{ '"' }, dest.ref, '"');
-}
+};
