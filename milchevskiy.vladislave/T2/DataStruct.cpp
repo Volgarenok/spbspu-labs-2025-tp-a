@@ -1,8 +1,9 @@
 #include "DataStruct.hpp"
 #include "FormatGuard.hpp"
 #include "Wrapper.hpp"
-#include <iostream>
+
 #include <cctype>
+#include <iostream>
 
 bool milchevskiy::operator<(const DataStruct& a, const DataStruct& b)
 {
@@ -72,4 +73,4 @@ std::istream& milchevskiy::operator>>(std::istream& in, DataStruct& dest)
         dest = temp;
     }
     return in;
-};
+}

@@ -3,18 +3,19 @@
 
 #include <string>
 
-namespace milchevskiy
-{
-    struct DataStruct
-    {
-        unsigned long long key1;
-        unsigned long long key2;
-        std::string key3;
-    };
+namespace milchevskiy {
 
-    std::istream& operator>>(std::istream& in, DataStruct& dest);
-    std::ostream& operator<<(std::ostream& out, const DataStruct& dest);
-    bool operator<(const DataStruct& a, const DataStruct& b);
-}
+	struct DataStruct
+	{
+		unsigned long long key1;
+		unsigned long long key2;
+		std::string key3;
+	};
 
-#endif;
+	std::istream& operator>>(std::istream& in, DataStruct& dest);
+	std::ostream& operator<<(std::ostream& out, const DataStruct& dest);
+	bool operator<(const DataStruct& a, const DataStruct& b);
+
+} // namespace milchevskiy
+
+#endif
