@@ -5,22 +5,22 @@
 
 namespace milchevskiy {
 
-	class FormatGuard
-	{
-	public:
-		explicit FormatGuard(std::basic_ios<char>& s);
-		~FormatGuard();
+  class FormatGuard
+  {
+  public:
+    explicit FormatGuard(std::basic_ios<char>& s);
+    ~FormatGuard();
 
-		FormatGuard(const FormatGuard&) = delete;
-		FormatGuard& operator=(const FormatGuard&) = delete;
+    FormatGuard(const FormatGuard&) = delete;
+    FormatGuard& operator=(const FormatGuard&) = delete;
 
-	private:
-		std::basic_ios<char>& s_;
-		std::streamsize width_;
-		char fill_;
-		std::streamsize precision_;
-		std::basic_ios<char>::fmtflags fmt_;
-	};
+  private:
+    std::basic_ios<char>& s_;
+    std::streamsize width_;
+    char fill_;
+    std::streamsize precision_;
+    std::basic_ios<char>::fmtflags fmt_;
+  };
 
 } // namespace milchevskiy
 

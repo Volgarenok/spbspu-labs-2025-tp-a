@@ -3,32 +3,32 @@
 
 #include <string>
 
-namespace milchevskiy
-{
-	struct DelimiterIO
-	{
-		char exp;
-	};
+namespace milchevskiy {
 
-	struct UnsignedLongLongOCT
-	{
-		unsigned long long& ref;
-	};
+  struct DelimiterIO
+  {
+    char exp;
+  };
 
-	struct UnsignedLongLongULL
-	{
-		unsigned long long& ref;
-	};
+  struct UnsignedLongLongOCT
+  {
+    unsigned long long& ref;
+  };
 
-	struct StringIO
-	{
-		std::string& ref;
-	};
+  struct UnsignedLongLongULL
+  {
+    unsigned long long& ref;
+  };
 
-	std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
-	std::istream& operator>>(std::istream& in, UnsignedLongLongOCT&& dest);
-	std::istream& operator>>(std::istream& in, UnsignedLongLongULL&& dest);
-	std::istream& operator>>(std::istream& in, StringIO&& dest);
+  struct StringIO
+  {
+    std::string& ref;
+  };
+
+  std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
+  std::istream& operator>>(std::istream& in, UnsignedLongLongOCT&& dest);
+  std::istream& operator>>(std::istream& in, UnsignedLongLongULL&& dest);
+  std::istream& operator>>(std::istream& in, StringIO&& dest);
 
 } // namespace milchevskiy
 
