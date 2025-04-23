@@ -87,3 +87,4 @@ std::istream& milchevskiy::operator>>(std::istream& in, STRvalue&& dest)
 
   return std::getline(in >> DelimiterIO{ '"' }, dest.ref, '"');
 }
+
