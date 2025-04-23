@@ -28,24 +28,15 @@ std::istream& milchevskiy::operator>>(std::istream& in, LITvalue&& dest)
   }
 
   unsigned long long num = 0;
-  char a = 0, b = 0, c = 0;
-  char temp = 0;
-  bool is_digit = false;
+  char a = 0, b = 0, c = 0, temp = 0;
 
   while (in >> temp && std::isdigit(temp))
   {
-    is_digit = true;
     num = num * 10 + (temp - '0');
   }
   in.unget();
 
-  if (!is_digit)
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-
-  if (in >> a >> b >> c && tolower(a) == 'u' && tolower(b) == 'l' && tolower(c) == 'l')
+  if (in.get(a) && in.get(b) && in.get(c) && a == 'u' && b == 'l' && c == 'l')
   {
     dest.ref = num;
   }
@@ -75,20 +66,12 @@ std::istream& milchevskiy::operator>>(std::istream& in, OCTvalue&& dest)
 
   unsigned long long num = 0;
   char temp = 0;
-  bool is_digit = false;
 
   while (in.get(temp) && temp >= '0' && temp <= '7')
   {
-    is_digit = true;
     num = num * 8 + (temp - '0');
   }
   in.unget();
-
-  if (!is_digit)
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
 
   dest.ref = num;
   return in;
@@ -104,4 +87,3 @@ std::istream& milchevskiy::operator>>(std::istream& in, STRvalue&& dest)
 
   return std::getline(in >> DelimiterIO{ '"' }, dest.ref, '"');
 }
-
