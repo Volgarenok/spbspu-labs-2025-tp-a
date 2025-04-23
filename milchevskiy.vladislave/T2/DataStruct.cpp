@@ -41,24 +41,23 @@ std::istream& milchevskiy::operator>>(std::istream& in, DataStruct& dest)
     return in;
   }
 
-  DataStruct temp{};
   in >> DelimiterIO{ '(' };
 
-  std::string field;
+  std::string key;
   for (int i = 0; i < 3; i++)
   {
-    in >> DelimiterIO{ ':' } >> field;
-    if (field == "key1")
+    in >> DelimiterIO{ ':' } >> key;
+    if (key == "key1")
     {
-      in >> UnsignedLongLongULL{ temp.key1 };
+      in >> LITvalue{ dest.key1 };
     }
-    else if (field == "key2")
+    else if (key == "key2")
     {
-      in >> UnsignedLongLongOCT{ temp.key2 };
+      in >> OCTvalue{ dest.key2 };
     }
-    else if (field == "key3")
+    else if (key == "key3")
     {
-      in >> StringIO{ temp.key3 };
+      in >> STRvalue{ dest.key3 };
     }
     else
     {
@@ -68,9 +67,5 @@ std::istream& milchevskiy::operator>>(std::istream& in, DataStruct& dest)
   }
 
   in >> DelimiterIO{ ':' } >> DelimiterIO{ ')' };
-  if (in)
-  {
-    dest = temp;
-  }
   return in;
 }

@@ -10,25 +10,25 @@ namespace milchevskiy {
     char exp;
   };
 
-  struct UnsignedLongLongOCT
+  struct LITvalue
   {
     unsigned long long& ref;
   };
 
-  struct UnsignedLongLongULL
+  struct OCTvalue
   {
-    unsigned long long& ref;
+      unsigned long long& ref;
   };
 
-  struct StringIO
+  struct STRvalue
   {
     std::string& ref;
   };
 
   std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
-  std::istream& operator>>(std::istream& in, UnsignedLongLongOCT&& dest);
-  std::istream& operator>>(std::istream& in, UnsignedLongLongULL&& dest);
-  std::istream& operator>>(std::istream& in, StringIO&& dest);
+  std::istream& operator>>(std::istream& in, LITvalue&& dest);
+  std::istream& operator>>(std::istream& in, OCTvalue&& dest);
+  std::istream& operator>>(std::istream& in, STRvalue&& dest);
 
 } // namespace milchevskiy
 
