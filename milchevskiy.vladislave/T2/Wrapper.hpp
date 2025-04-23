@@ -17,7 +17,7 @@ namespace milchevskiy {
 
   struct OCTvalue
   {
-      unsigned long long& ref;
+    unsigned long long& ref;
   };
 
   struct STRvalue
@@ -33,3 +33,4 @@ namespace milchevskiy {
 } // namespace milchevskiy
 
 #endif
+

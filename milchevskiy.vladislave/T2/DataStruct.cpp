@@ -69,3 +69,4 @@ std::istream& milchevskiy::operator>>(std::istream& in, DataStruct& dest)
   in >> DelimiterIO{ ':' } >> DelimiterIO{ ')' };
   return in;
 }
+

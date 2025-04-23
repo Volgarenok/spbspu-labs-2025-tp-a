@@ -14,3 +14,4 @@ milchevskiy::FormatGuard::~FormatGuard()
   s_.precision(precision_);
   s_.flags(fmt_);
 }
+

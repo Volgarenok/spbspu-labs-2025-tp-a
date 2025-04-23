@@ -1,4 +1,4 @@
-﻿#include "DataStruct.hpp"
+#include "DataStruct.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -36,3 +36,4 @@ int main()
 
   return 0;
 }
+
