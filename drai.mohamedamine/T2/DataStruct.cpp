@@ -38,7 +38,7 @@ std::istream& operator>>(std::istream& in, DataStruct& data) {
         std::string key1_str = extractBetween(line, "key1");
         data.key1 = std::stod(key1_str);
 
-        // key2: parse rational as (:N -1:D 2:)
+        // key2: parse rational
         size_t key2_pos = line.find("key2");
         size_t n_pos = line.find("N ", key2_pos);
         size_t d_pos = line.find("D ", key2_pos);
@@ -66,7 +66,7 @@ std::istream& operator>>(std::istream& in, DataStruct& data) {
 std::ostream& operator<<(std::ostream& out, const DataStruct& data) {
     out << "(:key1 " << std::scientific << std::setprecision(1) << data.key1
         << ":key2 (:N " << data.key2.first << ":D " << data.key2.second
-        << ":):key3 \"" << data.key3 << "\":)";
+        << ":):key3 "" << data.key3 << "":)";
     return out;
 }
 
