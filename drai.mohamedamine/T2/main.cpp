@@ -4,6 +4,8 @@
 #include <iterator>
 #include <iostream>
 
+using nspace::DataStruct;
+
 int main() {
     std::vector<DataStruct> data;
 
@@ -14,9 +16,10 @@ int main() {
     std::sort(data.begin(), data.end(), [](const DataStruct& a, const DataStruct& b) {
         if (a.key1 != b.key1)
             return a.key1 < b.key1;
-        if (a.key2 != b.key2)
-            return (static_cast<long double>(a.key2.first) / a.key2.second) <
-                   (static_cast<long double>(b.key2.first) / b.key2.second);
+        long double valA = static_cast<long double>(a.key2.first) / a.key2.second;
+        long double valB = static_cast<long double>(b.key2.first) / b.key2.second;
+        if (valA != valB)
+            return valA < valB;
         return a.key3.length() < b.key3.length();
     });
 
