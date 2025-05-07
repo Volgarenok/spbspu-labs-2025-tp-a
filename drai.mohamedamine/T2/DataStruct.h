@@ -17,6 +17,6 @@ namespace nspace {
     std::ostream& operator<<(std::ostream& out, const DataStruct& data);
     bool isValidDataStruct(const std::string& line);
 
-} // namespace nspace
+}
 
 #endif // DATASTRUCT_H
