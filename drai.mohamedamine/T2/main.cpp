@@ -12,7 +12,8 @@ int main() {
     std::string line;
 
     while (std::getline(std::cin, line)) {
-        if (line.empty()) continue;
+        if (line.empty())
+            continue;
 
         std::istringstream iss(line);
         nspace::DataStruct entry;
@@ -22,13 +23,15 @@ int main() {
     }
 
     std::sort(data.begin(), data.end(), [](const nspace::DataStruct& a, const nspace::DataStruct& b) {
-        if (a.key1 != b.key1)
+        if (a.key1 != b.key1) {
             return a.key1 < b.key1;
-        long double valueA = static_cast<long double>(a.key2.first) / a.key2.second;
-        long double valueB = static_cast<long double>(b.key2.first) / b.key2.second;
-        if (valueA != valueB)
-            return valueA < valueB;
-        return a.key3.length() < b.key3.length();
+        }
+        long double va = static_cast<long double>(a.key2.first) / a.key2.second;
+        long double vb = static_cast<long double>(b.key2.first) / b.key2.second;
+        if (va != vb) {
+            return va < vb;
+        }
+        return a.key3.size() < b.key3.size();
     });
 
     for (const nspace::DataStruct& item : data) {
