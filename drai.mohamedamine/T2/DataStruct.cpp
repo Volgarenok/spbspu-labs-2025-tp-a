@@ -1,6 +1,7 @@
 #include "DataStruct.h"
-#include <regex>
+#include <sstream>
 #include <iomanip>
+#include <stdexcept>
 
 namespace nspace {
 
@@ -8,6 +9,19 @@ bool isValidDataStruct(const std::string& line) {
     return line.find("key1") != std::string::npos &&
            line.find("key2") != std::string::npos &&
            line.find("key3") != std::string::npos;
+}
+
+std::string extractBetween(const std::string& line, const std::string& key) {
+    size_t pos = line.find(key);
+    if (pos == std::string::npos) return "";
+
+    size_t valueStart = line.find(' ', pos);
+    if (valueStart == std::string::npos) return "";
+
+    size_t valueEnd = line.find(':', valueStart);
+    if (valueEnd == std::string::npos) return "";
+
+    return line.substr(valueStart + 1, valueEnd - valueStart - 1);
 }
 
 std::istream& operator>>(std::istream& in, DataStruct& data) {
@@ -20,29 +34,28 @@ std::istream& operator>>(std::istream& in, DataStruct& data) {
     }
 
     try {
-        std::smatch match;
+        // key1: parse scientific double manually
+        std::string key1_str = extractBetween(line, "key1");
+        data.key1 = std::stod(key1_str);
 
-        std::regex key1_regex(R"(key1\s+([-+]?[0-9]*\.?[0-9]+[eE][-+]?[0-9]+))");
-        std::regex key2_regex(R"(key2\s+\(:N\s+(-?\d+):D\s+(\d+):\))");
-        std::regex key3_regex(R"(key3\s+"([^"]*)")");
+        // key2: parse rational as (:N -1:D 2:)
+        size_t key2_pos = line.find("key2");
+        size_t n_pos = line.find("N ", key2_pos);
+        size_t d_pos = line.find("D ", key2_pos);
+        size_t n_colon = line.find(":", n_pos);
+        size_t d_colon = line.find(":", d_pos);
 
-        if (std::regex_search(line, match, key1_regex)) {
-            data.key1 = std::stod(match[1]);
-        } else {
-            throw std::invalid_argument("Invalid key1");
-        }
+        std::string n_str = line.substr(n_pos + 2, n_colon - n_pos - 2);
+        std::string d_str = line.substr(d_pos + 2, d_colon - d_pos - 2);
 
-        if (std::regex_search(line, match, key2_regex)) {
-            data.key2 = { std::stoll(match[1]), std::stoull(match[2]) };
-        } else {
-            throw std::invalid_argument("Invalid key2");
-        }
+        data.key2.first = std::stoll(n_str);
+        data.key2.second = std::stoull(d_str);
 
-        if (std::regex_search(line, match, key3_regex)) {
-            data.key3 = match[1];
-        } else {
-            throw std::invalid_argument("Invalid key3");
-        }
+        // key3: extract string between quotes
+        size_t key3_pos = line.find("key3");
+        size_t first_quote = line.find('"', key3_pos);
+        size_t second_quote = line.find('"', first_quote + 1);
+        data.key3 = line.substr(first_quote + 1, second_quote - first_quote - 1);
     } catch (...) {
         in.setstate(std::ios::failbit);
     }
