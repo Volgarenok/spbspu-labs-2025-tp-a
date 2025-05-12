@@ -6,29 +6,35 @@
 #include "structures.hpp"
 
 int main() {
-  using namespace firstime;  // Updated namespace
+  using namespace firstime;
   using DSContainer = std::vector<DataStruct>;
   using InputIt = std::istream_iterator<DataStruct>;
   using OutIt = std::ostream_iterator<DataStruct>;
 
   try {
-    DSContainer vals(InputIt(std::cin), InputIt{});
-
-    // Handle remaining input (e.g., newlines after errors)
-    constexpr auto MaxSize = std::numeric_limits<std::streamsize>::max();
-    while (!std::cin.eof()) {
-      std::cin.clear();
-      std::cin.ignore(MaxSize, '\n');
-      vals.insert(vals.end(), InputIt(std::cin), InputIt{});
+    DSContainer vals;
+    
+    // Read until EOF
+    while (true) {
+      std::copy(InputIt(std::cin), InputIt{}, std::back_inserter(vals));
+      if (std::cin.eof()) break;
+      if (std::cin.fail()) {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      }
     }
 
-    // Sort using the custom comparator
-    std::sort(vals.begin(), vals.end());
+    if (vals.empty()) {
+      std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped\n";
+      return 0;
+    }
 
-    // Output sorted data
+    std::sort(vals.begin(), vals.end());
     std::copy(vals.begin(), vals.end(), OutIt(std::cout, "\n"));
+    
   } catch (const std::exception& e) {
     std::cerr << "Error: " << e.what() << '\n';
     return 1;
   }
+  return 0;
 }

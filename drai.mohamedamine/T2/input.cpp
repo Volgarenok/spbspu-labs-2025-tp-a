@@ -110,13 +110,26 @@ std::istream& firstime::operator>>(std::istream& in, DataStruct& dest) {
   if (!sentry) return in;
   StreamGuard guard(in);
   in >> std::skipws >> Delimiter{ '(' } >> Delimiter{ ':' };
-  std::vector<std::string> keys{ "key1", "key2", "key3" };
+  
   DataStruct input;
+  std::vector<std::string> keys{"key1", "key2", "key3"};
+  
   for (std::string key; !keys.empty() && std::getline(in, key, ' ');) {
-    keys.erase(std::find(keys.begin(), keys.end(), key));
+    auto it = std::find(keys.begin(), keys.end(), key);
+    if (it == keys.end()) {
+      in.setstate(std::ios::failbit);
+      break;
+    }
+    keys.erase(it);
     inputKey(in, key, input);
     in >> Delimiter{ ':' };
+    if (in.peek() == ')') break;
   }
-  if ((in >> Delimiter{ ')' }) && keys.empty()) dest = input;
+  
+  if ((in >> Delimiter{ ')' }) && keys.empty()) {
+    dest = input;
+  } else {
+    in.setstate(std::ios::failbit);
+  }
   return in;
 }
