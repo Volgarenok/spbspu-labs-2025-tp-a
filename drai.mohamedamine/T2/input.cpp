@@ -32,7 +32,6 @@ struct firstime::String { std::string& val; };
 struct firstime::Nominator { long long& val; };
 struct firstime::Denominator { unsigned long long& val; };
 struct firstime::Rational { DataStruct::Rational& val; };
-
 std::istream& firstime::operator>>(std::istream& in, Delimiter&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
@@ -40,7 +39,6 @@ std::istream& firstime::operator>>(std::istream& in, Delimiter&& dest) {
   if ((in >> c) && (c != dest.val)) in.setstate(std::ios::failbit);
   return in;
 }
-
 std::istream& firstime::operator>>(std::istream& in, OneOfDelimiters&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
@@ -48,14 +46,12 @@ std::istream& firstime::operator>>(std::istream& in, OneOfDelimiters&& dest) {
   if ((in >> c) && (dest.val.find(c) == std::string::npos)) in.setstate(std::ios::failbit);
   return in;
 }
-
 std::istream& firstime::operator>>(std::istream& in, Double&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
   in >> dest.val;
   return in;
 }
-
 std::istream& firstime::operator>>(std::istream& in, String&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
@@ -101,7 +97,7 @@ std::istream& firstime::operator>>(std::istream& in, DataStruct& dest) {
         break;
       }
       hasKey1 = true;
-    } 
+    }
     else if (key == "key2") {
       if (!(in >> Rational{ input.key2 })) {
         in.setstate(std::ios::failbit);
