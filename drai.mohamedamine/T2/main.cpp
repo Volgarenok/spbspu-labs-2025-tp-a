@@ -34,7 +34,7 @@ int main() {
     }
 >>>>>>> 2098b4e523bd3cd8b89cb3963e8eb32ccec3c7f7
     std::sort(vals.begin(), vals.end());
-    std::copy(vals.begin(), vals.end(), OutIt(std::cout, "\n")); 
+    std::copy(vals.begin(), vals.end(), OutIt(std::cout, "\n"));
   } catch (const std::exception& e) {
     std::cerr << "Error: " << e.what() << '\n';
     return 1;
