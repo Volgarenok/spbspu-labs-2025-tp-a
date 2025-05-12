@@ -51,15 +51,8 @@ std::ostream& firstime::operator<<(std::ostream& out, const DataStruct& data) {
   std::ostream::sentry sentry(out);
   if (!sentry) return out;
   StreamGuard guard(out);
-<<<<<<< HEAD
   out << "(:key1 " << Double{ data.key1 } << ":key2 ";
   out << Rational{ data.key2 } << ":key3 ";
   out << String{ data.key3 } << ":)";
-=======
-  out << "(:";
-  out << Label{ "key1" } << Double{ data.key1 } << ':';
-  out << Label{ "key2" } << Rational{ data.key2 } << ':';
-  out << Label{ "key3" } << String{ data.key3 } << ":)";
->>>>>>> 2098b4e523bd3cd8b89cb3963e8eb32ccec3c7f7
   return out;
 }
