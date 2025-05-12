@@ -13,9 +13,14 @@ int main() {
   try {
     DSContainer vals;
     while (true) {
-      std::copy(InputIt(std::cin), InputIt{}, std::back_inserter(vals));
-      if (std::cin.eof()) break;
-      if (std::cin.fail()) {
+      DataStruct temp;
+      if (std::cin >> temp) {
+        vals.push_back(temp);
+      }
+      else if (std::cin.eof()) {
+        break;
+      }
+      else {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       }
@@ -25,7 +30,10 @@ int main() {
       return 0;
     }
     std::sort(vals.begin(), vals.end());
-    std::copy(vals.begin(), vals.end(), OutIt(std::cout, "\n"));
+    if (!vals.empty()) {
+      std::cout << "Atleast one supported record type\n";
+      std::copy(vals.begin(), vals.end(), OutIt(std::cout, "\n"));
+    }
   } catch (const std::exception& e) {
     std::cerr << "Error: " << e.what() << '\n';
     return 1;
