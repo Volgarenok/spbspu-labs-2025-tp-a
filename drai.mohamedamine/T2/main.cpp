@@ -1,30 +1,34 @@
-#include <iostream>
-#include <vector>
 #include <algorithm>
+#include <iostream>
 #include <iterator>
-#include "DataStruct.h"
+#include <limits>
+#include <vector>
+#include "structures.hpp"
 
-int main()
-{
-    using nspace::DataStruct;
-    std::vector<DataStruct> data;
+int main() {
+  using namespace firstime;  
+  using DSContainer = std::vector<DataStruct>;
+  using InputIt = std::istream_iterator<DataStruct>;
+  using OutIt = std::ostream_iterator<DataStruct>;
 
-    // Read from stdin (or file)
-    std::copy(
-        std::istream_iterator<DataStruct>(std::cin),
-        std::istream_iterator<DataStruct>(),
-        std::back_inserter(data)
-    );
+  try {
+    DSContainer vals(InputIt(std::cin), InputIt{});
 
-    // Sort
-    std::sort(data.begin(), data.end(), nspace::compare);
+   
+    constexpr auto MaxSize = std::numeric_limits<std::streamsize>::max();
+    while (!std::cin.eof()) {
+      std::cin.clear();
+      std::cin.ignore(MaxSize, '\n');
+      vals.insert(vals.end(), InputIt(std::cin), InputIt{});
+    }
 
-    // Output
-    std::copy(
-        data.begin(),
-        data.end(),
-        std::ostream_iterator<DataStruct>(std::cout, "\n")
-    );
 
-    return 0;
+    std::sort(vals.begin(), vals.end());
+
+    
+    std::copy(vals.begin(), vals.end(), OutIt(std::cout, "\n"));
+  } catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << '\n';
+    return 1;
+  }
 }
