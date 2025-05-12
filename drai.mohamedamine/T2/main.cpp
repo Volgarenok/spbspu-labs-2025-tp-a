@@ -6,26 +6,28 @@
 #include "structures.hpp"
 
 int main() {
-  using namespace firstime;  // Updated namespace
+  using namespace firstime;
   using DSContainer = std::vector<DataStruct>;
   using InputIt = std::istream_iterator<DataStruct>;
   using OutIt = std::ostream_iterator<DataStruct>;
 
   try {
-    DSContainer vals(InputIt(std::cin), InputIt{});
+    DSContainer vals;
 
-    // Handle remaining input (e.g., newlines after errors)
-    constexpr auto MaxSize = std::numeric_limits<std::streamsize>::max();
-    while (!std::cin.eof()) {
+    // Read until EOF or unrecoverable error
+    while (true) {
+      // Read valid DataStructs
+      std::copy(InputIt(std::cin), InputIt{}, std::back_inserter(vals));
+
+      if (std::cin.eof()) break;  // Exit on EOF
+
+      // Clear errors and skip bad input
       std::cin.clear();
-      std::cin.ignore(MaxSize, '\n');
-      vals.insert(vals.end(), InputIt(std::cin), InputIt{});
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
-    // Sort using the custom comparator
+    // Sort and output
     std::sort(vals.begin(), vals.end());
-
-    // Output sorted data
     std::copy(vals.begin(), vals.end(), OutIt(std::cout, "\n"));
   } catch (const std::exception& e) {
     std::cerr << "Error: " << e.what() << '\n';
