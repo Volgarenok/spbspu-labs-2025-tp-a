@@ -13,6 +13,7 @@ int main() {
 
   try {
     DSContainer vals;
+<<<<<<< HEAD
     
     // Read until EOF
     while (true) {
@@ -29,6 +30,22 @@ int main() {
       return 0;
     }
 
+=======
+
+    // Read until EOF or unrecoverable error
+    while (true) {
+      // Read valid DataStructs
+      std::copy(InputIt(std::cin), InputIt{}, std::back_inserter(vals));
+
+      if (std::cin.eof()) break;  // Exit on EOF
+
+      // Clear errors and skip bad input
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+
+    // Sort and output
+>>>>>>> 2098b4e523bd3cd8b89cb3963e8eb32ccec3c7f7
     std::sort(vals.begin(), vals.end());
     std::copy(vals.begin(), vals.end(), OutIt(std::cout, "\n"));
     
