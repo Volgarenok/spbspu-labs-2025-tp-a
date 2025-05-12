@@ -14,7 +14,6 @@ namespace firstime {
   struct Nominator;
   struct Denominator;
   struct Rational;
-
   std::istream& operator>>(std::istream&, Delimiter&&);
   std::istream& operator>>(std::istream&, OneOfDelimiters&&);
   std::istream& operator>>(std::istream&, Label&&);
@@ -23,10 +22,8 @@ namespace firstime {
   std::istream& operator>>(std::istream&, Nominator&&);
   std::istream& operator>>(std::istream&, Denominator&&);
   std::istream& operator>>(std::istream&, Rational&&);
-
   std::istream& inputKey(std::istream&, const std::string&, DataStruct&);
 }
-
 struct firstime::Delimiter { char val; };
 struct firstime::OneOfDelimiters { const std::string& val; };
 struct firstime::Double { double& val; };
@@ -35,7 +32,6 @@ struct firstime::String { std::string& val; };
 struct firstime::Nominator { long long& val; };
 struct firstime::Denominator { unsigned long long& val; };
 struct firstime::Rational { DataStruct::Rational& val; };
-
 std::istream& firstime::operator>>(std::istream& in, Delimiter&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
@@ -43,7 +39,6 @@ std::istream& firstime::operator>>(std::istream& in, Delimiter&& dest) {
   if ((in >> c) && (c != dest.val)) in.setstate(std::ios::failbit);
   return in;
 }
-
 std::istream& firstime::operator>>(std::istream& in, OneOfDelimiters&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
@@ -51,7 +46,6 @@ std::istream& firstime::operator>>(std::istream& in, OneOfDelimiters&& dest) {
   if ((in >> c) && (dest.val.find(c) == std::string::npos)) in.setstate(std::ios::failbit);
   return in;
 }
-
 std::istream& firstime::operator>>(std::istream& in, Double&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
@@ -59,13 +53,11 @@ std::istream& firstime::operator>>(std::istream& in, Double&& dest) {
   if (in.peek() == 'd' || in.peek() == 'D') in.ignore(1);
   return in;
 }
-
 std::istream& firstime::operator>>(std::istream& in, String&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
   return std::getline(in >> Delimiter{ '"' }, dest.val, '"');
 }
-
 std::istream& firstime::operator>>(std::istream& in, Label&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
@@ -73,19 +65,16 @@ std::istream& firstime::operator>>(std::istream& in, Label&& dest) {
   if (std::getline(in, data, ' ') && (data != dest.val)) in.setstate(std::ios::failbit);
   return in;
 }
-
 std::istream& firstime::operator>>(std::istream& in, Nominator&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
   return in >> Delimiter{ 'N' } >> dest.val;
 }
-
 std::istream& firstime::operator>>(std::istream& in, Denominator&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
   return in >> Delimiter{ 'D' } >> dest.val;
 }
-
 std::istream& firstime::operator>>(std::istream& in, Rational&& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
@@ -94,7 +83,6 @@ std::istream& firstime::operator>>(std::istream& in, Rational&& dest) {
   in >> Denominator{ dest.val.denominator } >> Delimiter{ ':' } >> Delimiter{ ')' };
   return in;
 }
-
 std::istream& firstime::inputKey(std::istream& in, const std::string& key, DataStruct& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
@@ -104,16 +92,13 @@ std::istream& firstime::inputKey(std::istream& in, const std::string& key, DataS
   in.setstate(std::ios::failbit);
   return in;
 }
-
 std::istream& firstime::operator>>(std::istream& in, DataStruct& dest) {
   std::istream::sentry sentry(in);
   if (!sentry) return in;
   StreamGuard guard(in);
   in >> std::skipws >> Delimiter{ '(' } >> Delimiter{ ':' };
-  
   DataStruct input;
   std::vector<std::string> keys{"key1", "key2", "key3"};
-  
   for (std::string key; !keys.empty() && std::getline(in, key, ' ');) {
     auto it = std::find(keys.begin(), keys.end(), key);
     if (it == keys.end()) {
@@ -125,7 +110,6 @@ std::istream& firstime::operator>>(std::istream& in, DataStruct& dest) {
     in >> Delimiter{ ':' };
     if (in.peek() == ')') break;
   }
-  
   if ((in >> Delimiter{ ')' }) && keys.empty()) {
     dest = input;
   } else {
