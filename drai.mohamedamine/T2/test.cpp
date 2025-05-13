@@ -2,73 +2,81 @@
 #include <iostream>
 #include <sstream>
 #include <cctype>
+#include <limits>
 
-std::istream &amine::operator>>(std::istream &in, DelimiterIO &&dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
+namespace amine {
+std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
+
+    char c;
+    if (in >> c && c != dest.exp) {
+        in.setstate(std::ios::failbit);
+    }
     return in;
-  }
-
-  char c = 0;
-  if ((in >> c) && (c != dest.exp))
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
 }
+std::istream& operator>>(std::istream& in, DoubleSCI&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
 
-std::istream &amine::operator>>(std::istream &in, ComplexIO &&dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
+    double num;
+    if (in >> num) {
+        dest.ref = num;
+    } else {
+        in.setstate(std::ios::failbit);
+    }
     return in;
-  }
-
-  in >> DelimiterIO{'#'} >> DelimiterIO{'c'} >> DelimiterIO{'('};
-  double real = 0.0, imag = 0.0;
-  in >> real >> imag >> DelimiterIO{')'};
-
-  if (in)
-  {
-    dest.ref = std::complex<double>(real, imag);
-  }
-  return in;
 }
+std::istream& operator>>(std::istream& in, RationalIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
 
-std::istream &amine::operator>>(std::istream &in, RationalIO &&dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
+    long long numerator = 0;
+    unsigned long long denominator = 0;
+
+    in >> DelimiterIO{'('} >> DelimiterIO{':'} >> DelimiterIO{'N'};
+    in >> numerator;
+    in >> DelimiterIO{':'} >> DelimiterIO{'D'};
+    in >> denominator;
+    in >> DelimiterIO{':'} >> DelimiterIO{')'};
+
+    if (denominator == 0) {
+        in.setstate(std::ios::failbit);
+    } else if (in) {
+        dest.ref = {numerator, denominator};
+    }
     return in;
-  }
-
-  in >> DelimiterIO{'('} >> DelimiterIO{':'} >> DelimiterIO{'N'};
-  long long numerator = 0;
-  in >> numerator >> DelimiterIO{':'} >> DelimiterIO{'D'};
-  unsigned long long denominator = 0;
-  in >> denominator >> DelimiterIO{':'} >> DelimiterIO{')'};
-
-  if (in && denominator != 0)
-  {
-    dest.ref = {numerator, denominator};
-  }
-  else
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
 }
+std::istream& operator>>(std::istream& in, StringIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
 
-std::istream &amine::operator>>(std::istream &in, StringIO &&dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
+    char quote;
+    if (in >> quote && quote != '"') {
+        in.setstate(std::ios::failbit);
+        return in;
+    }
+    std::string str;
+    bool escape = false;
+    char c;
+
+    while (in.get(c)) {
+        if (escape) {
+            str += c;
+            escape = false;
+        } else if (c == '\\') {
+            escape = true;
+        } else if (c == '"') {
+            break;
+        } else {
+            str += c;
+        }
+    }
+    if (c != '"') {
+        in.setstate(std::ios::failbit);
+    } else {
+        dest.ref = str;
+    }
     return in;
-  }
-  return std::getline(in >> DelimiterIO{'"'}, dest.ref, '"');
+}
 }
