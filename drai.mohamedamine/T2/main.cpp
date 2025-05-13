@@ -3,52 +3,24 @@
 #include <iterator>
 #include <limits>
 #include <vector>
-#include "structures.hpp"
+#include "data-struct.hpp"
 
-int main() {
-  using namespace firstime;
-  using DSContainer = std::vector<DataStruct>;
-  using InputIt = std::istream_iterator<DataStruct>;
-  using OutIt = std::ostream_iterator<DataStruct>;
+int main()
+{
+  using namespace firstry;
+  using DSContainer = std::vector< DataStruct >;
+  using InputIt = std::istream_iterator< DataStruct >;
+  using OutIt = std::ostream_iterator< DataStruct >;
 
   try {
-    DSContainer vals;
-<<<<<<< HEAD
-    
-    // Read until EOF
-    while (true) {
-      std::copy(InputIt(std::cin), InputIt{}, std::back_inserter(vals));
-      if (std::cin.eof()) break;
-      if (std::cin.fail()) {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-      }
-    }
-
-    if (vals.empty()) {
-      std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped\n";
-      return 0;
-    }
-
-=======
-
-    // Read until EOF or unrecoverable error
-    while (true) {
-      // Read valid DataStructs
-      std::copy(InputIt(std::cin), InputIt{}, std::back_inserter(vals));
-
-      if (std::cin.eof()) break;  // Exit on EOF
-
-      // Clear errors and skip bad input
+    DSContainer vals(InputIt(std::cin), InputIt{});
+    constexpr auto MaxSize = std::numeric_limits< std::streamsize >::max();
+    while (!std::cin.eof()) {
       std::cin.clear();
-      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      vals.insert(vals.end(), InputIt(std::cin.ignore(MaxSize, '\n')), InputIt{});
     }
-
-    // Sort and output
->>>>>>> 2098b4e523bd3cd8b89cb3963e8eb32ccec3c7f7
     std::sort(vals.begin(), vals.end());
     std::copy(vals.begin(), vals.end(), OutIt(std::cout, "\n"));
-    
   } catch (const std::exception& e) {
     std::cerr << "Error: " << e.what() << '\n';
     return 1;
