@@ -4,38 +4,42 @@
 #include <cctype>
 
 namespace amine {
+
 std::istream &operator>>(std::istream &in, DelimiterIO &&dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
     char c;
-    if (in >> c && c != dest.exp)
+    if (in >> c && c != dest.exp) {
         in.setstate(std::ios::failbit);
+    }
     return in;
 }
 std::istream &operator>>(std::istream &in, DoubleSCI &&dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
     double num;
-    if (in >> num)
+    if (in >> num) {
         dest.ref = num;
-    else
+    } else {
         in.setstate(std::ios::failbit);
+    }
     return in;
 }
 std::istream &operator>>(std::istream &in, RationalIO &&dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
-    long long n;
-    unsigned long long d;
+    long long numerator = 0;
+    unsigned long long denominator = 0;
     in >> DelimiterIO{'('} >> DelimiterIO{':'} >> DelimiterIO{'N'};
-    in >> n;
+    in >> numerator;
     in >> DelimiterIO{':'} >> DelimiterIO{'D'};
-    in >> d;
+    in >> denominator;
     in >> DelimiterIO{':'} >> DelimiterIO{')'};
-    if (d == 0 || !in)
+    if (denominator == 0 || !in) {
         in.setstate(std::ios::failbit);
-    else
-        dest.ref = {n, d};
+    } else {
+        dest.ref = {numerator, denominator};
+    }
     return in;
 }
 std::istream &operator>>(std::istream &in, StringIO &&dest) {
@@ -48,7 +52,7 @@ std::istream &operator>>(std::istream &in, StringIO &&dest) {
     }
     std::string str;
     char c;
-    while (in.get(c) {
+    while (in.get(c)) {  // Fixed syntax here - removed '{' and added ')'
         if (c == '\\') {
             if (!in.get(c)) break;
             str += c;
@@ -60,10 +64,11 @@ std::istream &operator>>(std::istream &in, StringIO &&dest) {
             str += c;
         }
     }
-    if (c != '"')
+    if (c != '"') {
         in.setstate(std::ios::failbit);
-    else
+    } else {
         dest.ref = str;
+    }
     return in;
 }
 }
