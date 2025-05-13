@@ -6,14 +6,15 @@
 
 namespace amine
 {
-  struct DelimiterIO { char exp; };
-  struct DoubleSCI { double &ref; }; // New: For DBL SCI
-  struct RationalIO { std::pair<long long, unsigned long long> &ref; };
-  struct StringIO { std::string &ref; };
+    struct DelimiterIO { char exp; };
+    struct DoubleSCI { double &ref; };
+    struct RationalIO { std::pair<long long, unsigned long long> &ref; };
+    struct StringIO { std::string &ref; };
 
-  std::istream &operator>>(std::istream &in, DelimiterIO &&dest);
-  std::istream &operator>>(std::istream &in, DoubleSCI &&dest); // New
-  std::istream &operator>>(std::istream &in, RationalIO &&dest);
-  std::istream &operator>>(std::istream &in, StringIO &&dest);
+    std::istream &operator>>(std::istream &in, DelimiterIO &&dest);
+    std::istream &operator>>(std::istream &in, DoubleSCI &&dest);
+    std::istream &operator>>(std::istream &in, RationalIO &&dest);
+    std::istream &operator>>(std::istream &in, StringIO &&dest);
 }
+
 #endif
