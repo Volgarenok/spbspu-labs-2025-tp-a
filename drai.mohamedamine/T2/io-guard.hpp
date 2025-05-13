@@ -6,16 +6,13 @@
 namespace firstry {
   class IoGuard;
 }
-
 class firstry::IoGuard
 {
 public:
   IoGuard(const IoGuard&) = delete;
   explicit IoGuard(std::basic_ios< char >&);
   ~IoGuard();
-
   IoGuard& operator=(const IoGuard&) = delete;
-
 private:
   std::basic_ios< char >& s_;
   std::streamsize precision_;
@@ -23,5 +20,4 @@ private:
   std::basic_ios< char >::fmtflags flags_;
   char fill_;
 };
-
 #endif
