@@ -2,52 +2,52 @@
 #include <iostream>
 #include <sstream>
 #include <cctype>
-#include <limits>
 
 namespace amine {
-std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
+
+std::istream &operator>>(std::istream &in, DelimiterIO &&dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
     char c;
-    if (in >> c && c != dest.exp) {
+    if (in >> c && c != dest.exp)
         in.setstate(std::ios::failbit);
-    }
     return in;
 }
-std::istream& operator>>(std::istream& in, DoubleSCI&& dest) {
+
+std::istream &operator>>(std::istream &in, DoubleSCI &&dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
     double num;
-    if (in >> num) {
+    if (in >> num)
         dest.ref = num;
-    } else {
+    else
         in.setstate(std::ios::failbit);
-    }
     return in;
 }
-std::istream& operator>>(std::istream& in, RationalIO&& dest) {
+
+std::istream &operator>>(std::istream &in, RationalIO &&dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
-    long long numerator = 0;
-    unsigned long long denominator = 0;
-
+    long long n;
+    unsigned long long d;
+    
     in >> DelimiterIO{'('} >> DelimiterIO{':'} >> DelimiterIO{'N'};
-    in >> numerator;
+    in >> n;
     in >> DelimiterIO{':'} >> DelimiterIO{'D'};
-    in >> denominator;
+    in >> d;
     in >> DelimiterIO{':'} >> DelimiterIO{')'};
 
-    if (denominator == 0) {
+    if (d == 0 || !in)
         in.setstate(std::ios::failbit);
-    } else if (in) {
-        dest.ref = {numerator, denominator};
-    }
+    else
+        dest.ref = {n, d};
     return in;
 }
-std::istream& operator>>(std::istream& in, StringIO&& dest) {
+
+std::istream &operator>>(std::istream &in, StringIO &&dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
@@ -56,27 +56,27 @@ std::istream& operator>>(std::istream& in, StringIO&& dest) {
         in.setstate(std::ios::failbit);
         return in;
     }
-    std::string str;
-    bool escape = false;
-    char c;
 
-    while (in.get(c)) {
-        if (escape) {
+    std::string str;
+    char c;
+    while (in.get(c) {
+        if (c == '\\') {
+            if (!in.get(c)) break;
             str += c;
-            escape = false;
-        } else if (c == '\\') {
-            escape = true;
-        } else if (c == '"') {
+        }
+        else if (c == '"') {
             break;
-        } else {
+        }
+        else {
             str += c;
         }
     }
-    if (c != '"') {
+
+    if (c != '"')
         in.setstate(std::ios::failbit);
-    } else {
+    else
         dest.ref = str;
-    }
     return in;
 }
+
 }
