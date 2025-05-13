@@ -1,7 +1,7 @@
 #include "data-struct.hpp"
 #include <iomanip>
 #include <iostream>
-#include "io-guard.hpp"
+#include "stream-guard.hpp"
 
 namespace firstry {
   struct Label;
@@ -62,7 +62,7 @@ std::ostream& firstry::operator<<(std::ostream& out, const ScientificDouble& dat
   if (!sentry) {
     return out;
   }
-  IoGuard guard(out);
+  StreamGuard guard(out);
   out << std::scientific << std::setprecision(6);
   double val = data.val;
   if (val == 0.0) {
@@ -94,7 +94,7 @@ std::ostream& firstry::operator<<(std::ostream& out, const DataStruct& data)
   if (!sentry) {
     return out;
   }
-  IoGuard guard(out);
+  StreamGuard guard(out);
   out << '(';
   out << Label{ "key1" } << ScientificDouble{ data.key1 };
   out << Label{ "key2" } << Rational{ data.key2 };

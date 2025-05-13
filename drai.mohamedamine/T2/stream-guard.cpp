@@ -1,6 +1,6 @@
-#include "io-guard.hpp"
+#include "stream-guard.hpp"
 
-firstry::IoGuard::IoGuard(std::basic_ios< char >& s):
+firstry::StreamGuard::StreamGuard(std::basic_ios< char >& s):
   s_(s),
   precision_(s.precision()),
   width_(s.width()),
@@ -8,7 +8,7 @@ firstry::IoGuard::IoGuard(std::basic_ios< char >& s):
   fill_(s.fill())
 {}
 
-firstry::IoGuard::~IoGuard()
+firstry::StreamGuard::~StreamGuard()
 {
   s_.precision(precision_);
   s_.width(width_);

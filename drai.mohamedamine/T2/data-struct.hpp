@@ -10,7 +10,6 @@ namespace firstry {
   std::istream& operator>>(std::istream&, DataStruct&);
   std::ostream& operator<<(std::ostream&, const DataStruct&);
 }
-
 struct firstry::DataStruct
 {
   struct Rational
@@ -18,9 +17,8 @@ struct firstry::DataStruct
     long long numerator;
     unsigned long long denominator;
   };
-  double key1;  // DBL SCI
-  Rational key2;  // RAT LSP
+  double key1;
+  Rational key2;
   std::string key3;
 };
-
 #endif

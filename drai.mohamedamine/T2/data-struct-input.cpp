@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
-#include "io-guard.hpp"
+#include "stream-guard.hpp"
 
 namespace firstry {
   struct Delimiter;
@@ -93,6 +93,7 @@ std::istream& firstry::operator>>(std::istream& in, OneOfDelimiters&& dest)
   }
   return in;
 }
+
 std::istream& firstry::operator>>(std::istream& in, Nominator&& dest)
 {
   std::istream::sentry sentry(in);
@@ -101,6 +102,7 @@ std::istream& firstry::operator>>(std::istream& in, Nominator&& dest)
   }
   return in >> Delimiter{ 'N' } >> dest.val;
 }
+
 std::istream& firstry::operator>>(std::istream& in, Denominator&& dest)
 {
   std::istream::sentry sentry(in);
@@ -109,6 +111,7 @@ std::istream& firstry::operator>>(std::istream& in, Denominator&& dest)
   }
   return in >> Delimiter{ 'D' } >> dest.val;
 }
+
 std::istream& firstry::operator>>(std::istream& in, Rational&& dest)
 {
   std::istream::sentry sentry(in);
@@ -122,6 +125,7 @@ std::istream& firstry::operator>>(std::istream& in, Rational&& dest)
   in >> Delimiter{ ':' } >> Delimiter{ ')' };
   return in;
 }
+
 std::istream& firstry::operator>>(std::istream& in, ScientificDouble&& dest)
 {
   std::istream::sentry sentry(in);
@@ -130,6 +134,7 @@ std::istream& firstry::operator>>(std::istream& in, ScientificDouble&& dest)
   }
   return in >> dest.val >> OneOfDelimiters{ "eE" };
 }
+
 std::istream& firstry::operator>>(std::istream& in, String&& dest)
 {
   std::istream::sentry sentry(in);
@@ -138,6 +143,7 @@ std::istream& firstry::operator>>(std::istream& in, String&& dest)
   }
   return std::getline(in >> Delimiter{ '"' }, dest.val, '"');
 }
+
 std::istream& firstry::operator>>(std::istream& in, Label&& dest)
 {
   std::istream::sentry sentry(in);
@@ -150,6 +156,7 @@ std::istream& firstry::operator>>(std::istream& in, Label&& dest)
   }
   return in;
 }
+
 std::istream& firstry::inputKey(std::istream& in, const std::string& key, DataStruct& dest)
 {
   std::istream::sentry sentry(in);
@@ -166,13 +173,14 @@ std::istream& firstry::inputKey(std::istream& in, const std::string& key, DataSt
   in.setstate(std::ios::failbit);
   return in;
 }
+
 std::istream& firstry::operator>>(std::istream& in, DataStruct& dest)
 {
   std::istream::sentry sentry(in);
   if (!sentry) {
     return in;
   }
-  IoGuard guard(in);
+  StreamGuard guard(in);
   in >> std::skipws;
   in >> Delimiter{ '(' } >> Delimiter{ ':' };
   std::vector< std::string > keys{ "key1", "key2", "key3" };
