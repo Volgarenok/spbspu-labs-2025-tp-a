@@ -4,7 +4,6 @@
 #include <cctype>
 
 namespace amine {
-
 std::istream &operator>>(std::istream &in, DelimiterIO &&dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
