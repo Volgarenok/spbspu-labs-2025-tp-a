@@ -1,29 +1,26 @@
-#include <algorithm>
-#include <iostream>
+#include "data.hpp"
+
 #include <iterator>
-#include <limits>
 #include <vector>
-#include "data-struct.hpp"
+#include <algorithm>
+#include <limits>
+#include <iostream>
 
 int main()
 {
-  using namespace firstry;
-  using DSContainer = std::vector< DataStruct >;
-  using InputIt = std::istream_iterator< DataStruct >;
-  using OutIt = std::ostream_iterator< DataStruct >;
-
-  try {
-    DSContainer vals(InputIt(std::cin), InputIt{});
-    constexpr auto MaxSize = std::numeric_limits< std::streamsize >::max();
-    while (!std::cin.eof()) {
+  using amine::DataStruct;
+  std::vector<DataStruct> data;
+  while (!std::cin.eof())
+  {
+    std::copy(std::istream_iterator<DataStruct>(std::cin), std::istream_iterator<DataStruct>(),
+              std::back_inserter(data));
+    if (std::cin.fail())
+    {
       std::cin.clear();
-      vals.insert(vals.end(), InputIt(std::cin.ignore(MaxSize, '\n')), InputIt{});
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
-    std::sort(vals.begin(), vals.end());
-    std::copy(vals.begin(), vals.end(), OutIt(std::cout, "\n"));
-  } catch (const std::exception& e) {
-    std::cerr << "Error: " << e.what() << '\n';
-    return 1;
   }
+  std::sort(data.begin(), data.end());
+  std::copy(std::begin(data), std::end(data), std::ostream_iterator<DataStruct>(std::cout, "\n"));
   return 0;
 }
