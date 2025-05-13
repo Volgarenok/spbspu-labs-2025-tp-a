@@ -1,6 +1,6 @@
 #include "stream_guard.hpp"
 
-amine::StreamGuard::StreamGuard(std::basic_ios<char> &s):
+amine::FormatGuard::FormatGuard(std::basic_ios< char > &s):
   s_(s),
   width_(s.width()),
   fill_(s.fill()),
@@ -9,7 +9,7 @@ amine::StreamGuard::StreamGuard(std::basic_ios<char> &s):
 {
 }
 
-amine::StreamGuard::~StreamGuard()
+amine::FormatGuard::~FormatGuard()
 {
   s_.width(width_);
   s_.fill(fill_);

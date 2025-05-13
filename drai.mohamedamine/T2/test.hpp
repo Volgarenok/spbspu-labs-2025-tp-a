@@ -2,7 +2,6 @@
 #define TEST_HPP
 
 #include <string>
-#include <complex>
 #include <utility>
 
 namespace amine
@@ -11,11 +10,11 @@ namespace amine
   {
     char exp;
   };
-  struct ComplexIO
+  struct DoubleSCI
   {
-    std::complex<double> &ref;
+    double &ref;
   };
-  struct RationalIO
+  struct RationalLSP
   {
     std::pair<long long, unsigned long long> &ref;
   };
@@ -25,8 +24,8 @@ namespace amine
   };
 
   std::istream &operator>>(std::istream &in, DelimiterIO &&dest);
-  std::istream &operator>>(std::istream &in, ComplexIO &&dest);
-  std::istream &operator>>(std::istream &in, RationalIO &&dest);
+  std::istream &operator>>(std::istream &in, DoubleSCI &&dest);
+  std::istream &operator>>(std::istream &in, RationalLSP &&dest);
   std::istream &operator>>(std::istream &in, StringIO &&dest);
 }
 #endif

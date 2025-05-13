@@ -5,18 +5,18 @@
 
 namespace amine
 {
-  class StreamGuard
+  class FormatGuard
   {
   public:
-    StreamGuard(std::basic_ios<char> &s);
-    ~StreamGuard();
+    FormatGuard(std::basic_ios< char > &s);
+    ~FormatGuard();
 
   private:
-    std::basic_ios<char> &s_;
+    std::basic_ios< char > &s_;
     std::streamsize width_;
     char fill_;
     std::streamsize precision_;
-    std::basic_ios<char>::fmtflags fmt_;
+    std::basic_ios< char >::fmtflags fmt_;
   };
 }
 #endif
