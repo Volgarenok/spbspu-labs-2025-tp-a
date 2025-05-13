@@ -4,7 +4,6 @@
 #include <iostream>
 #include <cmath>
 #include <iomanip>
-
 bool amine::operator<(const DataStruct &lhs, const DataStruct &rhs)
 {
   double lhs_mod = std::abs(lhs.key1);
@@ -13,17 +12,14 @@ bool amine::operator<(const DataStruct &lhs, const DataStruct &rhs)
   {
     return lhs_mod < rhs_mod;
   }
-
   double lhs_ratio = static_cast<double>(lhs.key2.first) / lhs.key2.second;
   double rhs_ratio = static_cast<double>(rhs.key2.first) / rhs.key2.second;
   if (lhs_ratio != rhs_ratio)
   {
     return lhs_ratio < rhs_ratio;
   }
-
   return lhs.key3.size() < rhs.key3.size();
 }
-
 std::ostream &amine::operator<<(std::ostream &out, const DataStruct &src)
 {
   std::ostream::sentry sentry(out);
@@ -32,14 +28,12 @@ std::ostream &amine::operator<<(std::ostream &out, const DataStruct &src)
     return out;
   }
   StreamGuard fg(out);
-
-  out << "(:key1 #c(" << std::fixed << std::setprecision(1) 
+  out << "(:key1 #c(" << std::fixed << std::setprecision(1)
       << src.key1.real() << " " << src.key1.imag() << ")";
   out << ":key2 (:N " << src.key2.first << ":D " << src.key2.second << ":)";
   out << ":key3 \"" << src.key3 << "\":)";
   return out;
 }
-
 std::istream &amine::operator>>(std::istream &in, DataStruct &dest)
 {
   std::istream::sentry sentry(in);
@@ -47,10 +41,8 @@ std::istream &amine::operator>>(std::istream &in, DataStruct &dest)
   {
     return in;
   }
-
   DataStruct tmp;
   in >> DelimiterIO{'('} >> DelimiterIO{':'};
-
   std::string field;
   for (int i = 0; i < 3; i++)
   {
@@ -74,7 +66,6 @@ std::istream &amine::operator>>(std::istream &in, DataStruct &dest)
     }
     in >> DelimiterIO{':'};
   }
-
   in >> DelimiterIO{')'};
   if (in)
   {
