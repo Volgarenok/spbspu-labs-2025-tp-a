@@ -1,7 +1,6 @@
 #include "data-struct.hpp"
 #include <tuple>
 #include <cmath>
-
 bool firstry::operator<(const DataStruct& lhs, const DataStruct& rhs)
 {
   const auto lhsSize = lhs.key3.size();
