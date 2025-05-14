@@ -10,10 +10,11 @@ namespace {
     std::string token;
     std::getline(in, token, ')');
 
-    std::regex rat_regex(R"(:N (-?\d+):D (\d+):)");
+    std::regex rat_regex(R"(\(:N (-?\d+):D (\d+):\))");
     std::smatch match;
 
-    if (std::regex_search(token, match, rat_regex)) {
+    std::string full = token + ")";
+    if (std::regex_match(full, match, rat_regex)) {
       rat.first = std::stoll(match[1]);
       rat.second = std::stoull(match[2]);
       return true;
@@ -68,7 +69,7 @@ std::istream &operator>>(std::istream &in, data_struct_t &data) {
     } else if (token == "key2") {
       std::string rest;
       std::getline(iss, rest, ':');
-      std::istringstream tmp(":" + rest + ":)");
+      std::istringstream tmp(rest + ":)");
       has_key2 = parse_rational(tmp, data.key2);
     } else if (token == "key3") {
       std::string value;
