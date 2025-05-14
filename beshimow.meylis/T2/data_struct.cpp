@@ -42,13 +42,13 @@ namespace {
     return false;
   }
 
-}  // namespace
+}
 
 std::istream &operator>>(std::istream &in, data_struct_t &data) {
   std::string line;
   std::getline(in, line);
 
-  if (line.empty()  line.front() != '('  line.back() != ')') {
+  if (line.empty() || line.front() != '(' || line.back() != ')') {
     in.setstate(std::ios::failbit);
     return in;
   }
