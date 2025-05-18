@@ -93,11 +93,10 @@ std::ostream &operator<<(std::ostream &out, const data_struct_t &data) {
   out << "(:key1 #c("
       << std::fixed << std::setprecision(1)
       << data.key1.real() << " "
-      << data.key1.imag()
-      << "):key2 (:N "
+      << data.key1.imag() << "):key2 (:N "
       << data.key2.first << ":D "
-      << data.key2.second
-      << ":):key3 \""
+      << data.key2.second << ":):key3 \""
       << data.key3 << "\":)";
   return out;
 }
+
