@@ -2,9 +2,8 @@
 #define DATA_STRUCT_HPP
 
 #include <complex>
-#include <string>
 #include <utility>
-#include <iostream>
+#include <string>
 
 struct data_struct_t {
   std::complex<double> key1;
@@ -12,7 +11,7 @@ struct data_struct_t {
   std::string key3;
 };
 
-std::istream &operator>>(std::istream &in, data_struct_t &data);
-std::ostream &operator<<(std::ostream &out, const data_struct_t &data);
+std::istream& operator>>(std::istream& in, data_struct_t& data);
+std::ostream& operator<<(std::ostream& out, const data_struct_t& data);
 
 #endif
