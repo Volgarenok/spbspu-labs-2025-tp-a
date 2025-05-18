@@ -2,7 +2,6 @@
 #include <sstream>
 #include <regex>
 #include <iomanip>
-#include <iostream>
 
 namespace {
 
@@ -46,7 +45,7 @@ bool parseComplex(std::istream& in, std::complex<double>& c)
 
 }
 
-std::istream& operator>>(std::istream& in, data_struct_t& data)
+std::istream& operator>>(std::istream& in, DataStruct& data)
 {
   std::string line;
   if (!std::getline(in, line))
@@ -109,7 +108,7 @@ std::istream& operator>>(std::istream& in, data_struct_t& data)
   return in;
 }
 
-std::ostream& operator<<(std::ostream& out, const data_struct_t& data)
+std::ostream& operator<<(std::ostream& out, const DataStruct& data)
 {
   out << "(:key1 #c("
       << std::fixed << std::setprecision(1)
