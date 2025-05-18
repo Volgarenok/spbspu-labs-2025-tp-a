@@ -67,9 +67,10 @@ std::istream &operator>>(std::istream &in, data_struct_t &data) {
       std::istringstream tmp("#c" + rest);
       has_key1 = parse_complex(tmp, data.key1);
     } else if (token == "key2") {
-      std::string rest;
-      std::getline(iss, rest, ':');
-      std::istringstream tmp(rest + ":)");
+      std::string full;
+      std::getline(iss, full, ':');
+      full += ":)";
+      std::istringstream tmp(full);
       has_key2 = parse_rational(tmp, data.key2);
     } else if (token == "key3") {
       std::string value;
@@ -93,10 +94,11 @@ std::ostream &operator<<(std::ostream &out, const data_struct_t &data) {
   out << "(:key1 #c("
       << std::fixed << std::setprecision(1)
       << data.key1.real() << " "
-      << data.key1.imag() << "):key2 (:N "
+      << data.key1.imag()
+      << "):key2 (:N "
       << data.key2.first << ":D "
-      << data.key2.second << ":):key3 \""
+      << data.key2.second
+      << ":):key3 \""
       << data.key3 << "\":)";
   return out;
 }
-
