@@ -1,18 +1,22 @@
-#ifndef DATA_STRUCT_HPP
-#define DATA_STRUCT_HPP
+#ifndef DATASTRUCT_HPP
+#define DATASTRUCT_HPP
 
-#include <complex>
-#include <utility>
 #include <string>
+#include <vector>
+#include <utility>
+#include <istream>
+#include <ostream>
 
 struct DataStruct
 {
-  std::complex<double> key1;
+  double key1;
   std::pair<long long, unsigned long long> key2;
   std::string key3;
 };
 
-std::istream& operator>>(std::istream& in, DataStruct& data);
-std::ostream& operator<<(std::ostream& out, const DataStruct& data);
+bool isValidRecord(const std::string& line);
+bool parseRecord(const std::string& line, DataStruct& data);
+void sortData(std::vector<DataStruct>& data);
+void printData(std::ostream& out, const DataStruct& data);
 
 #endif

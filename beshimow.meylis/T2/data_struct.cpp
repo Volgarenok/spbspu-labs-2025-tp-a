@@ -1,123 +1,61 @@
 #include "data_struct.hpp"
-#include <sstream>
+
 #include <regex>
+#include <sstream>
 #include <iomanip>
+#include <algorithm>
 
-namespace {
-
-bool parseRational(std::istream& in, std::pair<long long, unsigned long long>& rat)
+bool isValidRecord(const std::string& line)
 {
-  std::string token;
-  std::getline(in, token, ')');
+  std::regex format(R"(^\(\s*:.*:\s*\)$)");
+  std::regex key1Re(R"delim(:key1\s+[+-]?\d+(\.\d+)?[eE][+-]?\d+:)delim");
+  std::regex key2Re(R"delim(:key2\s+\(:N\s+-?\d+:D\s+\d+:\):)delim");
+  std::regex key3Re(R"delim(:key3\s+"[^"]*":)delim");
 
-  std::regex ratRegex(R"(\(:N (-?\d+):D (\d+):\))");
+  return std::regex_match(line, format)
+    && std::regex_search(line, key1Re)
+    && std::regex_search(line, key2Re)
+    && std::regex_search(line, key3Re);
+}
+
+bool parseRecord(const std::string& line, DataStruct& data)
+{
   std::smatch match;
 
-  if (std::regex_search(token, match, ratRegex))
-  {
-    rat.first = std::stoll(match[1]);
-    rat.second = std::stoull(match[2]);
-    return true;
+  std::regex key1Re(R"delim(:key1\s+([+-]?\d+(?:\.\d+)?[eE][+-]?\d+):)delim");
+  if (!std::regex_search(line, match, key1Re)) {
+    return false;
   }
-  return false;
+  data.key1 = std::stod(match[1]);
+
+  std::regex key2Re(R"delim(:key2\s+\(:N\s+(-?\d+):D\s+(\d+):\):)delim");
+  if (!std::regex_search(line, match, key2Re)) {
+    return false;
+  }
+  data.key2 = {std::stoll(match[1]), std::stoull(match[2])};
+
+  std::regex key3Re(R"delim(:key3\s+"([^"]*)":)delim");
+  if (!std::regex_search(line, match, key3Re)) {
+    return false;
+  }
+  data.key3 = match[1];
+
+  return true;
 }
 
-bool parseComplex(std::istream& in, std::complex<double>& c)
+void sortData(std::vector<DataStruct>& data)
 {
-  std::string token;
-  std::getline(in, token, ')');
-
-  std::regex compRegex(
-    R"(#c\((-?\d+\.?\d*)(?:e[+-]?\d+)?[ ]+(-?\d+\.?\d*)(?:e[+-]?\d+)?\))",
-    std::regex::icase
-  );
-  std::smatch match;
-
-  if (std::regex_search(token, match, compRegex))
-  {
-    double re = std::stod(match[1]);
-    double im = std::stod(match[2]);
-    c = {re, im};
-    return true;
-  }
-  return false;
+  std::sort(data.begin(), data.end(),
+    [](const DataStruct& a, const DataStruct& b) {
+      if (a.key1 != b.key1) return a.key1 < b.key1;
+      if (a.key2 != b.key2) return a.key2 < b.key2;
+      return a.key3.length() < b.key3.length();
+    });
 }
 
-}
-
-std::istream& operator>>(std::istream& in, DataStruct& data)
+void printData(std::ostream& out, const DataStruct& data)
 {
-  std::string line;
-  if (!std::getline(in, line))
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-
-  if (line.empty() || line.front() != '(' || line.back() != ')')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-
-  std::istringstream iss(line.substr(1, line.size() - 2));
-  std::string token;
-  bool hasKey1 = false;
-  bool hasKey2 = false;
-  bool hasKey3 = false;
-
-  while (std::getline(iss, token, ':'))
-  {
-    if (token == "key1")
-    {
-      std::string rest;
-      if (std::getline(iss, rest, ':'))
-      {
-        std::istringstream tmp("#c" + rest);
-        hasKey1 = parseComplex(tmp, data.key1);
-      }
-    }
-    else if (token == "key2")
-    {
-      std::string rest;
-      if (std::getline(iss, rest, ':'))
-      {
-        std::istringstream tmp("(:N" + rest + ":)");
-        hasKey2 = parseRational(tmp, data.key2);
-      }
-    }
-    else if (token == "key3")
-    {
-      std::string value;
-      if (std::getline(iss, value, ':'))
-      {
-        if (value.size() >= 2 && value.front() == '"' && value.back() == '"')
-        {
-          data.key3 = value.substr(1, value.size() - 2);
-          hasKey3 = true;
-        }
-      }
-    }
-  }
-
-  if (!(hasKey1 && hasKey2 && hasKey3))
-  {
-    in.setstate(std::ios::failbit);
-  }
-
-  return in;
-}
-
-std::ostream& operator<<(std::ostream& out, const DataStruct& data)
-{
-  out << "(:key1 #c("
-      << std::fixed << std::setprecision(1)
-      << data.key1.real() << " "
-      << data.key1.imag()
-      << "):key2 (:N "
-      << data.key2.first << ":D "
-      << data.key2.second
-      << ":):key3 \""
-      << data.key3 << "\":)";
-  return out;
+  out << "(:key1 " << std::scientific << std::setprecision(6) << data.key1
+      << ":key2 (:N " << data.key2.first << ":D " << data.key2.second << ":)"
+      << ":key3 \"" << data.key3 << "\":)";
 }
