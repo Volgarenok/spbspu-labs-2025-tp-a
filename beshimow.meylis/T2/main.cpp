@@ -1,31 +1,35 @@
-#include "data_struct.hpp"
-
-#include <iostream>
-#include <string>
 #include <vector>
+#include <iterator>
+#include <algorithm>
+#include <limits>
+#include "data_struct.hpp"
 
 int main()
 {
+  using namespace beshimow;
+  using istreamDS = std::istream_iterator<DataStruct>;
+  using ostreamDS = std::ostream_iterator<DataStruct>;
+
   std::vector<DataStruct> data;
-  std::string line;
 
-  while (std::getline(std::cin, line)) {
-    if (!isValidRecord(line)) {
-      continue;
+  while (!std::cin.eof() && !std::cin.bad())
+  {
+    if (std::cin.fail())
+    {
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
-
-    DataStruct record{};
-    if (parseRecord(line, record)) {
-      data.push_back(record);
-    }
+    std::copy(istreamDS{std::cin}, istreamDS{}, std::back_inserter(data));
   }
 
-  sortData(data);
-
-  for (const DataStruct& item : data) {
-    printData(std::cout, item);
-    std::cout << '\n';
+  if (std::cin.bad())
+  {
+    std::cerr << "Input error.\n";
+    return 2;
   }
+
+  std::sort(data.begin(), data.end());
+  std::copy(data.begin(), data.end(), ostreamDS{std::cout, "\n"});
 
   return 0;
 }

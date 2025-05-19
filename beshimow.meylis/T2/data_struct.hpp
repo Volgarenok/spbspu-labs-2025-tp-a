@@ -1,22 +1,20 @@
-#ifndef DATASTRUCT_HPP
-#define DATASTRUCT_HPP
+#ifndef DATA_STRUCT_HPP
+#define DATA_STRUCT_HPP
 
+#include <iostream>
 #include <string>
-#include <vector>
 #include <utility>
-#include <istream>
-#include <ostream>
 
-struct DataStruct
-{
-  double key1;
-  std::pair<long long, unsigned long long> key2;
-  std::string key3;
-};
+namespace beshimow {
+    struct DataStruct {
+        double key1;
+        std::pair<long long, long long> key2;
+        std::string key3;
+    };
 
-bool isValidRecord(const std::string& line);
-bool parseRecord(const std::string& line, DataStruct& data);
-void sortData(std::vector<DataStruct>& data);
-void printData(std::ostream& out, const DataStruct& data);
+    std::istream& operator>>(std::istream& in, DataStruct& dst);
+    std::ostream& operator<<(std::ostream& out, const DataStruct& dst);
+    bool operator<(const DataStruct& lhs, const DataStruct& rhs);
+}
 
 #endif
