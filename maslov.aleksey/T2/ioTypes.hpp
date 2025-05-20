@@ -6,10 +6,6 @@
 
 namespace maslov
 {
-  struct DelimiterIO
-  {
-    char exp;
-  };
   struct DoubleSciIO
   {
     double & ref;
@@ -22,7 +18,6 @@ namespace maslov
   {
     std::string & ref;
   };
-  std::istream & operator>>(std::istream & in, DelimiterIO && dest);
   std::istream & operator>>(std::istream & in, DoubleSciIO && dest);
   std::istream & operator>>(std::istream & in, CharLitIO && dest);
   std::istream & operator>>(std::istream & in, StringIO && dest);
