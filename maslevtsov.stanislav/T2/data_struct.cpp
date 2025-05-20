@@ -1,6 +1,6 @@
 #include "data_struct.hpp"
 #include <cmath>
-#include "io_fmt_guard.hpp"
+#include <io_fmt_guard.hpp>
 
 namespace {
   struct DelimiterIn
