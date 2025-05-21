@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
-#include "stream-guard.hpp"
+#include <stream-guard.hpp>
 
 namespace kizhin {
   struct Delimiter;
