@@ -3,11 +3,10 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
-#include "stream-guard.hpp"
+#include <interim-input-utils.hpp>
+#include <stream-guard.hpp>
 
 namespace kizhin {
-  struct Delimiter;
-  struct OneOfDelimiters;
   struct Label;
   struct String;
   struct Double;
@@ -15,8 +14,6 @@ namespace kizhin {
   struct Denominator;
   struct Rational;
 
-  std::istream& operator>>(std::istream&, Delimiter&&);
-  std::istream& operator>>(std::istream&, OneOfDelimiters&&);
   std::istream& operator>>(std::istream&, Label&&);
   std::istream& operator>>(std::istream&, String&&);
   std::istream& operator>>(std::istream&, Double&&);
@@ -26,16 +23,6 @@ namespace kizhin {
 
   std::istream& inputKey(std::istream&, const std::string&, DataStruct&);
 }
-
-struct kizhin::Delimiter
-{
-  char val;
-};
-
-struct kizhin::OneOfDelimiters
-{
-  const std::string& val;
-};
 
 struct kizhin::Double
 {
@@ -66,33 +53,6 @@ struct kizhin::Rational
 {
   DataStruct::Rational& val;
 };
-
-std::istream& kizhin::operator>>(std::istream& in, Delimiter&& dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry) {
-    return in;
-  }
-  char c;
-  if ((in >> c) && (c != dest.val)) {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
-}
-
-std::istream& kizhin::operator>>(std::istream& in, OneOfDelimiters&& dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry) {
-    return in;
-  }
-  char c;
-  const std::string& exp = dest.val;
-  if ((in >> c) && std::find(exp.begin(), exp.end(), c) == exp.end()) {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
-}
 
 std::istream& kizhin::operator>>(std::istream& in, Nominator&& dest)
 {
