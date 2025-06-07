@@ -1,16 +1,13 @@
 #include "stream_guard.hpp"
 
-beshimow::StreamGuard::StreamGuard(std::basic_ios<char> &s):
+beshimow::StreamGuard::StreamGuard(std::basic_ios<char> &s) :
   s_(s),
   width_(s.width()),
   fill_(s.fill()),
   precision_(s.precision()),
-  fmt_(s.flags())
-{
-}
+  fmt_(s.flags()) {}
 
-beshimow::StreamGuard::~StreamGuard()
-{
+beshimow::StreamGuard::~StreamGuard() {
   s_.width(width_);
   s_.fill(fill_);
   s_.precision(precision_);

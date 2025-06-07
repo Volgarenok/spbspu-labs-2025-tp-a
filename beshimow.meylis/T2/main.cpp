@@ -5,8 +5,7 @@
 #include <iostream>
 #include "data.hpp"
 
-int main()
-{
+int main() {
   using beshimow::DataStruct;
   using Vec = std::vector<DataStruct>;
   using In = std::istream_iterator<DataStruct>;

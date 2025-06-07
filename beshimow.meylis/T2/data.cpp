@@ -1,13 +1,11 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-
 #include "data.hpp"
 #include "stream_guard.hpp"
 #include "io.hpp"
 
-bool beshimow::operator<(const DataStruct &lhs, const DataStruct &rhs)
-{
+bool beshimow::operator<(const DataStruct &lhs, const DataStruct &rhs) {
   double lhs_mod = std::abs(lhs.key1);
   double rhs_mod = std::abs(rhs.key1);
   if (lhs_mod != rhs_mod) {
@@ -23,8 +21,7 @@ bool beshimow::operator<(const DataStruct &lhs, const DataStruct &rhs)
   return lhs.key3.size() < rhs.key3.size();
 }
 
-std::ostream &beshimow::operator<<(std::ostream &out, const DataStruct &src)
-{
+std::ostream &beshimow::operator<<(std::ostream &out, const DataStruct &src) {
   std::ostream::sentry sentry(out);
   if (!sentry) {
     return out;
@@ -37,8 +34,7 @@ std::ostream &beshimow::operator<<(std::ostream &out, const DataStruct &src)
   return out;
 }
 
-std::istream &beshimow::operator>>(std::istream &in, DataStruct &dest)
-{
+std::istream &beshimow::operator>>(std::istream &in, DataStruct &dest) {
   std::istream::sentry sentry(in);
   if (!sentry) {
     return in;

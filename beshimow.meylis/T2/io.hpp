@@ -4,27 +4,21 @@
 #include <string>
 #include <complex>
 #include <utility>
-#include <istream>
 
-namespace beshimow
-{
-  struct DelimiterIO
-  {
+namespace beshimow {
+  struct DelimiterIO {
     char exp;
   };
 
-  struct ComplexIO
-  {
+  struct ComplexIO {
     std::complex<double> &ref;
   };
 
-  struct RationalIO
-  {
+  struct RationalIO {
     std::pair<long long, unsigned long long> &ref;
   };
 
-  struct StringIO
-  {
+  struct StringIO {
     std::string &ref;
   };
 

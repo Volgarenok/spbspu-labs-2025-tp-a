@@ -2,27 +2,22 @@
 #include <iostream>
 #include <cctype>
 
-std::istream &beshimow::operator>>(std::istream &in, DelimiterIO &&dest)
-{
+std::istream &beshimow::operator>>(std::istream &in, DelimiterIO &&dest) {
   std::istream::sentry sentry(in);
-  if (!sentry)
-  {
+  if (!sentry) {
     return in;
   }
 
   char c = 0;
-  if ((in >> c) && (c != dest.exp))
-  {
+  if ((in >> c) && (c != dest.exp)) {
     in.setstate(std::ios::failbit);
   }
   return in;
 }
 
-std::istream &beshimow::operator>>(std::istream &in, ComplexIO &&dest)
-{
+std::istream &beshimow::operator>>(std::istream &in, ComplexIO &&dest) {
   std::istream::sentry sentry(in);
-  if (!sentry)
-  {
+  if (!sentry) {
     return in;
   }
 
@@ -30,18 +25,15 @@ std::istream &beshimow::operator>>(std::istream &in, ComplexIO &&dest)
   double real = 0.0, imag = 0.0;
   in >> real >> imag >> DelimiterIO{')'};
 
-  if (in)
-  {
+  if (in) {
     dest.ref = std::complex<double>(real, imag);
   }
   return in;
 }
 
-std::istream &beshimow::operator>>(std::istream &in, RationalIO &&dest)
-{
+std::istream &beshimow::operator>>(std::istream &in, RationalIO &&dest) {
   std::istream::sentry sentry(in);
-  if (!sentry)
-  {
+  if (!sentry) {
     return in;
   }
 
@@ -51,22 +43,17 @@ std::istream &beshimow::operator>>(std::istream &in, RationalIO &&dest)
   unsigned long long denominator = 0;
   in >> denominator >> DelimiterIO{':'} >> DelimiterIO{')'};
 
-  if (in && denominator != 0)
-  {
+  if (in && denominator != 0) {
     dest.ref = {numerator, denominator};
-  }
-  else
-  {
+  } else {
     in.setstate(std::ios::failbit);
   }
   return in;
 }
 
-std::istream &beshimow::operator>>(std::istream &in, StringIO &&dest)
-{
+std::istream &beshimow::operator>>(std::istream &in, StringIO &&dest) {
   std::istream::sentry sentry(in);
-  if (!sentry)
-  {
+  if (!sentry) {
     return in;
   }
   return std::getline(in >> DelimiterIO{'"'}, dest.ref, '"');

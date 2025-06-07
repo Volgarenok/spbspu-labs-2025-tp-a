@@ -3,10 +3,8 @@
 
 #include <ios>
 
-namespace beshimow
-{
-  class StreamGuard
-  {
+namespace beshimow {
+  class StreamGuard {
   public:
     explicit StreamGuard(std::basic_ios<char> &s);
     ~StreamGuard();
