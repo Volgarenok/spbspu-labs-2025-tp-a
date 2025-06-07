@@ -8,22 +8,7 @@
 #include <string>
 
 #include "scopeGuard.hpp"
-
-std::istream& kostyukov::operator>>(std::istream& in, DelimiterIO&& dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-  char c = '0';
-  in >> c;
-  if (in && (std::tolower(c) != std::tolower(dest.expected)))
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
-}
+#include "delimiter.hpp"
 
 std::istream& kostyukov::operator>>(std::istream& in, StringIO&& dest)
 {
