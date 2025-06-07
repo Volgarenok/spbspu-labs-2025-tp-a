@@ -1,35 +1,34 @@
-#include <vector>
 #include <iterator>
+#include <vector>
 #include <algorithm>
 #include <limits>
-#include "data_struct.hpp"
+#include <iostream>
+#include "data.hpp"
 
 int main()
 {
-  using namespace beshimow;
-  using istreamDS = std::istream_iterator<DataStruct>;
-  using ostreamDS = std::ostream_iterator<DataStruct>;
+  using beshimow::DataStruct;
+  using Vec = std::vector<DataStruct>;
+  using In = std::istream_iterator<DataStruct>;
+  using Out = std::ostream_iterator<DataStruct>;
 
-  std::vector<DataStruct> data;
+  constexpr auto max_ignore = std::numeric_limits<std::streamsize>::max();
+  Vec data;
 
-  while (!std::cin.eof() && !std::cin.bad())
-  {
-    if (std::cin.fail())
-    {
+  while (!std::cin.eof()) {
+    In in{std::cin};
+    In in_end{};
+    std::copy(in, in_end, std::back_inserter(data));
+    if (std::cin.fail()) {
       std::cin.clear();
-      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cin.ignore(max_ignore, '\n');
     }
-    std::copy(istreamDS{std::cin}, istreamDS{}, std::back_inserter(data));
-  }
-
-  if (std::cin.bad())
-  {
-    std::cerr << "Input error.\n";
-    return 2;
   }
 
   std::sort(data.begin(), data.end());
-  std::copy(data.begin(), data.end(), ostreamDS{std::cout, "\n"});
+
+  Out out{std::cout, "\n"};
+  std::copy(data.begin(), data.end(), out);
 
   return 0;
 }
