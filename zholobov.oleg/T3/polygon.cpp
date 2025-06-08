@@ -52,10 +52,7 @@ namespace zholobov {
     if (input >> count) {
       std::vector< Point > points;
       std::copy_n(std::istream_iterator< Point >(input), count, std::back_inserter(points));
-
-      if (!input) {
-        input.setstate(std::ios::failbit);
-      } else {
+      if (input) {
         polygon.points = std::move(points);
       }
     }
