@@ -18,6 +18,8 @@ namespace zholobov {
   std::istream& operator>>(std::istream& input, Point& point);
   std::istream& operator>>(std::istream& input, Polygon& polygon);
 
+  using Polygons = std::vector< zholobov::Polygon >;
+
 }
 
 #endif
