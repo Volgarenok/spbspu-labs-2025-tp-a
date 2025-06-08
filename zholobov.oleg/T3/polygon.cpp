@@ -1,6 +1,8 @@
 #include "polygon.hpp"
 
+#include <algorithm>
 #include <istream>
+#include <iterator>
 
 namespace zholobov {
 
@@ -48,13 +50,13 @@ namespace zholobov {
     }
     size_t count = 0;
     if (input >> count) {
-      for (size_t i = 0; i < count; ++i) {
-        Point p;
-        if (!(input >> io_helpers::CharIO{' '} >> p)) {
-          input.setstate(std::ios::failbit);
-          return input;
-        }
-        polygon.points.push_back(p);
+      std::vector< Point > points;
+      std::copy_n(std::istream_iterator< Point >(input), count, std::back_inserter(points));
+
+      if (!input) {
+        input.setstate(std::ios::failbit);
+      } else {
+        polygon.points = std::move(points);
       }
     }
     return input;
