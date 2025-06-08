@@ -5,6 +5,7 @@
 #include <iterator>
 #include <map>
 
+#include "commands.hpp"
 #include "polygon.hpp"
 
 int main(int argc, char* argv[])
@@ -27,6 +28,26 @@ int main(int argc, char* argv[])
     if (input.fail()) {
       input.clear();
       input.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+    }
+  }
+
+  std::map< std::string, std::function< void() > > commands;
+  commands["AREA"] = std::bind(zholobov::cmdArea, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["MAX"] = std::bind(zholobov::cmdArea, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["MIN"] = std::bind(zholobov::cmdArea, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["COUNT"] = std::bind(zholobov::cmdArea, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+
+  std::string cmd;
+  while (!(std::cin >> cmd).eof()) {
+    try {
+      commands.at(cmd)();
+    } catch (const std::out_of_range& e) {
+      std::cerr << e.what() << '\n';
+      if (!std::cin) {
+        std::cin.clear();
+      }
+      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+      std::cout << "INVALID COMMAND\n";
     }
   }
 
