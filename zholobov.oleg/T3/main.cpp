@@ -33,16 +33,18 @@ int main(int argc, char* argv[])
 
   std::map< std::string, std::function< void() > > commands;
   commands["AREA"] = std::bind(zholobov::cmdArea, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
-  commands["MAX"] = std::bind(zholobov::cmdArea, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
-  commands["MIN"] = std::bind(zholobov::cmdArea, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
-  commands["COUNT"] = std::bind(zholobov::cmdArea, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["MAX"] = std::bind(zholobov::cmdMax, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["MIN"] = std::bind(zholobov::cmdMin, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["COUNT"] = std::bind(zholobov::cmdCount, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["INTERSECTIONS"] = std::bind(zholobov::cmdIntersections, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["RECTS"] = std::bind(zholobov::cmdRects, std::ref(std::cout), std::cref(polygons));
 
   std::string cmd;
   while (!(std::cin >> cmd).eof()) {
     try {
       commands.at(cmd)();
-    } catch (const std::out_of_range& e) {
-      std::cerr << e.what() << '\n';
+      std::cout << "\n";
+    } catch (const std::exception&) {
       if (!std::cin) {
         std::cin.clear();
       }

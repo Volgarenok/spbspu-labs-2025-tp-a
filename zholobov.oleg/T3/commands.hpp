@@ -11,6 +11,8 @@ namespace zholobov {
   void cmdMax(std::istream& input, std::ostream& output, const Polygons& polygons);
   void cmdMin(std::istream& input, std::ostream& output, const Polygons& polygons);
   void cmdCount(std::istream& input, std::ostream& output, const Polygons& polygons);
+  void cmdIntersections(std::istream& input, std::ostream& output, const Polygons& polygons);
+  void cmdRects(std::ostream& output, const Polygons& polygons);
 
 }
 

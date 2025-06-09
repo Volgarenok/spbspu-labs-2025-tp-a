@@ -1,8 +1,26 @@
 #include "polygon.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <istream>
 #include <iterator>
+#include <numeric>
+
+namespace {
+
+  struct AreaAccumulator {
+    const zholobov::Point& p0;
+    zholobov::Point cur;
+
+    float operator()(float acc, const zholobov::Point& p)
+    {
+      acc += (cur.x - p0.x) * (p.y - p0.y) - (cur.y - p0.y) * (p.x - p0.x);
+      cur = p;
+      return acc;
+    }
+  };
+
+}
 
 namespace zholobov {
 
@@ -58,5 +76,14 @@ namespace zholobov {
     }
     return input;
   }
+}
 
+float zholobov::calcArea(const Polygon& polygon)
+{
+  if (polygon.points.size() < 3) {
+    return 0.0;
+  }
+  AreaAccumulator areaAcc{polygon.points[0], polygon.points[1]};
+  float sum = std::accumulate(polygon.points.cbegin() + 2, polygon.points.cend(), 0.0f, std::ref(areaAcc));
+  return 0.5f * std::abs(sum);
 }

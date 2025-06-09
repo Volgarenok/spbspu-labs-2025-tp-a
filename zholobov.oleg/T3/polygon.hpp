@@ -20,6 +20,8 @@ namespace zholobov {
 
   using Polygons = std::vector< zholobov::Polygon >;
 
+  float calcArea(const Polygon& polygon);
+
 }
 
 #endif
