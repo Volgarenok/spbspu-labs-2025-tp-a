@@ -1,6 +1,6 @@
 #include "data-struct.hpp"
 #include <iomanip>
-#include "scope-guard.hpp"
+#include <scope-guard.hpp>
 #include "io-utils.hpp"
 
 std::istream & savintsev::operator>>(std::istream & in, DataStruct & dest)
