@@ -1,9 +1,9 @@
-#include "data_struct.hpp"
 #include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <limits>
 #include <vector>
+#include "data_struct.hpp"
 
 int main()
 {
@@ -15,7 +15,7 @@ int main()
 
   while (!std::cin.eof())
   {
-    std::copy(input_it {std::cin}, input_it {}, std::back_inserter(data));
+    std::copy(input_it{std::cin}, input_it{}, std::back_inserter(data));
     if (std::cin.fail())
     {
       std::cin.clear();
@@ -23,6 +23,6 @@ int main()
     }
   }
   std::sort(data.begin(), data.end());
-  std::copy(std::begin(data), std::end(data), output_it {std::cout, "\n"});
+  std::copy(std::begin(data), std::end(data), output_it{std::cout, "\n"});
   return 0;
 }
