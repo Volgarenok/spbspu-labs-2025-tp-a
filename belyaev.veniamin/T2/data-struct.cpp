@@ -1,6 +1,6 @@
 #include "data-struct.hpp"
 #include "io-helpers.hpp"
-#include "stream-guard.hpp"
+#include <stream-guard.hpp>
 
 bool belyaev::operator<(const DataStruct& lhs, const DataStruct& rhs)
 {
