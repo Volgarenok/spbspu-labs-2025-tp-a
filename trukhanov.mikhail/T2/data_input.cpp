@@ -1,5 +1,5 @@
 #include "data_input.hpp"
-#include "stream_guard.hpp"
+#include <stream_guard.hpp>
 
 using Del = trukhanov::DelimiterIO;
 using Lbl = trukhanov::LabelIO;
