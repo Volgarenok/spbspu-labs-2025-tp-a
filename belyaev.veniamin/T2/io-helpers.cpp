@@ -1,6 +1,6 @@
 #include "io-helpers.hpp"
 #include <iomanip>
-#include "stream-guard.hpp"
+#include <stream-guard.hpp>
 
 std::istream& belyaev::operator>>(std::istream& in, const DelimeterIO&& dest)
 {
