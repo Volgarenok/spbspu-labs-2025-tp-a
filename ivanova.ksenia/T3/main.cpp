@@ -19,10 +19,10 @@ int main(int argc, char* argv[])
     std::ifstream file(argv[1]);
     if (!file) throw std::runtime_error("Failed to open file");
 
-    std::vector<Polygon> polygons;
-    std::copy(std::istream_iterator<Polygon>(file),
-    std::istream_iterator<Polygon>(),
-    std::back_inserter(polygons));
+    std::vector<ivanova::Polygon> polygons;
+    std::copy(std::istream_iterator<ivanova::Polygon>(file),
+                std::istream_iterator<ivanova::Polygon>(),
+                std::back_inserter(polygons));
 
     std::string command;
     while (std::cin >> command)
