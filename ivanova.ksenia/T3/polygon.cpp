@@ -6,6 +6,16 @@
 
 namespace ivanova
 {
+  bool Point::operator==(const Point& other) const
+  {
+    return x == other.x && y == other.y;
+  }
+
+  bool Polygon::operator==(const Polygon& other) const
+  {
+    return points == other.points;
+  }
+
   std::istream& operator>>(std::istream& in, Point& point)
   {
     std::istream::sentry sent(in);
