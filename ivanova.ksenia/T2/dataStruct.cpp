@@ -1,5 +1,4 @@
 #include <iomanip>
-#include <sstream>
 #include <bitset>
 #include "dataStruct.hpp"
 
@@ -78,14 +77,14 @@ namespace ivanova
 
   std::ostream& operator<<(std::ostream& out, const dataStruct& ds)
   {
-    std::stringstream ss;
-    ss << std::scientific << std::setprecision(1) << ds.key1;
-    std::string key1;
-    ss >> key1;
-    if (*(key1.end() - 2) == '0') {
+    char key1Str[32];
+    snprintf(key1Str, sizeof(key1Str), "%.1e", ds.key1);
+    std::string key1(key1Str);
+
+    if (*(key1.end() - 2) == '0')
+    {
       key1.erase(key1.end() - 2);
     }
-
     out << "(:key1 " << key1;
 
     out << ":key2 0b";
