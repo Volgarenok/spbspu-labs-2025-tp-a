@@ -16,7 +16,10 @@ namespace ivanova
     std::vector< Point > points;
   };
 
-  std::istream& operator>>(std::istream&, Polygon&);
+  std::istream& operator>>(std::istream& in, Point& point);
+  std::ostream& operator<<(std::ostream& out, const Point& point);
+  std::istream& operator>>(std::istream& in, Polygon& poly);
+  std::ostream& operator<<(std::ostream& out, const Polygon& poly);
 }
 
 #endif
