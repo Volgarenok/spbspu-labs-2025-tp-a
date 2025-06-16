@@ -89,7 +89,7 @@ namespace ivanova
     {
       throw std::invalid_argument("At least one polygon required");
     }
-     
+
     std::string param;
     in >> param;
 

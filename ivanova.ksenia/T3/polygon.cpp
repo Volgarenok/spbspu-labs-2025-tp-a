@@ -20,7 +20,7 @@ namespace ivanova
   {
     std::istream::sentry sent(in);
     if (!sent) return in;
-        
+
     StreamGuard guard(in);
     char c1, c2, c3;
     if (!(in >> c1 >> point.x >> c2 >> point.y >> c3) || c1 != '(' || c2 != ';' || c3 != ')')
