@@ -68,18 +68,44 @@ namespace ivanova
     if (param == "AREA")
     {
       auto maxIt = std::max_element(polygons.begin(), polygons.end(),
-              [](const Polygon& a, const Polygon& b){ return calculateArea(a) < calculateArea(b);});
+              [](const Polygon& a, const Polygon& b){ return calculateArea(a) < calculateArea(b);} );
       out << std::fixed << std::setprecision(1) << calculateArea(*maxIt) << '\n';
     }
     else if (param == "VERTEXES")
     {
       auto maxIt = std::max_element(polygons.begin(), polygons.end(),
-              [](const Polygon& a, const Polygon& b) { return a.points.size() < b.points.size();});
+              [](const Polygon& a, const Polygon& b) { return a.points.size() < b.points.size();} );
       out << maxIt->points.size() << '\n';
     }
     else
     {
       throw std::invalid_argument("Invalid max parameter");
+    }
+  }
+
+  void min(std::istream& in, std::ostream& out, const std::vector<Polygon>& polygons)
+  {        
+    std::string param;
+    in >> param;
+
+    StreamGuard guard(out);
+    out << std::fixed << std::setprecision(1);
+
+    if (param == "AREA")
+    {
+      auto minElem = std::min_element(polygons.begin(), polygons.end(),
+               [](const Polygon& a, const Polygon& b) { return calculateArea(a) < calculateArea(b);} );
+      out << calculateArea(*minElem) << '\n';
+    }
+    else if (param == "VERTEXES")
+    {
+      auto minElem = std::min_element(polygons.begin(), polygons.end(),
+               [](const Polygon& a, const Polygon& b) { return a.points.size() < b.points.size();} );
+      out << minElem->points.size() << '\n';
+    }
+    else
+    {
+      throw std::invalid_argument("Invalid MIN parameter: " + param);
     }
   }
 }
