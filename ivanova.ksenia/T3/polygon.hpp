@@ -22,6 +22,7 @@ namespace ivanova
   std::ostream& operator<<(std::ostream& out, const Point& point);
   std::istream& operator>>(std::istream& in, Polygon& poly);
   std::ostream& operator<<(std::ostream& out, const Polygon& poly);
+  double calculateArea(const Polygon& poly);
 }
 
 #endif
