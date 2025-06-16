@@ -113,4 +113,32 @@ namespace ivanova
       throw std::invalid_argument("Invalid MIN parameter: " + param);
     }
   }
+
+  void count(std::istream& in, std::ostream& out, const std::vector<Polygon>& polygons)
+  {
+    std::string param;
+    in >> param;
+
+    if (param == "EVEN" || param == "ODD")
+    {
+      bool isEven = (param == "EVEN");
+      size_t cnt = std::count_if(polygons.begin(), polygons.end(),
+                [isEven](const Polygon& poly) { return (poly.points.size() % 2 == 0) == isEven;} );
+      out << cnt << '\n';
+    }
+    else
+    {
+      try
+      {
+        size_t numVertices = std::stoul(param);
+        size_t cnt = std::count_if(polygons.begin(), polygons.end(),
+                    [numVertices](const Polygon& poly) { return poly.points.size() == numVertices;} );
+        out << cnt << '\n';
+      }
+      catch (const std::invalid_argument&)
+      {
+        throw std::invalid_argument("Invalid COUNT parameter: " + param);
+      }
+    }
+  }
 }
