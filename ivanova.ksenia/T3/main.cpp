@@ -1,3 +1,51 @@
-int main()
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <iterator>
+#include <stdexcept>
+#include "commands.hpp"
+#include "polygon.hpp"
+
+int main(int argc, char* argv[])
 {
+  if (argc != 2)
+  {
+    std::cerr << "Usage: " << argv[0] << " <filename>\n";
+    return 1;
+  }
+
+  try
+  {
+    std::ifstream file(argv[1]);
+    if (!file) throw std::runtime_error("Failed to open file");
+
+    std::vector<Polygon> polygons;
+    std::copy(std::istream_iterator<Polygon>(file),
+    std::istream_iterator<Polygon>(),
+    std::back_inserter(polygons));
+
+    std::string command;
+    while (std::cin >> command)
+    {
+      try
+      {
+        if (command == "AREA") ivanova::area(std::cin, std::cout, polygons);
+        else if (command == "MAX") ivanova::max(std::cin, std::cout, polygons);
+        else if (command == "MIN") ivanova::min(std::cin, std::cout, polygons);
+        else if (command == "COUNT") ivanova::count(std::cin, std::cout, polygons);
+        else throw std::invalid_argument("Unknown command");
+      }
+      catch (const std::exception& e)
+      {
+        std::cout << "<ERROR: " << e.what() << ">\n";
+      }
+    }
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Error: " << e.what() << '\n';
+    return 1;
+  }
+
+  return 0;
 }
