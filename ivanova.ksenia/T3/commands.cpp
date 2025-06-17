@@ -130,11 +130,16 @@ namespace ivanova
     std::string param;
     in >> param;
 
+    auto isValidPolygon = [](const Polygon& poly)
+    {
+      return poly.points.size() >= 3;
+    };
+
     if (param == "EVEN" || param == "ODD")
     {
       bool isEven = (param == "EVEN");
       size_t cnt = std::count_if(polygons.begin(), polygons.end(),
-              [isEven](const Polygon& poly) { return (poly.points.size() % 2 == 0) == isEven;} );
+        [isEven, isValidPolygon](const Polygon& poly) { return isValidPolygon(poly) && (poly.points.size() % 2 == 0) == isEven;});
       out << cnt << '\n';
     }
     else
@@ -147,7 +152,7 @@ namespace ivanova
           throw std::invalid_argument("<INVALID COMMAND>");
         }
         size_t cnt = std::count_if(polygons.begin(), polygons.end(),
-                  [numVertices](const Polygon& poly) { return poly.points.size() == numVertices;} );
+          [numVertices, isValidPolygon](const Polygon& poly) { return isValidPolygon(poly) && poly.points.size() == numVertices;});
         out << cnt << '\n';
       }
       catch (const std::invalid_argument&)
