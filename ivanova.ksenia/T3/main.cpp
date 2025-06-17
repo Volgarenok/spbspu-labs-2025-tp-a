@@ -37,13 +37,13 @@ int main(int argc, char* argv[])
       }
       catch (const std::exception& e)
       {
-        std::cout << "<ERROR: " << e.what() << ">\n";
+        std::cout << e.what() << "\n";
       }
     }
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Error: " << e.what() << '\n';
+    std::cerr << e.what() << '\n';
     return 1;
   }
 
