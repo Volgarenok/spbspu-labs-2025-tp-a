@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
         else if (command == "MAX") ivanova::max(std::cin, std::cout, polygons);
         else if (command == "MIN") ivanova::min(std::cin, std::cout, polygons);
         else if (command == "COUNT") ivanova::count(std::cin, std::cout, polygons);
-        else throw std::invalid_argument("Unknown command");
+        else throw std::invalid_argument("<INVALID COMMAND>");
       }
       catch (const std::exception& e)
       {
