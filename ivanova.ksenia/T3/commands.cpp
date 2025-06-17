@@ -123,7 +123,7 @@ namespace ivanova
     {
       bool isEven = (param == "EVEN");
       size_t cnt = std::count_if(polygons.begin(), polygons.end(),
-                [isEven](const Polygon& poly) { return (poly.points.size() % 2 == 0) == isEven;} );
+              [isEven](const Polygon& poly) { return (poly.points.size() % 2 == 0) == isEven;} );
       out << cnt << '\n';
     }
     else
@@ -131,13 +131,17 @@ namespace ivanova
       try
       {
         size_t numVertices = std::stoul(param);
+        if (numVertices < 3)
+        {
+          throw std::invalid_argument("Invalid vertex count");
+        }
         size_t cnt = std::count_if(polygons.begin(), polygons.end(),
-                    [numVertices](const Polygon& poly) { return poly.points.size() == numVertices;} );
+                  [numVertices](const Polygon& poly) { return poly.points.size() == numVertices;} );
         out << cnt << '\n';
       }
       catch (const std::invalid_argument&)
       {
-        throw std::invalid_argument("Invalid COUNT parameter: " + param);
+        throw std::invalid_argument("<INVALID COMMAND>");
       }
     }
   }
