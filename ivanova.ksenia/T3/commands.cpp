@@ -31,7 +31,7 @@ namespace ivanova
     {
       if (polygons.empty())
       {
-        throw std::invalid_argument("At least one polygon required");
+        throw std::invalid_argument("<INVALID COMMAND>");
       }
       double sum = 0.0;
       for (const auto& poly : polygons)
@@ -42,28 +42,39 @@ namespace ivanova
     }
     else
     {
-      size_t numVertices = std::stoul(param);
-      double sum = 0.0;
-      for (const auto& poly : polygons)
+      try
       {
-        if (poly.points.size() == numVertices)
+        size_t numVertices = std::stoul(param);
+        if (numVertices < 3)
         {
-          sum += calculateArea(poly);
+          throw std::invalid_argument("<INVALID COMMAND>");
         }
+        double sum = 0.0;
+        for (const auto& poly : polygons)
+        {
+          if (poly.points.size() == numVertices)
+          {
+            sum += calculateArea(poly);
+          }
+        }
+        out << sum << '\n';
       }
-      out << sum << '\n';
+      catch (const std::invalid_argument&)
+      {
+        throw std::invalid_argument("<INVALID COMMAND>");
+      }
     }
   }
 
   void max(std::istream& in, std::ostream& out, const std::vector<Polygon>& polygons)
   {
-    if (polygons.empty())
-    {
-      throw std::invalid_argument("At least one polygon required");
-    }
-
     std::string param;
     in >> param;
+
+    if (polygons.empty())
+    {
+      throw std::invalid_argument("<INVALID COMMAND>");
+    }
 
     if (param == "AREA")
     {
@@ -79,19 +90,19 @@ namespace ivanova
     }
     else
     {
-      throw std::invalid_argument("Invalid max parameter");
+      throw std::invalid_argument("<INVALID COMMAND>");
     }
   }
 
   void min(std::istream& in, std::ostream& out, const std::vector<Polygon>& polygons)
   {
-    if (polygons.empty())
-    {
-      throw std::invalid_argument("At least one polygon required");
-    }
-
     std::string param;
     in >> param;
+
+    if (polygons.empty())
+    {
+      throw std::invalid_argument("<INVALID COMMAND>");
+    }
 
     StreamGuard guard(out);
     out << std::fixed << std::setprecision(1);
@@ -110,7 +121,7 @@ namespace ivanova
     }
     else
     {
-      throw std::invalid_argument("Invalid MIN parameter: " + param);
+      throw std::invalid_argument("<INVALID COMMAND>");
     }
   }
 
@@ -133,7 +144,7 @@ namespace ivanova
         size_t numVertices = std::stoul(param);
         if (numVertices < 3)
         {
-          throw std::invalid_argument("Invalid vertex count");
+          throw std::invalid_argument("<INVALID COMMAND>");
         }
         size_t cnt = std::count_if(polygons.begin(), polygons.end(),
                   [numVertices](const Polygon& poly) { return poly.points.size() == numVertices;} );
