@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     {
       try
       {
-        if (command == "AREA") 
+        if (command == "AREA")
         {
           ivanova::area(std::cin, std::cout, polygons);
         }
