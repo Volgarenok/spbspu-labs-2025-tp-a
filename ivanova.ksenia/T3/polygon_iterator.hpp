@@ -31,6 +31,8 @@ namespace ivanova
     std::istream* in_;
     Polygon poly_;
     bool end_;
+
+    bool parseCoordinate(const std::string& line, std::size_t& pos, char delimiter, int& value);
   };
 }
 

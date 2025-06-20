@@ -5,7 +5,6 @@
 #include <limits>
 #include <stdexcept>
 #include <vector>
-#include <string>
 
 #include "commands.hpp"
 #include "polygon.hpp"
@@ -34,33 +33,19 @@ int main(int argc, char* argv[])
     {
       try
       {
-        if (command == "AREA")
+        if (command == "AREA") ivanova::area(std::cin, std::cout, polygons);
+        else if (command == "MAX") ivanova::max(std::cin, std::cout, polygons);
+        else if (command == "MIN") ivanova::min(std::cin, std::cout, polygons);
+        else if (command == "COUNT") ivanova::count(std::cin, std::cout, polygons);
+        else
         {
-          ivanova::area(std::cin, std::cout, polygons);
-        }
-        else if (command == "MAX")
-        {
-          ivanova::max(std::cin, std::cout, polygons);
-        }
-        else if (command == "MIN")
-        {
-          ivanova::min(std::cin, std::cout, polygons);
-        }
-        else if (command == "COUNT")
-        {
-          ivanova::count(std::cin, std::cout, polygons);
-        }
-        else if (!command.empty())
-        {
+          std::cin.ignore(100, '\n');
           throw std::invalid_argument("<INVALID COMMAND>");
         }
-
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       }
       catch (const std::exception& e)
       {
         std::cout << e.what() << "\n";
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       }
     }
   }
