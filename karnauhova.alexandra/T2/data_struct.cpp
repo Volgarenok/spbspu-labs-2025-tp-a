@@ -2,7 +2,7 @@
 #include <string>
 #include <exception>
 #include <iomanip>
-#include "scope_guard.hpp"
+#include <scope_guard.hpp>
 
 std::istream& karnauhova::operator>>(std::istream& in, DelimiterIO&& dest)
 {
