@@ -7,25 +7,29 @@
 
 int main()
 {
-  using fedorova::DataStruct;
-  using istreamDataStruct = std::istream_iterator< DataStruct >;
-  using ostreamDataStruct = std::ostream_iterator< DataStruct >;
-
-  std::vector< DataStruct > data;
+  std::vector<fedorova::DataStruct> vector;
 
   while (!std::cin.eof())
   {
-    std::copy(istreamDataStruct{ std::cin }, istreamDataStruct{}, std::back_inserter(data));
+    std::copy(
+      std::istream_iterator<fedorova::DataStruct>(std::cin),
+      std::istream_iterator<fedorova::DataStruct>(),
+      std::back_inserter(vector)
+    );
     if (std::cin.fail())
     {
       std::cin.clear();
-      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
   }
 
-  std::sort(data.begin(), data.end(), fedorova::compareDataStruct);
+  std::sort(vector.begin(), vector.end(), fedorova::compareDataStruct);
 
-  std::copy(std::begin(data), std::end(data), ostreamDataStruct(std::cout, "\n"));
+  std::copy(
+    vector.begin(),
+    vector.end(),
+    std::ostream_iterator<fedorova::DataStruct>(std::cout, "\n")
+  );
 
-  return 0;
+  return EXIT_SUCCESS;
 }

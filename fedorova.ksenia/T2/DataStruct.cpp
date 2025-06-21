@@ -1,24 +1,56 @@
-#include <iostream>
-#include <sstream>
-#include <limits>
 #include "DataStruct.h"
+#include <iostream>
+#include <string>
+#include <limits>
 
-std::istream& fedorova::operator>>(std::istream& is, DelimiterIO&& dest)
+std::string fedorova::changeKeyToBinary(unsigned long long key)
 {
-  std::istream::sentry sentry(is);
+  std::string result;
+
+  if (key == 0)
+  {
+    return "0b0";
+  }
+
+  for (int i = 63; i >= 0; --i)
+  {
+    result += ((key >> i) & 1) ? '1' : '0';
+  }
+
+  size_t firstIndex = result.find('1');
+  if (firstIndex == std::string::npos)
+  {
+    return "0b0";
+  }
+
+  result = result.substr(firstIndex);
+
+  if (result.length() == 1)
+  {
+    result = "0" + result;
+  }
+
+  return "0b" + result;
+}
+
+std::istream& fedorova::operator>>(std::istream& in, DelimiterIO&& data)
+{
+  std::istream::sentry sentry(in);
   if (!sentry)
   {
-    return is;
+    return in;
   }
 
-  char c;
-  is >> c;
-  if (is && (c != dest.exp))
+  char c = '0';
+  in >> c;
+  c = std::tolower(c);
+
+  if (in && (c != data.exp))
   {
-    is.setstate(std::ios::failbit);
+    in.setstate(std::ios::failbit);
   }
 
-  return is;
+  return in;
 }
 
 std::istream& fedorova::operator>>(std::istream& is, ULLLiteralIO&& dest)
@@ -28,24 +60,15 @@ std::istream& fedorova::operator>>(std::istream& is, ULLLiteralIO&& dest)
   {
     return is;
   }
-
   is >> dest.ref;
-
   if (is)
   {
-    char u, l1, l2;
-    is >> u >> l1 >> l2;
-
-    if (tolower(u) != 'u' || tolower(l1) != 'l' || tolower(l2) != 'l')
-    {
-      is.setstate(std::ios::failbit);
-    }
+    is >> DelimiterIO{ 'u' } >> DelimiterIO{ 'l' } >> DelimiterIO{ 'l' } >> DelimiterIO{ ':' };
   }
-
   return is;
 }
 
-std::istream& fedorova::operator>>(std::istream& is, ULLBinaryIO&& dest)
+std::istream& fedorova::operator>>(std::istream& is, ULLBinaryIO&& data)
 {
   std::istream::sentry sentry(is);
   if (!sentry)
@@ -53,35 +76,21 @@ std::istream& fedorova::operator>>(std::istream& is, ULLBinaryIO&& dest)
     return is;
   }
 
-  char first, second;
-  is >> first >> second;
+  char c = 0;
+  unsigned long long number = 0;
+  is >> DelimiterIO{ '0' } >> c;
 
-  if (first != '0' || tolower(second) != 'b')
+  if (c != 'b' && c != 'B')
   {
     is.setstate(std::ios::failbit);
     return is;
   }
 
-  unsigned long long value = 0;
-  bool has_digits = false;
-  dest.has_leading_zero = false;
-  bool first_digit_zero = false;
-
-  while (true) {
-    char c = is.peek();
-    if (c == '0' || c == '1')
+  while (is >> c)
+  {
+    if (c == '1' || c == '0')
     {
-      is.get();
-      if (!has_digits && c == '0')
-      {
-        first_digit_zero = true;
-      }
-      else if (first_digit_zero && !dest.has_leading_zero)
-      {
-        dest.has_leading_zero = true;
-      }
-      value = (value << 1) | (c - '0');
-      has_digits = true;
+      number = (number << 1) + (c - '0');
     }
     else
     {
@@ -89,13 +98,13 @@ std::istream& fedorova::operator>>(std::istream& is, ULLBinaryIO&& dest)
     }
   }
 
-  if (!has_digits)
+  if (c == ':')
   {
-    is.setstate(std::ios::failbit);
+    data.ref = number;
   }
   else
   {
-    dest.ref = value;
+    is.setstate(std::ios::failbit);
   }
 
   return is;
@@ -109,7 +118,15 @@ std::istream& fedorova::operator>>(std::istream& is, StringIO&& dest)
     return is;
   }
 
-  return std::getline(is >> DelimiterIO{ '\"' }, dest.ref, '\"');
+  std::getline(is >> DelimiterIO{ '"' }, dest.ref, '"');
+  if (is.fail())
+  {
+    is.setstate(std::ios::failbit);
+  }
+
+  is >> DelimiterIO{ ':' };
+
+  return is;
 }
 
 std::istream& fedorova::operator>>(std::istream& is, LabelIO&& dest)
@@ -135,91 +152,61 @@ std::istream& fedorova::operator>>(std::istream& is, LabelIO&& dest)
 
 std::istream& fedorova::operator>>(std::istream& is, DataStruct& data)
 {
-  DataStruct in;
-  bool key1 = false, key2 = false, key3 = false;
-
-  is >> DelimiterIO{ '(' };
-
-  while (is && (!key1 || !key2 || !key3))
+  std::istream::sentry sentry(is);
+  if (!sentry)
   {
-    std::string fieldName;
-    if (!(is >> fieldName))
+    return is;
+  }
+
+  DataStruct temp;
+
+  is >> DelimiterIO{ '(' } >> DelimiterIO{ ':' };
+
+  for (size_t i = 0; i < 3; i++)
+  {
+    std::string key;
+    is >> key;
+    if (key == "key1")
     {
-      break;
+      is >> ULLLiteralIO{ temp.key1 };
     }
-    if (fieldName == ":key1" && !key1)
+    else if (key == "key2")
     {
-      is >> ULLLiteralIO{ in.key1 };
-      key1 = true;
+      is >> ULLBinaryIO{ temp.key2 };
     }
-    else if (fieldName == ":key2" && !key2)
+    else if (key == "key3")
     {
-      is >> ULLBinaryIO{ in.key2, in.key2_has_leading_zero };
-      key2 = true;
-    }
-    else if (fieldName == ":key3" && !key3)
-    {
-      is >> StringIO{ in.key3 };
-      key3 = true;
+      is >> StringIO{ temp.key3 };
     }
     else
     {
       is.setstate(std::ios::failbit);
-      break;
+      return is;
     }
   }
 
-  if (is)
-  {
-    is >> DelimiterIO{ ':' } >> DelimiterIO{ ')' };
-  }
+  is >> DelimiterIO{ ')' };
 
   if (is)
   {
-    data = in;
+    data = temp;
   }
 
   return is;
 }
 
-std::ostream& fedorova::operator<<(std::ostream& os, const DataStruct& data)
+std::ostream& fedorova::operator<<(std::ostream& out, const fedorova::DataStruct& data)
 {
-  std::ostream::sentry sentry(os);
+  std::ostream::sentry sentry(out);
   if (!sentry)
   {
-    return os;
+    return out;
   }
-
-  IoGuard fmtguard(os);
-  os << "(:key1 " << data.key1 << "ull"
-    << ":key2 0b";
-
-  if (data.key2 == 0)
-  {
-    os << "0";
-  }
-  else
-  {
-    if (data.key2_has_leading_zero)
-    {
-      os << "0";
-    }
-
-    unsigned long long mask = 1ULL << (sizeof(data.key2) * 8 - 1);
-    while (mask && !(data.key2 & mask))
-    {
-      mask >>= 1;
-    }
-
-    while (mask)
-    {
-      os << ((data.key2 & mask) ? "1" : "0");
-      mask >>= 1;
-    }
-  }
-
-  os << ":key3 \"" << data.key3 << "\":)";
-  return os;
+  IoGuard fmtguard(out);
+  out << "(:key1 " << data.key1 << "ull:"
+      << "key2 " << changeKeyToBinary(data.key2) << ":"
+      << "key3 \"" << data.key3 << "\":)";
+  return out;
 }
 
 fedorova::IoGuard::IoGuard(std::basic_ios< char >& s) :

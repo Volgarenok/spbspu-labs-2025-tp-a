@@ -9,7 +9,6 @@ namespace fedorova
   {
     unsigned long long key1;
     unsigned long long key2;
-    bool key2_has_leading_zero = false;
     std::string key3;
   };
 
@@ -21,14 +20,11 @@ namespace fedorova
   struct ULLLiteralIO
   {
     unsigned long long& ref;
-    char suffix[3];
   };
 
   struct ULLBinaryIO
   {
     unsigned long long& ref;
-    bool& has_leading_zero;
-    char prefix[2];
   };
 
   struct StringIO
@@ -62,6 +58,7 @@ namespace fedorova
   std::istream& operator>>(std::istream& is, LabelIO&& dest);
   std::istream& operator>>(std::istream& is, DataStruct& data);
   std::ostream& operator<<(std::ostream& os, const DataStruct& data);
+  std::string changeKeyToBinary(unsigned long long key);
 };
 
 #endif
