@@ -1,5 +1,6 @@
 #include "data_struct.hpp"
 #include <iomanip>
+#include <delimiter.hpp>
 #include "stream_guard.hpp"
 #include "input_struct.hpp"
 #include "output_struct.hpp"
