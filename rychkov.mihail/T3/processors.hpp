@@ -1,7 +1,7 @@
 #ifndef PROCESSORS_HPP
 #define PROCESSORS_HPP
 
-#include "parser.hpp"
+#include <parser.hpp>
 #include "polygon.hpp"
 
 namespace rychkov
@@ -9,7 +9,7 @@ namespace rychkov
   class MainProcessor
   {
   public:
-    static Parser::map_type< MainProcessor > call_map;
+    static Parser::map_type< ParserContext, MainProcessor > call_map;
 
     MainProcessor(int argc, char** argv);
 
@@ -25,7 +25,7 @@ namespace rychkov
   class AreaProcessor
   {
   public:
-    static Parser::map_type< AreaProcessor > call_map;
+    static Parser::map_type< ParserContext, AreaProcessor > call_map;
 
     AreaProcessor(std::vector< Polygon >& polygons) noexcept;
     bool even(ParserContext& context);
@@ -38,7 +38,7 @@ namespace rychkov
   class MaxProcessor
   {
   public:
-    static Parser::map_type< MaxProcessor > call_map;
+    static Parser::map_type< ParserContext, MaxProcessor > call_map;
 
     MaxProcessor(std::vector< Polygon >& polygons) noexcept;
     bool area(ParserContext& context);
@@ -49,7 +49,7 @@ namespace rychkov
   class MinProcessor
   {
   public:
-    static Parser::map_type< MinProcessor > call_map;
+    static Parser::map_type< ParserContext, MinProcessor > call_map;
 
     MinProcessor(std::vector< Polygon >& polygons) noexcept;
     bool area(ParserContext& context);
@@ -60,7 +60,7 @@ namespace rychkov
   class CountProcessor
   {
   public:
-    static Parser::map_type< CountProcessor > call_map;
+    static Parser::map_type< ParserContext, CountProcessor > call_map;
 
     CountProcessor(std::vector< Polygon >& polygons) noexcept;
     bool even(ParserContext& context);

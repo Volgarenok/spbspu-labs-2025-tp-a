@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <limits>
 
-rychkov::Parser::map_type< rychkov::MainProcessor > rychkov::MainProcessor::call_map = {
+rychkov::Parser::map_type< rychkov::ParserContext, rychkov::MainProcessor > rychkov::MainProcessor::call_map = {
       {"AREA", &rychkov::MainProcessor::area},
       {"MAX", &rychkov::MainProcessor::max},
       {"MIN", &rychkov::MainProcessor::min},
@@ -15,20 +15,20 @@ rychkov::Parser::map_type< rychkov::MainProcessor > rychkov::MainProcessor::call
       {"RMECHO", &rychkov::MainProcessor::remove_repeates},
       {"RECTS", &rychkov::MainProcessor::rectangles}
     };
-rychkov::Parser::map_type< rychkov::AreaProcessor > rychkov::AreaProcessor::call_map = {
+rychkov::Parser::map_type< rychkov::ParserContext, rychkov::AreaProcessor > rychkov::AreaProcessor::call_map = {
       {"EVEN", &rychkov::AreaProcessor::even},
       {"ODD", &rychkov::AreaProcessor::odd},
       {"MEAN", &rychkov::AreaProcessor::mean}
     };
-rychkov::Parser::map_type< rychkov::MaxProcessor > rychkov::MaxProcessor::call_map = {
+rychkov::Parser::map_type< rychkov::ParserContext, rychkov::MaxProcessor > rychkov::MaxProcessor::call_map = {
       {"AREA", &rychkov::MaxProcessor::area},
       {"VERTEXES", &rychkov::MaxProcessor::count}
     };
-rychkov::Parser::map_type< rychkov::MinProcessor > rychkov::MinProcessor::call_map = {
+rychkov::Parser::map_type< rychkov::ParserContext, rychkov::MinProcessor > rychkov::MinProcessor::call_map = {
       {"AREA", &rychkov::MinProcessor::area},
       {"VERTEXES", &rychkov::MinProcessor::count}
     };
-rychkov::Parser::map_type< rychkov::CountProcessor > rychkov::CountProcessor::call_map = {
+rychkov::Parser::map_type< rychkov::ParserContext, rychkov::CountProcessor > rychkov::CountProcessor::call_map = {
       {"EVEN", &rychkov::CountProcessor::even},
       {"ODD", &rychkov::CountProcessor::odd}
     };

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <utility>
 #include <skip_any_of.hpp>
-#include "parser.hpp"
+#include <parser.hpp>
 
 std::istream& rychkov::operator>>(std::istream& in, Point& point)
 {

@@ -8,6 +8,14 @@
 
 bool rychkov::eol(std::istream& in)
 {
+  if (in.eof())
+  {
+    return true;
+  }
+  if (!std::isspace(in.peek()))
+  {
+    return false;
+  }
   struct remove_empty
   {
     std::istream& in;
@@ -19,7 +27,7 @@ bool rychkov::eol(std::istream& in)
         bad = false;
         return true;
       }
-      else if (!std::isspace(c))
+      else if (!std::isspace(in.peek()))
       {
         bad = true;
         return true;
