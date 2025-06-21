@@ -1,5 +1,5 @@
 #include "input.hpp"
-#include "delimiter.hpp"
+#include <delimiter.hpp>
 
 using check = shak::DelimiterIO;
 std::istream &shak::operator>>(std::istream &in, ChrLitIO &&dest)
