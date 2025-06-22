@@ -80,6 +80,9 @@ namespace {
 
   float calcAreaMean(const zholobov::Polygons& polygons)
   {
+    if (polygons.size() == 0) {
+      throw std::logic_error("There are no poligons");
+    }
     float area = std::accumulate(polygons.begin(), polygons.end(), 0.0f,
         [](float acc, const zholobov::Polygon& polygon) {
           return acc + zholobov::calcArea(polygon);
@@ -97,6 +100,9 @@ namespace {
 
   void calcMaxArea(std::ostream& output, const zholobov::Polygons& polygons)
   {
+    if (polygons.size() == 0) {
+      throw std::logic_error("There are no poligons");
+    }
     std::vector< float > areas;
     std::transform(polygons.begin(), polygons.end(), std::back_inserter(areas),
         [](const zholobov::Polygon& polygon) {
@@ -108,6 +114,9 @@ namespace {
 
   void calcMaxNumberOfVertices(std::ostream& output, const zholobov::Polygons& polygons)
   {
+    if (polygons.size() == 0) {
+      throw std::logic_error("There are no poligons");
+    }
     std::vector< size_t > numOfVertices;
     std::transform(polygons.begin(), polygons.end(), std::back_inserter(numOfVertices),
         [](const zholobov::Polygon& polygon) {
@@ -118,6 +127,9 @@ namespace {
 
   void calcMinArea(std::ostream& output, const zholobov::Polygons& polygons)
   {
+    if (polygons.size() == 0) {
+      throw std::logic_error("There are no poligons");
+    }
     std::vector< float > areas;
     std::transform(polygons.begin(), polygons.end(), std::back_inserter(areas),
         [](const zholobov::Polygon& polygon) {
@@ -129,12 +141,14 @@ namespace {
 
   void calcMinNumberOfVertices(std::ostream& output, const zholobov::Polygons& polygons)
   {
+    if (polygons.size() == 0) {
+      throw std::logic_error("There are no poligons");
+    }
     std::vector< float > numOfVertices;
     std::transform(polygons.begin(), polygons.end(), std::back_inserter(numOfVertices),
         [](const zholobov::Polygon& polygon) {
           return polygon.points.size();
         });
-
     output << *std::min_element(numOfVertices.begin(), numOfVertices.end());
   }
 
@@ -155,7 +169,6 @@ namespace {
     }
     return std::count_if(polygons.begin(), polygons.end(), NumOfVerticesEqualTo{numberOfVertices});
   }
-
 }
 
 void zholobov::cmdArea(std::istream& input, std::ostream& output, const Polygons& polygons)
