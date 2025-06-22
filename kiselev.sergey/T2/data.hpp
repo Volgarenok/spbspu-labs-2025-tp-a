@@ -16,16 +16,6 @@ namespace kiselev
   std::ostream& operator<<(std::ostream& output, const DataStruct& dest);
   bool compare(const DataStruct& lhs, const DataStruct& rhs);
 
-  struct DelimeterIO
-  {
-    char exp;
-  };
-
-  struct DelimetersIO
-  {
-    const std::string& exp;
-  };
-
   struct UllIO
   {
     unsigned long long& ref;
@@ -46,8 +36,6 @@ namespace kiselev
     DataStruct& data;
     std::array< int, 3 > keys;
   };
-  std::istream& operator>>(std::istream& input, DelimeterIO&& dest);
-  std::istream& operator>>(std::istream& input, DelimetersIO&& dest);
   std::istream& operator>>(std::istream& input, UllIO&& dest);
   std::istream& operator>>(std::istream& input, CharIO&& dest);
   std::istream& operator>>(std::istream& input, StringIO&& dest);
