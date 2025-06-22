@@ -9,26 +9,54 @@
 #include <numeric>
 
 namespace {
-  float calcAreaEven(const zholobov::Polygons& polygons)
+
+  using Predicate = std::function< bool(const zholobov::Polygon&) >;
+
+  bool isEvenVertices(const zholobov::Polygon& polygon)
+  {
+    return polygon.points.size() % 2 == 0;
+  }
+
+  bool isOddVertices(const zholobov::Polygon& polygon)
+  {
+    return !isEvenVertices(polygon);
+  }
+
+  struct NumOfVerticesEqualTo {
+    const size_t num;
+    bool operator()(const zholobov::Polygon& polygon) const
+    {
+      return polygon.points.size() == num;
+    }
+  };
+
+  struct CheckIfIntersects {
+    const zholobov::Polygon& poly;
+    bool operator()(const zholobov::Polygon& polygon) const
+    {
+      return zholobov::hasIntersection(poly, polygon);
+    }
+  };
+
+  float sumAreaIf(const zholobov::Polygons& polygons, const Predicate& pred)
   {
     return std::accumulate(polygons.begin(), polygons.end(), 0.0f,
-        [](float acc, const zholobov::Polygon& polygon) {
-          if (polygon.points.size() % 2 == 0) {
+        [&pred](float acc, const zholobov::Polygon& polygon) {
+          if (pred(polygon)) {
             acc += zholobov::calcArea(polygon);
           }
           return acc;
         });
   }
 
+  float calcAreaEven(const zholobov::Polygons& polygons)
+  {
+    return sumAreaIf(polygons, isEvenVertices);
+  }
+
   float calcAreaOdd(const zholobov::Polygons& polygons)
   {
-    return std::accumulate(polygons.begin(), polygons.end(), 0.0f,
-        [](float acc, const zholobov::Polygon& polygon) {
-          if (polygon.points.size() % 2 != 0) {
-            acc += zholobov::calcArea(polygon);
-          }
-          return acc;
-        });
+    return sumAreaIf(polygons, isOddVertices);
   }
 
   float calcAreaMean(const zholobov::Polygons& polygons)
@@ -40,15 +68,9 @@ namespace {
     return area / polygons.size();
   }
 
-  float calcAreaNumOfVertexes(const zholobov::Polygons& polygons, unsigned long numberOfVertexes)
+  float calcAreaNumOfVertices(const zholobov::Polygons& polygons, size_t numberOfVertices)
   {
-    return std::accumulate(polygons.begin(), polygons.end(), 0.0f,
-        [numberOfVertexes](float acc, const zholobov::Polygon& polygon) {
-          if (polygon.points.size() == numberOfVertexes) {
-            acc += zholobov::calcArea(polygon);
-          }
-          return acc;
-        });
+    return sumAreaIf(polygons, NumOfVerticesEqualTo{numberOfVertices});
   }
 
   float calcMaxArea(const zholobov::Polygons& polygons)
@@ -58,19 +80,17 @@ namespace {
         [](const zholobov::Polygon& polygon) {
           return zholobov::calcArea(polygon);
         });
-
     return *std::max_element(areas.begin(), areas.end());
   }
 
-  float calcMaxNumberOfVertexes(const zholobov::Polygons& polygons)
+  float calcMaxNumberOfVertices(const zholobov::Polygons& polygons)
   {
-    std::vector< float > numOfVertexes;
-    std::transform(polygons.begin(), polygons.end(), std::back_inserter(numOfVertexes),
+    std::vector< float > numOfVertices;
+    std::transform(polygons.begin(), polygons.end(), std::back_inserter(numOfVertices),
         [](const zholobov::Polygon& polygon) {
           return polygon.points.size();
         });
-
-    return *std::max_element(numOfVertexes.begin(), numOfVertexes.end());
+    return *std::max_element(numOfVertices.begin(), numOfVertices.end());
   }
 
   float calcMinArea(const zholobov::Polygons& polygons)
@@ -84,46 +104,31 @@ namespace {
     return *std::min_element(areas.begin(), areas.end());
   }
 
-  float calcMinNumberOfVertexes(const zholobov::Polygons& polygons)
+  float calcMinNumberOfVertices(const zholobov::Polygons& polygons)
   {
-    std::vector< float > numOfVertexes;
-    std::transform(polygons.begin(), polygons.end(), std::back_inserter(numOfVertexes),
+    std::vector< float > numOfVertices;
+    std::transform(polygons.begin(), polygons.end(), std::back_inserter(numOfVertices),
         [](const zholobov::Polygon& polygon) {
           return polygon.points.size();
         });
 
-    return *std::min_element(numOfVertexes.begin(), numOfVertexes.end());
+    return *std::min_element(numOfVertices.begin(), numOfVertices.end());
   }
 
   float calcCountEven(const zholobov::Polygons& polygons)
   {
-    return std::count_if(polygons.begin(), polygons.end(),
-        [](const zholobov::Polygon& polygon) {
-          return polygon.points.size() % 2 == 0;
-        });
+    return std::count_if(polygons.begin(), polygons.end(), isEvenVertices);
   }
 
   float calcCountOdd(const zholobov::Polygons& polygons)
   {
-    return std::count_if(polygons.begin(), polygons.end(),
-        [](const zholobov::Polygon& polygon) {
-          return polygon.points.size() % 2 != 0;
-        });
+    return std::count_if(polygons.begin(), polygons.end(), isOddVertices);
   }
 
-  float calcCountNumOfVertexes(const zholobov::Polygons& polygons, unsigned long numberOfVertexes)
+  float calcCountNumOfVertices(const zholobov::Polygons& polygons, size_t numberOfVertices)
   {
-    return std::count_if(polygons.begin(), polygons.end(),
-        [numberOfVertexes](const zholobov::Polygon& polygon) {
-          return polygon.points.size() == numberOfVertexes;
-        });
+    return std::count_if(polygons.begin(), polygons.end(), NumOfVerticesEqualTo{numberOfVertices});
   }
-
-  // bool hasIntersection(const zholobov::Point& pt1_1, const zholobov::Point& pt1_2,
-  //     const zholobov::Point& pt2_1, const zholobov::Point& pt2_2)
-  // {
-  //   return false;
-  // }
 
 }
 
@@ -143,8 +148,8 @@ void zholobov::cmdArea(std::istream& input, std::ostream& output, [[maybe_unused
   try {
     result = cmdParam.at(param)();
   } catch (std::out_of_range&) {
-    unsigned long numberOfVertexes = std::stoul(param);
-    result = calcAreaNumOfVertexes(polygons, numberOfVertexes);
+    size_t numberOfVertices = std::stoul(param);
+    result = calcAreaNumOfVertices(polygons, numberOfVertices);
   }
   output << result;
 }
@@ -158,7 +163,7 @@ void zholobov::cmdMax(std::istream& input, std::ostream& output, [[maybe_unused]
 
   std::map< std::string, std::function< float() > > cmdParam;
   cmdParam["AREA"] = std::bind(calcMaxArea, std::cref(polygons));
-  cmdParam["VERTEXES"] = std::bind(calcMaxNumberOfVertexes, std::cref(polygons));
+  cmdParam["VERTEXES"] = std::bind(calcMaxNumberOfVertices, std::cref(polygons));
   float result = cmdParam.at(param)();
   output << result;
 }
@@ -172,7 +177,7 @@ void zholobov::cmdMin(std::istream& input, std::ostream& output, [[maybe_unused]
 
   std::map< std::string, std::function< float() > > cmdParam;
   cmdParam["AREA"] = std::bind(calcMinArea, std::cref(polygons));
-  cmdParam["VERTEXES"] = std::bind(calcMinNumberOfVertexes, std::cref(polygons));
+  cmdParam["VERTEXES"] = std::bind(calcMinNumberOfVertices, std::cref(polygons));
   float result = cmdParam.at(param)();
   output << result;
 }
@@ -192,8 +197,8 @@ void zholobov::cmdCount(std::istream& input, std::ostream& output, [[maybe_unuse
   try {
     result = cmdParam.at(param)();
   } catch (std::out_of_range&) {
-    unsigned long numberOfVertexes = std::stoul(param);
-    result = calcCountNumOfVertexes(polygons, numberOfVertexes);
+    size_t numberOfVertices = std::stoul(param);
+    result = calcCountNumOfVertices(polygons, numberOfVertices);
   }
   output << result;
 }
@@ -204,7 +209,7 @@ void zholobov::cmdIntersections(std::istream& input, std::ostream& output, [[may
   if (!(input >> param)) {
     throw std::invalid_argument("INTERSECTIONS failed");
   }
-  output << "Not implemented\n";
+  output << std::count_if(polygons.begin(), polygons.end(), CheckIfIntersects{param});
 }
 
 void zholobov::cmdRects(std::ostream& output, [[maybe_unused]] const Polygons& polygons)
