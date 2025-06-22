@@ -22,6 +22,22 @@ namespace {
     return !isEvenVertices(polygon);
   }
 
+  bool isRect(const zholobov::Polygon& polygon)
+  {
+    if (polygon.points.size() != 4) {
+      return false;
+    }
+    zholobov::Point v0{polygon.points[0].x - polygon.points[3].x, polygon.points[0].y - polygon.points[3].y};
+    for (size_t i = 0; i < 3; ++i) {
+      zholobov::Point v{polygon.points[i + 1].x - polygon.points[i].x, polygon.points[i + 1].y - polygon.points[i].y};
+      if ((v0.x * v.x + v0.y * v.y) != 0) {
+        return false;
+      }
+      v0 = v;
+    }
+    return true;
+  }
+
   struct NumOfVerticesEqualTo {
     const size_t num;
     bool operator()(const zholobov::Polygon& polygon) const
@@ -214,5 +230,5 @@ void zholobov::cmdIntersections(std::istream& input, std::ostream& output, [[may
 
 void zholobov::cmdRects(std::ostream& output, [[maybe_unused]] const Polygons& polygons)
 {
-  output << "Not implemented\n";
+  output << std::count_if(polygons.begin(), polygons.end(), isRect);
 }
