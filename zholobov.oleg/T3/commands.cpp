@@ -3,10 +3,13 @@
 #include <algorithm>
 #include <exception>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
 #include <numeric>
+
+#include "stream_guard.hpp"
 
 namespace {
 
@@ -86,41 +89,45 @@ namespace {
 
   float calcAreaNumOfVertices(const zholobov::Polygons& polygons, size_t numberOfVertices)
   {
+    if (numberOfVertices < 3) {
+      throw std::out_of_range("Few vertices");
+    }
     return sumAreaIf(polygons, NumOfVerticesEqualTo{numberOfVertices});
   }
 
-  float calcMaxArea(const zholobov::Polygons& polygons)
+  void calcMaxArea(std::ostream& output, const zholobov::Polygons& polygons)
   {
     std::vector< float > areas;
     std::transform(polygons.begin(), polygons.end(), std::back_inserter(areas),
         [](const zholobov::Polygon& polygon) {
           return zholobov::calcArea(polygon);
         });
-    return *std::max_element(areas.begin(), areas.end());
+    zholobov::StreamGuard guard(output);
+    output << std::fixed << std::setprecision(1) << *std::max_element(areas.begin(), areas.end());
   }
 
-  float calcMaxNumberOfVertices(const zholobov::Polygons& polygons)
+  void calcMaxNumberOfVertices(std::ostream& output, const zholobov::Polygons& polygons)
   {
-    std::vector< float > numOfVertices;
+    std::vector< size_t > numOfVertices;
     std::transform(polygons.begin(), polygons.end(), std::back_inserter(numOfVertices),
         [](const zholobov::Polygon& polygon) {
           return polygon.points.size();
         });
-    return *std::max_element(numOfVertices.begin(), numOfVertices.end());
+    output << *std::max_element(numOfVertices.begin(), numOfVertices.end());
   }
 
-  float calcMinArea(const zholobov::Polygons& polygons)
+  void calcMinArea(std::ostream& output, const zholobov::Polygons& polygons)
   {
     std::vector< float > areas;
     std::transform(polygons.begin(), polygons.end(), std::back_inserter(areas),
         [](const zholobov::Polygon& polygon) {
           return zholobov::calcArea(polygon);
         });
-
-    return *std::min_element(areas.begin(), areas.end());
+    zholobov::StreamGuard guard(output);
+    output << std::fixed << std::setprecision(1) << *std::min_element(areas.begin(), areas.end());
   }
 
-  float calcMinNumberOfVertices(const zholobov::Polygons& polygons)
+  void calcMinNumberOfVertices(std::ostream& output, const zholobov::Polygons& polygons)
   {
     std::vector< float > numOfVertices;
     std::transform(polygons.begin(), polygons.end(), std::back_inserter(numOfVertices),
@@ -128,27 +135,30 @@ namespace {
           return polygon.points.size();
         });
 
-    return *std::min_element(numOfVertices.begin(), numOfVertices.end());
+    output << *std::min_element(numOfVertices.begin(), numOfVertices.end());
   }
 
-  float calcCountEven(const zholobov::Polygons& polygons)
+  size_t calcCountEven(const zholobov::Polygons& polygons)
   {
     return std::count_if(polygons.begin(), polygons.end(), isEvenVertices);
   }
 
-  float calcCountOdd(const zholobov::Polygons& polygons)
+  size_t calcCountOdd(const zholobov::Polygons& polygons)
   {
     return std::count_if(polygons.begin(), polygons.end(), isOddVertices);
   }
 
-  float calcCountNumOfVertices(const zholobov::Polygons& polygons, size_t numberOfVertices)
+  size_t calcCountNumOfVertices(const zholobov::Polygons& polygons, size_t numberOfVertices)
   {
+    if (numberOfVertices < 3) {
+      throw std::out_of_range("Few vertices");
+    }
     return std::count_if(polygons.begin(), polygons.end(), NumOfVerticesEqualTo{numberOfVertices});
   }
 
 }
 
-void zholobov::cmdArea(std::istream& input, std::ostream& output, [[maybe_unused]] const Polygons& polygons)
+void zholobov::cmdArea(std::istream& input, std::ostream& output, const Polygons& polygons)
 {
   std::string param;
   if (!(input >> param)) {
@@ -167,49 +177,48 @@ void zholobov::cmdArea(std::istream& input, std::ostream& output, [[maybe_unused
     size_t numberOfVertices = std::stoul(param);
     result = calcAreaNumOfVertices(polygons, numberOfVertices);
   }
-  output << result;
+  zholobov::StreamGuard guard(output);
+  output << std::fixed << std::setprecision(1) << result;
 }
 
-void zholobov::cmdMax(std::istream& input, std::ostream& output, [[maybe_unused]] const Polygons& polygons)
+void zholobov::cmdMax(std::istream& input, std::ostream& output, const Polygons& polygons)
 {
   std::string param;
   if (!(input >> param)) {
     throw std::invalid_argument("MAX failed");
   }
 
-  std::map< std::string, std::function< float() > > cmdParam;
-  cmdParam["AREA"] = std::bind(calcMaxArea, std::cref(polygons));
-  cmdParam["VERTEXES"] = std::bind(calcMaxNumberOfVertices, std::cref(polygons));
-  float result = cmdParam.at(param)();
-  output << result;
+  std::map< std::string, std::function< void() > > cmdParam;
+  cmdParam["AREA"] = std::bind(calcMaxArea, std::ref(output), std::cref(polygons));
+  cmdParam["VERTEXES"] = std::bind(calcMaxNumberOfVertices, std::ref(output), std::cref(polygons));
+  cmdParam.at(param)();
 }
 
-void zholobov::cmdMin(std::istream& input, std::ostream& output, [[maybe_unused]] const Polygons& polygons)
+void zholobov::cmdMin(std::istream& input, std::ostream& output, const Polygons& polygons)
 {
   std::string param;
   if (!(input >> param)) {
     throw std::invalid_argument("MIN failed");
   }
 
-  std::map< std::string, std::function< float() > > cmdParam;
-  cmdParam["AREA"] = std::bind(calcMinArea, std::cref(polygons));
-  cmdParam["VERTEXES"] = std::bind(calcMinNumberOfVertices, std::cref(polygons));
-  float result = cmdParam.at(param)();
-  output << result;
+  std::map< std::string, std::function< void() > > cmdParam;
+  cmdParam["AREA"] = std::bind(calcMinArea, std::ref(output), std::cref(polygons));
+  cmdParam["VERTEXES"] = std::bind(calcMinNumberOfVertices, std::ref(output), std::cref(polygons));
+  cmdParam.at(param)();
 }
 
-void zholobov::cmdCount(std::istream& input, std::ostream& output, [[maybe_unused]] const Polygons& polygons)
+void zholobov::cmdCount(std::istream& input, std::ostream& output, const Polygons& polygons)
 {
   std::string param;
   if (!(input >> param)) {
     throw std::invalid_argument("COUNT failed");
   }
 
-  std::map< std::string, std::function< float() > > cmdParam;
+  std::map< std::string, std::function< size_t() > > cmdParam;
   cmdParam["EVEN"] = std::bind(calcCountEven, std::cref(polygons));
   cmdParam["ODD"] = std::bind(calcCountOdd, std::cref(polygons));
 
-  float result = 0.0f;
+  size_t result = 0;
   try {
     result = cmdParam.at(param)();
   } catch (std::out_of_range&) {
@@ -219,7 +228,7 @@ void zholobov::cmdCount(std::istream& input, std::ostream& output, [[maybe_unuse
   output << result;
 }
 
-void zholobov::cmdIntersections(std::istream& input, std::ostream& output, [[maybe_unused]] const Polygons& polygons)
+void zholobov::cmdIntersections(std::istream& input, std::ostream& output, const Polygons& polygons)
 {
   Polygon param;
   if (!(input >> param)) {
@@ -228,7 +237,7 @@ void zholobov::cmdIntersections(std::istream& input, std::ostream& output, [[may
   output << std::count_if(polygons.begin(), polygons.end(), CheckIfIntersects{param});
 }
 
-void zholobov::cmdRects(std::ostream& output, [[maybe_unused]] const Polygons& polygons)
+void zholobov::cmdRects(std::ostream& output, const Polygons& polygons)
 {
   output << std::count_if(polygons.begin(), polygons.end(), isRect);
 }

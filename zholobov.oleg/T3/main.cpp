@@ -21,8 +21,9 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  zholobov::Polygons polygons;
-  using InputStreamIterator = std::istream_iterator< zholobov::Polygon >;
+  using namespace zholobov;
+  Polygons polygons;
+  using InputStreamIterator = std::istream_iterator< Polygon >;
   while (!input.eof()) {
     std::copy(InputStreamIterator{input}, InputStreamIterator{}, std::back_inserter(polygons));
     if (input.fail()) {
@@ -32,12 +33,12 @@ int main(int argc, char* argv[])
   }
 
   std::map< std::string, std::function< void() > > commands;
-  commands["AREA"] = std::bind(zholobov::cmdArea, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
-  commands["MAX"] = std::bind(zholobov::cmdMax, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
-  commands["MIN"] = std::bind(zholobov::cmdMin, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
-  commands["COUNT"] = std::bind(zholobov::cmdCount, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
-  commands["INTERSECTIONS"] = std::bind(zholobov::cmdIntersections, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
-  commands["RECTS"] = std::bind(zholobov::cmdRects, std::ref(std::cout), std::cref(polygons));
+  commands["AREA"] = std::bind(cmdArea, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["MAX"] = std::bind(cmdMax, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["MIN"] = std::bind(cmdMin, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["COUNT"] = std::bind(cmdCount, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["INTERSECTIONS"] = std::bind(cmdIntersections, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  commands["RECTS"] = std::bind(cmdRects, std::ref(std::cout), std::cref(polygons));
 
   std::string cmd;
   while (!(std::cin >> cmd).eof()) {
