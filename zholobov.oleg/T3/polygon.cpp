@@ -121,12 +121,14 @@ namespace zholobov {
       return input;
     }
     size_t count = 0;
-    if (input >> count) {
+    if (input >> count && count >= 3) {
       std::vector< Point > points;
       std::copy_n(std::istream_iterator< Point >(input), count, std::back_inserter(points));
       if (input) {
         polygon.points = std::move(points);
       }
+    } else {
+      input.setstate(std::ios::failbit);
     }
     return input;
   }

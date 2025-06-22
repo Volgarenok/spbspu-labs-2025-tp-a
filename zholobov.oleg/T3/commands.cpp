@@ -244,7 +244,7 @@ void zholobov::cmdCount(std::istream& input, std::ostream& output, const Polygon
 void zholobov::cmdIntersections(std::istream& input, std::ostream& output, const Polygons& polygons)
 {
   Polygon param;
-  if (!(input >> param)) {
+  if (!(input >> param) || !(input.peek() == '\n')) {
     throw std::invalid_argument("INTERSECTIONS failed");
   }
   output << std::count_if(polygons.begin(), polygons.end(), CheckIfIntersects{param});
