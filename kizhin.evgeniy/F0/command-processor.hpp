@@ -2,6 +2,8 @@
 #define SPBSPU_LABS_2025_TP_A_KIZHIN_EVGENIY_F0_COMMAND_PROCESSOR_HPP
 
 #include <iosfwd>
+#include <string>
+#include <utility>
 #include <vector>
 #include "state.hpp"
 

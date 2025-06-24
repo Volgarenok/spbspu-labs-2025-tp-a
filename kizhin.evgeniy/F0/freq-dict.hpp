@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include <map>
 #include <vector>
+#include <string>
 
 namespace kizhin {
   struct FrequencyDictionary
