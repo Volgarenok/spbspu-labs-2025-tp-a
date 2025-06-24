@@ -40,6 +40,8 @@ namespace kizhin {
     void handleBot(const CmdArgs&) const;
     void handleRange(const CmdArgs&) const;
     void handleFind(const CmdArgs&) const;
+
+    void outDictionary(const State::key_type&) const;
   };
 }
 

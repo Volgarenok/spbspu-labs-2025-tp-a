@@ -1,21 +1,14 @@
 #include "state.hpp"
+#include <algorithm>
 #include <cstdlib>
+#include <functional>
 #include <iostream>
+#include <iterator>
 #include <sstream> // TODO: Remove sstream
 
 namespace kizhin {
-  std::string getStateDir()
-  {
-    const char* xdgStateHome = std::getenv("XDG_STATE_HOME");
-    if (xdgStateHome) {
-      return xdgStateHome;
-    }
-    const char* home = std::getenv("HOME");
-    if (home) {
-      return std::string(home) + "/.local/state";
-    }
-    return "/tmp";
-  }
+  std::string getStateDir();
+  void saveDict(std::ostream&, State::const_reference);
 }
 
 std::string kizhin::getStateFile()
@@ -44,14 +37,34 @@ kizhin::State kizhin::loadState(std::istream& in)
 
 void kizhin::saveState(std::ostream& out, const State& state)
 {
-  for (const auto& dict: state) {
-    const auto& dictName = dict.first;
-    const auto& files = dict.second;
-    out << dictName;
-    for (const auto& filePath: files) {
-      out << ',' << filePath;
-    }
-    out << '\n';
-  }
+  using std::placeholders::_1;
+  const auto saver = std::bind(std::addressof(saveDict), std::ref(out), _1);
+  std::for_each(state.begin(), state.end(), saver);
 }
 
+std::string kizhin::getStateDir()
+{
+  const char* xdgStateHome = std::getenv("XDG_STATE_HOME");
+  if (xdgStateHome) {
+    return xdgStateHome;
+  }
+  const char* home = std::getenv("HOME");
+  if (home) {
+    return std::string(home) + "/.local/state";
+  }
+  return "/tmp";
+}
+
+void kizhin::saveDict(std::ostream& out, State::const_reference dict)
+{
+  const auto& dictName = dict.first;
+  const auto& files = dict.second;
+  out << dictName;
+  if (files.empty()) {
+    out << '\n';
+    return;
+  }
+  using OutIt = std::ostream_iterator< std::string >;
+  std::copy(files.begin(), std::prev(files.end()), OutIt{ out << ',', "," });
+  out << files.back() << '\n';
+}
