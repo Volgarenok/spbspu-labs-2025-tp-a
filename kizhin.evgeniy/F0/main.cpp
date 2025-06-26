@@ -1,6 +1,5 @@
 #include <fstream>
 #include <iostream>
-#include <getopt.h>
 #include "command-processor.hpp"
 
 namespace kizhin {
@@ -10,18 +9,9 @@ namespace kizhin {
 int main(int argc, char** argv)
 {
   using namespace kizhin;
-  const option longOpts[] = {
-    { "help", no_argument, nullptr, 'h' },
-    { nullptr, no_argument, nullptr, 0 },
-  };
-  char c = 0;
-  while ((c = getopt_long(argc, argv, "h", longOpts, nullptr)) != -1) {
-    switch (c) {
-    case 'h':
-    default:
-      outHelp(std::cout, argv[0]);
-      return 0;
-    }
+  if (argc != 1) {
+    outHelp(std::cout, argv[0]);
+    return 0;
   }
   try {
     const std::string stateFile = getStateFile();
