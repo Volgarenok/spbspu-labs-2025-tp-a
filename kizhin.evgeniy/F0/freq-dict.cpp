@@ -21,7 +21,7 @@ void kizhin::expandDictionary(std::istream& in, FrequencyDictionary& dict)
 {
   using InIt = std::istream_iterator< std::string >;
   using std::placeholders::_1;
-  static const auto appender = std::bind(std::addressof(appendWord), std::ref(dict), _1);
+  const auto appender = std::bind(std::addressof(appendWord), std::ref(dict), _1);
   std::for_each(InIt{ in }, InIt{}, appender);
 }
 

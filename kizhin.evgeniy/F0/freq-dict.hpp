@@ -9,7 +9,7 @@
 namespace kizhin {
   using WordMap = std::map< std::string, std::size_t >;
   using WordSet = std::set< std::string >;
-  using WordAndSize = std::pair< std::string, std::size_t >;
+  using WordAndSize = std::pair< const std::string, std::size_t >;
   struct SizeDescendingComp;
   using SizeSet = std::set< WordAndSize, SizeDescendingComp >;
 

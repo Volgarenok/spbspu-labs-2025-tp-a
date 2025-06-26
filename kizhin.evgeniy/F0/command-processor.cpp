@@ -11,7 +11,10 @@
 #include "freq-dict.hpp"
 
 namespace kizhin {
-  bool isSatisfied(const std::string&, const std::string&);
+  bool isSatisfied(const std::string& str, const std::string& regexp);
+  std::string wordAndSizeToString(const WordAndSize&);
+  float getFreq(const FrequencyDictionary&, const WordAndSize&);
+  void outWordInfo(std::ostream&, const FrequencyDictionary&, const WordAndSize&);
 }
 
 kizhin::CommandProcessor::CommandProcessor(State& state, std::istream& in,
@@ -26,7 +29,7 @@ void kizhin::CommandProcessor::processCommands()
 {
   using CmdContainer = std::map< std::string, std::function< void(const CmdArgs&) > >;
   using std::placeholders::_1;
-  const CmdContainer commands = {
+  static const CmdContainer commands = {
     { "ls", std::bind(&CommandProcessor::handleLs, this, _1) },
     { "add", std::bind(&CommandProcessor::handleAdd, this, _1) },
     { "rm", std::bind(&CommandProcessor::handleRm, this, _1) },
@@ -190,19 +193,22 @@ void kizhin::CommandProcessor::handleInter(const CmdArgs& args) const
   }
   const FrequencyDictionary first = loadDictionary(state_[args[0]]);
   const FrequencyDictionary second = loadDictionary(state_[args[1]]);
-  using std::placeholders::_1;
   std::set< std::string > intersection{};
   const auto ins = std::inserter(intersection, intersection.end());
   const WordSet& firstW = first.wordSet;
   const WordSet& secondW = second.wordSet;
-  using std::set_intersection;
-  set_intersection(firstW.begin(), firstW.end(), secondW.begin(), secondW.end(), ins);
+  const auto beg = firstW.begin();
+  std::set_intersection(beg, firstW.end(), secondW.begin(), secondW.end(), ins);
+  WordMap result{};
+  const auto inserter = std::inserter(result, result.end());
+  std::size_t (WordSet::*count)(const std::string&) const = &WordSet::count;
+  using std::placeholders::_1;
+  static const auto getFirst = std::bind(&WordMap::value_type::first, _1);
+  const auto interPtr = std::addressof(intersection);
+  const auto contains = std::bind(count, interPtr, std::bind(getFirst, _1));
+  std::copy_if(first.wordMap.begin(), first.wordMap.end(), inserter, contains);
   using OutIt = std::ostream_iterator< std::string >;
-  static const auto formater = [&first, &second](const std::string& str) -> std::string
-  {
-    return std::to_string(first.wordMap.at(str) + second.wordMap.at(str)) + '\t' + str;
-  }; // TODO: lambda function
-  std::transform(intersection.begin(), intersection.end(), OutIt{ out_, "\n" }, formater);
+  std::transform(result.begin(), result.end(), OutIt{ out_, "\n" }, wordAndSizeToString);
 }
 
 void kizhin::CommandProcessor::handleDiff(const CmdArgs& args) const
@@ -223,12 +229,15 @@ void kizhin::CommandProcessor::handleDiff(const CmdArgs& args) const
   const WordSet& firstW = first.wordSet;
   const WordSet& secondW = second.wordSet;
   std::set_difference(firstW.begin(), firstW.end(), secondW.begin(), secondW.end(), ins);
+  WordMap result{};
+  const auto inserter = std::inserter(result, result.end());
+  std::size_t (WordSet::*count)(const std::string&) const = &WordSet::count;
+  static const auto getFirst = std::bind(&WordMap::value_type::first, _1);
+  const auto diffPtr = std::addressof(difference);
+  const auto contains = std::bind(count, diffPtr, std::bind(getFirst, _1));
+  std::copy_if(first.wordMap.begin(), first.wordMap.end(), inserter, contains);
   using OutIt = std::ostream_iterator< std::string >;
-  static const auto formater = [&first](const std::string& str) -> std::string
-  {
-    return std::to_string(first.wordMap.at(str)) + '\t' + str;
-  }; // TODO: lambda function
-  std::transform(difference.begin(), difference.end(), OutIt{ out_, "\n" }, formater);
+  std::transform(result.begin(), result.end(), OutIt{ out_, "\n" }, wordAndSizeToString);
 }
 
 void kizhin::CommandProcessor::handleStat(const CmdArgs& args) const
@@ -286,15 +295,8 @@ void kizhin::CommandProcessor::handleTop(const CmdArgs& args) const
   const SizeSet& freqDict = dict.sizeSet;
   const bool beforeEnd = count < freqDict.size();
   const auto end = beforeEnd ? std::next(freqDict.begin(), count) : freqDict.end();
-  constexpr static struct
-  {
-    std::string operator()(const WordAndSize& val) const
-    {
-      return std::to_string(val.second) + '\t' + val.first;
-    }
-  } formater; // TODO: struct instead of lambda
   using OutIt = std::ostream_iterator< std::string >;
-  std::transform(freqDict.begin(), end, OutIt{ out_, "\n" }, formater);
+  std::transform(freqDict.begin(), end, OutIt{ out_, "\n" }, wordAndSizeToString);
 }
 
 void kizhin::CommandProcessor::handleBot(const CmdArgs& args) const
@@ -311,20 +313,12 @@ void kizhin::CommandProcessor::handleBot(const CmdArgs& args) const
   const SizeSet& freqDict = dict.sizeSet;
   const bool beforeEnd = count < freqDict.size();
   const auto beg = beforeEnd ? std::next(freqDict.rbegin(), count) : freqDict.rend();
-  constexpr static struct
-  {
-    std::string operator()(const WordAndSize& val) const
-    {
-      return std::to_string(val.second) + '\t' + val.first;
-    }
-  } formater; // TODO: struct instead of lambda
   using OutIt = std::ostream_iterator< std::string >;
-  std::transform(beg.base(), freqDict.end(), OutIt{ out_, "\n" }, formater);
+  std::transform(beg.base(), freqDict.end(), OutIt{ out_, "\n" }, wordAndSizeToString);
 }
 
 void kizhin::CommandProcessor::handleRange(const CmdArgs& args) const
 {
-  // TODO: Refactor
   if (args.empty() || args.size() > 3) {
     err_ << "Usage: range <dict> [min] [max]";
     return;
@@ -341,16 +335,12 @@ void kizhin::CommandProcessor::handleRange(const CmdArgs& args) const
   }
   const FrequencyDictionary dict = loadDictionary(state_[args[0]]);
   const SizeSet& freqDict = dict.sizeSet;
-  for (const auto& word: freqDict) {
-    const float currFr = static_cast< float >(word.second) / dict.total;
-    if (currFr - min < epsilon) {
-      continue;
-    }
-    if (currFr - max <= epsilon) {
-      out_ << std::fixed << std::setprecision(3);
-      out_ << word.second << '\t' << currFr << '\t' << word.first << '\n';
-    }
-  }
+  const auto begin = freqDict.upper_bound({ "", max * dict.total });
+  const auto end = freqDict.lower_bound({ "", min * dict.total });
+  using std::placeholders::_1;
+  constexpr static auto outWordPtr = std::addressof(outWordInfo);
+  const auto printer = std::bind(outWordPtr, std::ref(out_), std::cref(dict), _1);
+  std::for_each(begin, end, printer);
 }
 
 void kizhin::CommandProcessor::handleFind(const CmdArgs& args) const
@@ -388,8 +378,26 @@ kizhin::FrequencyDictionary kizhin::CommandProcessor::loadDictionary(
   return result;
 }
 
-bool isSatisfied(const std::string& /*string*/, const std::string& /*regexp*/)
+bool kizhin::isSatisfied(const std::string& /*string*/, const std::string& /*regexp*/)
 {
   // TODO: Implement
   return false;
 }
+
+std::string kizhin::wordAndSizeToString(const WordAndSize& val)
+{
+  return std::to_string(val.second) + '\t' + val.first;
+}
+
+float kizhin::getFreq(const FrequencyDictionary& dict, const WordAndSize& word)
+{
+  return static_cast< float >(word.second) / dict.total;
+};
+
+void kizhin::outWordInfo(std::ostream& out, const FrequencyDictionary& dict,
+    const WordAndSize& word)
+{
+  out << std::fixed << std::setprecision(3);
+  out << word.second << '\t' << getFreq(dict, word) << '\t' << word.first << '\n';
+}
+

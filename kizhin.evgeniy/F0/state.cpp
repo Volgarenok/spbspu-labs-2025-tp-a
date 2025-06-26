@@ -4,7 +4,6 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
-#include <sstream> // TODO: Remove sstream
 
 namespace kizhin {
   std::string getStateDir();
@@ -18,18 +17,20 @@ std::string kizhin::getStateFile()
 
 kizhin::State kizhin::loadState(std::istream& in)
 {
-  // TODO: Refactor
   State result{};
-  std::string currLine;
-  while (std::getline(in, currLine)) {
-    std::istringstream sin(currLine);
-    std::string currName;
-    std::string currFile;
-    if (std::getline(sin, currName, ',')) {
-      auto& currPaths = result[currName];
-      while (std::getline(sin, currFile, ',')) {
-        currPaths.push_back(currFile);
-      }
+  std::string line{};
+  while (std::getline(in, line)) {
+    const auto comma = line.find(',');
+    if (comma == std::string::npos) {
+      result[line];
+      continue;
+    }
+    auto& paths = result[line.substr(0, comma)];
+    auto start = line.begin() + comma + 1;
+    while (start != line.end()) {
+      const auto next = std::find(start, line.end(), ',');
+      paths.emplace_back(start, next);
+      start = next == line.end() ? line.end() : next + 1;
     }
   }
   return result;
