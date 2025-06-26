@@ -1,44 +1,42 @@
 #include "freq-dict.hpp"
 #include <algorithm>
 #include <fstream>
+#include <functional>
+#include <iterator>
 
-kizhin::FrequencyDictionary kizhin::loadDictionary(
-    const std::vector< std::string >& files)
+namespace kizhin {
+  void appendWord(FrequencyDictionary&, const std::string&);
+}
+
+bool kizhin::SizeDescendingComp::operator()(const WordAndSize& lhs,
+    const WordAndSize& rhs) const
 {
-  // TODO: Refactor
-  FrequencyDictionary::WordMap byWord;
-  FrequencyDictionary::Words words;
-  for (const auto& file: files) {
-    std::ifstream fin(file);
-    if (!fin.is_open()) {
-      // TODO: What to do here?
-      //      std::cerr << "Failed to load file: " << file << '\n';
-      continue;
-    }
-    std::string current;
-    while (fin >> current) {
-      if (!byWord.count(current)) {
-        byWord[current] = 0;
-      }
-      ++byWord[current];
-      words.insert(current);
-    }
+  if (lhs.second != rhs.second) {
+    return lhs.second > rhs.second;
   }
-  FrequencyDictionary::FreqVector byFreq;
-  byFreq.reserve(byWord.size());
-  std::size_t total = 0;
-  for (const auto& v: byWord) {
-    total += v.second;
-    byFreq.emplace_back(v.second, v.first);
+  return lhs.first < rhs.first;
+}
+
+void kizhin::expandDictionary(std::istream& in, FrequencyDictionary& dict)
+{
+  using InIt = std::istream_iterator< std::string >;
+  using std::placeholders::_1;
+  static const auto appender = std::bind(std::addressof(appendWord), std::ref(dict), _1);
+  std::for_each(InIt{ in }, InIt{}, appender);
+}
+
+void kizhin::appendWord(FrequencyDictionary& dict, const std::string& word)
+{
+  WordMap& wordMap = dict.wordMap;
+  WordSet& wordSet = dict.wordSet;
+  SizeSet& sizeSet = dict.sizeSet;
+  if (!wordMap.count(word)) {
+    wordMap[word] = 0;
+    wordSet.insert(word);
   }
-  auto pred = [](const auto& a, const auto& b)
-  {
-    if (a.first != b.first) {
-      return a.first > b.first;
-    }
-    return a.second < b.second;
-  };
-  std::sort(byFreq.begin(), byFreq.end(), pred);
-  return FrequencyDictionary{ byWord, words, byFreq, total };
+  std::size_t& wordCount = wordMap.at(word);
+  sizeSet.erase({ word, wordCount });
+  sizeSet.insert({ word, ++wordCount });
+  ++dict.total;
 }
 

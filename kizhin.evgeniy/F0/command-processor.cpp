@@ -1,5 +1,6 @@
 #include "command-processor.hpp"
 #include <algorithm>
+#include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -191,16 +192,15 @@ void kizhin::CommandProcessor::handleInter(const CmdArgs& args) const
   const FrequencyDictionary second = loadDictionary(state_[args[1]]);
   using std::placeholders::_1;
   std::set< std::string > intersection{};
-  const auto firstBeg = first.words.begin();
-  const auto firstEnd = first.words.end();
-  const auto secondBeg = second.words.begin();
-  const auto secondEnd = second.words.end();
-  const auto inserter = std::inserter(intersection, intersection.end());
-  std::set_intersection(firstBeg, firstEnd, secondBeg, secondEnd, inserter);
+  const auto ins = std::inserter(intersection, intersection.end());
+  const WordSet& firstW = first.wordSet;
+  const WordSet& secondW = second.wordSet;
+  using std::set_intersection;
+  set_intersection(firstW.begin(), firstW.end(), secondW.begin(), secondW.end(), ins);
   using OutIt = std::ostream_iterator< std::string >;
   static const auto formater = [&first, &second](const std::string& str) -> std::string
   {
-    return std::to_string(first.byWord.at(str) + second.byWord.at(str)) + '\t' + str;
+    return std::to_string(first.wordMap.at(str) + second.wordMap.at(str)) + '\t' + str;
   }; // TODO: lambda function
   std::transform(intersection.begin(), intersection.end(), OutIt{ out_, "\n" }, formater);
 }
@@ -219,16 +219,14 @@ void kizhin::CommandProcessor::handleDiff(const CmdArgs& args) const
   const FrequencyDictionary second = loadDictionary(state_[args[1]]);
   using std::placeholders::_1;
   std::set< std::string > difference{};
-  const auto firstBeg = first.words.begin();
-  const auto firstEnd = first.words.end();
-  const auto secondBeg = second.words.begin();
-  const auto secondEnd = second.words.end();
-  const auto inserter = std::inserter(difference, difference.end());
-  std::set_difference(firstBeg, firstEnd, secondBeg, secondEnd, inserter);
+  const auto ins = std::inserter(difference, difference.end());
+  const WordSet& firstW = first.wordSet;
+  const WordSet& secondW = second.wordSet;
+  std::set_difference(firstW.begin(), firstW.end(), secondW.begin(), secondW.end(), ins);
   using OutIt = std::ostream_iterator< std::string >;
   static const auto formater = [&first](const std::string& str) -> std::string
   {
-    return std::to_string(first.byWord.at(str)) + '\t' + str;
+    return std::to_string(first.wordMap.at(str)) + '\t' + str;
   }; // TODO: lambda function
   std::transform(difference.begin(), difference.end(), OutIt{ out_, "\n" }, formater);
 }
@@ -243,13 +241,11 @@ void kizhin::CommandProcessor::handleStat(const CmdArgs& args) const
     return;
   }
   const FrequencyDictionary dict = loadDictionary(state_.at(args[0]));
-  using FreqVec = FrequencyDictionary::FreqVector;
-  const FreqVec& freqDict = dict.byFrequency;
+  const SizeSet& freqDict = dict.sizeSet;
   if (freqDict.empty()) {
     out_ << "Dictionary is empty\n";
     return;
   }
-  // TODO: Refactor
   constexpr static unsigned titleWidth = 15;
   constexpr static unsigned countWidth = 15;
   out_ << std::setw(titleWidth) << std::left << "Unique words";
@@ -257,22 +253,23 @@ void kizhin::CommandProcessor::handleStat(const CmdArgs& args) const
   out_ << std::setw(titleWidth) << std::left << "Total words";
   out_ << std::setw(countWidth) << std::left << dict.total << '\n';
   out_ << std::setw(titleWidth) << std::left << "Most frequent";
-  out_ << std::setw(countWidth) << std::left << freqDict.front().first;
+  out_ << std::setw(countWidth) << std::left << freqDict.begin()->second;
   using std::placeholders::_1;
-  static const auto getFirst = std::bind(&FreqVec::value_type::first, _1);
-  static const auto getSecond = std::bind(&FreqVec::value_type::second, _1);
-  const auto frontEqual = std::bind(std::equal_to<>{}, getFirst, freqDict.front().first);
-  const auto frontEnd = std::find_if_not(freqDict.begin(), freqDict.end(), frontEqual);
+  static const auto getFirst = std::bind(&SizeSet::value_type::first, _1);
+  static const auto getSecond = std::bind(&SizeSet::value_type::second, _1);
+  constexpr static auto eqTo = std::equal_to<>{};
+  const auto frontEq = std::bind(eqTo, getSecond, freqDict.begin()->second);
+  const auto backEq = std::bind(eqTo, getSecond, std::prev(freqDict.end())->second);
+  const auto frontEnd = std::find_if_not(freqDict.begin(), freqDict.end(), frontEq);
+  const auto backBegin = std::find_if_not(freqDict.rbegin(), freqDict.rend(), backEq);
   using OutIt = std::ostream_iterator< std::string >;
-  std::transform(freqDict.begin(), std::prev(frontEnd), OutIt{ out_, " " }, getSecond);
-  out_ << std::prev(frontEnd)->second << '\n';
+  std::transform(freqDict.begin(), std::prev(frontEnd), OutIt{ out_, " " }, getFirst);
+  out_ << std::prev(frontEnd)->first << '\n';
   out_ << std::setw(titleWidth) << std::left << "Rarest";
-  out_ << std::setw(countWidth) << std::left << freqDict.back().first;
-  const auto backEqual = std::bind(std::equal_to<>{}, getFirst, freqDict.back().first);
-  const auto backBegin = std::find_if_not(freqDict.rbegin(), freqDict.rend(), backEqual);
+  out_ << std::setw(countWidth) << std::left << std::prev(freqDict.end())->second;
   const auto backEnd = std::prev(freqDict.end());
-  std::transform(backBegin.base(), backEnd, OutIt{ out_, " " }, getSecond);
-  out_ << freqDict.back().second << '\n';
+  std::transform(backBegin.base(), backEnd, OutIt{ out_, " " }, getFirst);
+  out_ << backEnd->first << '\n';
 }
 
 void kizhin::CommandProcessor::handleTop(const CmdArgs& args) const
@@ -286,14 +283,14 @@ void kizhin::CommandProcessor::handleTop(const CmdArgs& args) const
   }
   const std::size_t count = args.size() == 2 ? std::stoull(args[1]) : 5;
   const FrequencyDictionary dict = loadDictionary(state_[args[0]]);
-  using FreqVec = FrequencyDictionary::FreqVector;
-  const FreqVec& freqDict = dict.byFrequency;
-  const auto end = count < freqDict.size() ? freqDict.begin() + count : freqDict.end();
+  const SizeSet& freqDict = dict.sizeSet;
+  const bool beforeEnd = count < freqDict.size();
+  const auto end = beforeEnd ? std::next(freqDict.begin(), count) : freqDict.end();
   constexpr static struct
   {
-    std::string operator()(const std::pair< std::size_t, std::string >& val) const
+    std::string operator()(const WordAndSize& val) const
     {
-      return std::to_string(val.first) + '\t' + val.second;
+      return std::to_string(val.second) + '\t' + val.first;
     }
   } formater; // TODO: struct instead of lambda
   using OutIt = std::ostream_iterator< std::string >;
@@ -311,13 +308,14 @@ void kizhin::CommandProcessor::handleBot(const CmdArgs& args) const
   }
   const std::size_t count = args.size() == 2 ? std::stoull(args[1]) : 5;
   FrequencyDictionary dict = loadDictionary(state_[args[0]]);
-  const FrequencyDictionary::FreqVector& freqDict = dict.byFrequency;
-  const auto beg = count < freqDict.size() ? freqDict.rbegin() + count : freqDict.rend();
+  const SizeSet& freqDict = dict.sizeSet;
+  const bool beforeEnd = count < freqDict.size();
+  const auto beg = beforeEnd ? std::next(freqDict.rbegin(), count) : freqDict.rend();
   constexpr static struct
   {
-    std::string operator()(const std::pair< std::size_t, std::string >& val) const
+    std::string operator()(const WordAndSize& val) const
     {
-      return std::to_string(val.first) + '\t' + val.second;
+      return std::to_string(val.second) + '\t' + val.first;
     }
   } formater; // TODO: struct instead of lambda
   using OutIt = std::ostream_iterator< std::string >;
@@ -342,15 +340,15 @@ void kizhin::CommandProcessor::handleRange(const CmdArgs& args) const
     return;
   }
   const FrequencyDictionary dict = loadDictionary(state_[args[0]]);
-  const FrequencyDictionary::FreqVector& freqDict = dict.byFrequency;
+  const SizeSet& freqDict = dict.sizeSet;
   for (const auto& word: freqDict) {
-    const float currFr = static_cast< float >(word.first) / dict.total;
+    const float currFr = static_cast< float >(word.second) / dict.total;
     if (currFr - min < epsilon) {
       continue;
     }
     if (currFr - max <= epsilon) {
       out_ << std::fixed << std::setprecision(3);
-      out_ << word.first << '\t' << currFr << '\t' << word.second << '\n';
+      out_ << word.second << '\t' << currFr << '\t' << word.first << '\n';
     }
   }
 }
@@ -377,6 +375,17 @@ void kizhin::CommandProcessor::outDictionary(const State::key_type& dictionary) 
     out_ << files.back();
   }
   out_ << '\n';
+}
+
+kizhin::FrequencyDictionary kizhin::CommandProcessor::loadDictionary(
+    const std::vector< std::string >& files) const
+{
+  FrequencyDictionary result{};
+  using std::placeholders::_1;
+  const auto expander = std::bind(std::addressof(expandDictionary), _1, std::ref(result));
+  std::vector< std::ifstream > fins(files.begin(), files.end());
+  std::for_each(fins.begin(), fins.end(), expander);
+  return result;
 }
 
 bool isSatisfied(const std::string& /*string*/, const std::string& /*regexp*/)

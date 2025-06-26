@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "freq-dict.hpp"
 #include "state.hpp"
 
 namespace kizhin {
@@ -42,6 +43,7 @@ namespace kizhin {
     void handleFind(const CmdArgs&) const;
 
     void outDictionary(const State::key_type&) const;
+    FrequencyDictionary loadDictionary(const std::vector< std::string >&) const;
   };
 }
 
