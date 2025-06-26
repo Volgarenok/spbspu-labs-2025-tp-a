@@ -3,15 +3,19 @@
 
 #include <iosfwd>
 #include <map>
-#include <vector>
+#include <set>
 #include <string>
+#include <vector>
 
 namespace kizhin {
   struct FrequencyDictionary
   {
     using WordMap = std::map< std::string, std::size_t >;
+    // tODO: Add some container with freqs (floats) or append to existing one
+    using Words = std::set< std::string >;
     using FreqVector = std::vector< std::pair< std::size_t, std::string > >;
     WordMap byWord{};
+    Words words{};
     FreqVector byFrequency{};
     std::size_t total = 0;
   };

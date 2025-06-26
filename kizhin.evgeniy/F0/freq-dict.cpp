@@ -7,6 +7,7 @@ kizhin::FrequencyDictionary kizhin::loadDictionary(
 {
   // TODO: Refactor
   FrequencyDictionary::WordMap byWord;
+  FrequencyDictionary::Words words;
   for (const auto& file: files) {
     std::ifstream fin(file);
     if (!fin.is_open()) {
@@ -20,6 +21,7 @@ kizhin::FrequencyDictionary kizhin::loadDictionary(
         byWord[current] = 0;
       }
       ++byWord[current];
+      words.insert(current);
     }
   }
   FrequencyDictionary::FreqVector byFreq;
@@ -37,6 +39,6 @@ kizhin::FrequencyDictionary kizhin::loadDictionary(
     return a.second < b.second;
   };
   std::sort(byFreq.begin(), byFreq.end(), pred);
-  return FrequencyDictionary{ byWord, byFreq, total };
+  return FrequencyDictionary{ byWord, words, byFreq, total };
 }
 

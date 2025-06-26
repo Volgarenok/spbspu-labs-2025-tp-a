@@ -9,6 +9,10 @@
 #include <sstream> // TODO: Remove sstream
 #include "freq-dict.hpp"
 
+namespace kizhin {
+  bool isSatisfied(const std::string&, const std::string&);
+}
+
 kizhin::CommandProcessor::CommandProcessor(State& state, std::istream& in,
     std::ostream& out, std::ostream& err) noexcept:
   state_(state),
@@ -138,7 +142,7 @@ void kizhin::CommandProcessor::handleClear(const CmdArgs& args)
   if (!args.empty()) {
     err_ << "Usage: clear\n";
     return;
-  } else if (!state_.empty()) {
+  } else if (state_.empty()) {
     return;
   }
   out_ << "Are you sure want to delete all (";
@@ -175,7 +179,6 @@ void kizhin::CommandProcessor::handleMerge(const CmdArgs& args)
 
 void kizhin::CommandProcessor::handleInter(const CmdArgs& args) const
 {
-  // TODO: Refactor
   if (args.size() != 2) {
     err_ << "Usage: inter <dict1> <dict2>\n";
     return;
@@ -186,49 +189,24 @@ void kizhin::CommandProcessor::handleInter(const CmdArgs& args) const
   }
   const FrequencyDictionary first = loadDictionary(state_[args[0]]);
   const FrequencyDictionary second = loadDictionary(state_[args[1]]);
-#if 0
-  std::set< std::string > firstWords{};
-  std::set< std::string > secondWords{};
-  const auto firstInserter = std::inserter(firstWords, firstWords.end());
-  const auto secondInserter = std::inserter(secondWords, secondWords.end());
   using std::placeholders::_1;
-  static const auto getFirst = std::bind(&State::value_type::first, _1);
-  std::transform(first.byWord.begin(), first.byWord.end(), firstInserter, getFirst);
-  std::transform(second.byWord.begin(), second.byWord.end(), secondInserter, getFirst);
   std::set< std::string > intersection{};
-  const auto firstBeg = firstWords.begin();
-  const auto firstEnd = firstWords.end();
-  const auto secondBeg = secondWords.begin();
-  const auto secondEnd = secondWords.end();
+  const auto firstBeg = first.words.begin();
+  const auto firstEnd = first.words.end();
+  const auto secondBeg = second.words.begin();
+  const auto secondEnd = second.words.end();
   const auto inserter = std::inserter(intersection, intersection.end());
   std::set_intersection(firstBeg, firstEnd, secondBeg, secondEnd, inserter);
-
-  for (const auto& word: intersection) {
-    const float currFr = static_cast< float >(word.second) / resultTotal;
-    out_ << std::fixed << std::setprecision(3);
-    out_ << word.second << '\t' << currFr << '\t' << word.first << '\n';
-  }
-#else
-  std::size_t resultTotal = 0;
-  FrequencyDictionary::FreqVector resultDict{};
-  for (const auto& word: first.byFrequency) {
-    if (second.byWord.count(word.second)) {
-      const std::size_t count = word.first + second.byWord.at(word.second);
-      resultTotal += count;
-      resultDict.emplace_back(count, word.second);
-    }
-  }
-  for (const auto& word: resultDict) {
-    const float currFr = static_cast< float >(word.first) / resultTotal;
-    out_ << std::fixed << std::setprecision(3);
-    out_ << word.first << '\t' << currFr << '\t' << word.second << '\n';
-  }
-#endif
+  using OutIt = std::ostream_iterator< std::string >;
+  static const auto formater = [&first, &second](const std::string& str) -> std::string
+  {
+    return std::to_string(first.byWord.at(str) + second.byWord.at(str)) + '\t' + str;
+  }; // TODO: lambda function
+  std::transform(intersection.begin(), intersection.end(), OutIt{ out_, "\n" }, formater);
 }
 
 void kizhin::CommandProcessor::handleDiff(const CmdArgs& args) const
 {
-  // TODO: Refactor
   if (args.size() != 2) {
     err_ << "Usage: diff <dict1> <dict2>\n";
     return;
@@ -239,19 +217,20 @@ void kizhin::CommandProcessor::handleDiff(const CmdArgs& args) const
   }
   const FrequencyDictionary first = loadDictionary(state_[args[0]]);
   const FrequencyDictionary second = loadDictionary(state_[args[1]]);
-  FrequencyDictionary::FreqVector resultDict{};
-  std::size_t resultTotal = 0;
-  for (const auto& word: first.byFrequency) {
-    if (!second.byWord.count(word.second)) {
-      resultDict.push_back(word);
-      resultTotal += word.first;
-    }
-  }
-  for (const auto& word: resultDict) {
-    const float currFr = static_cast< float >(word.first) / resultTotal;
-    out_ << std::fixed << std::setprecision(3);
-    out_ << word.first << '\t' << currFr << '\t' << word.second << '\n';
-  }
+  using std::placeholders::_1;
+  std::set< std::string > difference{};
+  const auto firstBeg = first.words.begin();
+  const auto firstEnd = first.words.end();
+  const auto secondBeg = second.words.begin();
+  const auto secondEnd = second.words.end();
+  const auto inserter = std::inserter(difference, difference.end());
+  std::set_difference(firstBeg, firstEnd, secondBeg, secondEnd, inserter);
+  using OutIt = std::ostream_iterator< std::string >;
+  static const auto formater = [&first](const std::string& str) -> std::string
+  {
+    return std::to_string(first.byWord.at(str)) + '\t' + str;
+  }; // TODO: lambda function
+  std::transform(difference.begin(), difference.end(), OutIt{ out_, "\n" }, formater);
 }
 
 void kizhin::CommandProcessor::handleStat(const CmdArgs& args) const
@@ -270,6 +249,7 @@ void kizhin::CommandProcessor::handleStat(const CmdArgs& args) const
     out_ << "Dictionary is empty\n";
     return;
   }
+  // TODO: Refactor
   constexpr static unsigned titleWidth = 15;
   constexpr static unsigned countWidth = 15;
   out_ << std::setw(titleWidth) << std::left << "Unique words";
@@ -375,8 +355,15 @@ void kizhin::CommandProcessor::handleRange(const CmdArgs& args) const
   }
 }
 
-void kizhin::CommandProcessor::handleFind(const CmdArgs& /*args*/) const
+void kizhin::CommandProcessor::handleFind(const CmdArgs& args) const
 {
+  if (args.size() != 2) {
+    err_ << "Usage: find <dict> <regexp>\n";
+    return;
+  } else if (!state_.count(args[0])) {
+    err_ << "Unknown dictionary: " << args[0] << '\n';
+    return;
+  }
   // TODO: Implement find
 }
 
@@ -390,4 +377,10 @@ void kizhin::CommandProcessor::outDictionary(const State::key_type& dictionary) 
     out_ << files.back();
   }
   out_ << '\n';
+}
+
+bool isSatisfied(const std::string& /*string*/, const std::string& /*regexp*/)
+{
+  // TODO: Implement
+  return false;
 }
