@@ -7,7 +7,8 @@
 #include <iterator>
 #include <limits>
 #include <set>
-#include <sstream> // TODO: Remove sstream
+#include <sstream>
+#include <tuple>
 #include "freq-dict.hpp"
 
 namespace kizhin {
@@ -69,7 +70,7 @@ std::pair< std::string, kizhin::CommandProcessor::CmdArgs > kizhin::CommandProce
     parseCommand(const std::string& line) const
 {
   std::string command{};
-  std::stringstream sin(line); // TODO: Remove stringstream
+  std::stringstream sin(line);
   sin >> command;
   using InIt = std::istream_iterator< std::string >;
   CmdArgs args(InIt{ sin }, InIt{});
@@ -352,7 +353,17 @@ void kizhin::CommandProcessor::handleFind(const CmdArgs& args) const
     err_ << "Unknown dictionary: " << args[0] << '\n';
     return;
   }
-  // TODO: Implement find
+  const FrequencyDictionary dict = loadDictionary(state_.at(args[0]));
+  const WordMap& wordMap = dict.wordMap;
+  WordMap result{};
+  using std::placeholders::_1;
+  const auto inserter = std::inserter(result, result.end());
+  static const auto getFirst = std::bind(&WordMap::value_type::first, _1);
+  static const auto validator = std::addressof(isSatisfied);
+  const auto isRight = std::bind(validator, std::bind(getFirst, _1), std::cref(args[1]));
+  std::copy_if(wordMap.begin(), wordMap.end(), inserter, isRight);
+  using OutIt = std::ostream_iterator< std::string >;
+  std::transform(result.begin(), result.end(), OutIt{ out_, "\n" }, wordAndSizeToString);
 }
 
 void kizhin::CommandProcessor::outDictionary(const State::key_type& dictionary) const
@@ -378,10 +389,22 @@ kizhin::FrequencyDictionary kizhin::CommandProcessor::loadDictionary(
   return result;
 }
 
-bool kizhin::isSatisfied(const std::string& /*string*/, const std::string& /*regexp*/)
+bool kizhin::isSatisfied(const std::string& str, const std::string& reg)
 {
-  // TODO: Implement
-  return false;
+  auto strPos = str.begin();
+  auto regPos = reg.begin();
+  std::tie(strPos, regPos) = std::mismatch(strPos, str.end(), regPos, reg.end());
+  while (strPos != str.end() && regPos != reg.end()) {
+    if (*regPos == '*') {
+      strPos = std::find(strPos, str.end(), *(++regPos));
+    } else {
+      return false;
+    }
+    std::tie(strPos, regPos) = std::mismatch(strPos, str.end(), regPos, reg.end());
+  }
+  const bool isRegEnd = regPos == reg.end();
+  const bool doesMathcAny = (*regPos == '*' && std::next(regPos) == reg.end());
+  return strPos == str.end() && (isRegEnd || doesMathcAny);
 }
 
 std::string kizhin::wordAndSizeToString(const WordAndSize& val)
