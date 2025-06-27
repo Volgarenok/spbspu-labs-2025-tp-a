@@ -339,8 +339,7 @@ void kizhin::CommandProcessor::handleRange(const CmdArgs& args) const
   const auto begin = freqDict.upper_bound({ "", max * dict.total });
   const auto end = freqDict.lower_bound({ "", min * dict.total });
   using std::placeholders::_1;
-  constexpr static auto outWordPtr = std::addressof(outWordInfo);
-  const auto printer = std::bind(outWordPtr, std::ref(out_), std::cref(dict), _1);
+  const auto printer = std::bind(&outWordInfo, std::ref(out_), std::cref(dict), _1);
   std::for_each(begin, end, printer);
 }
 
