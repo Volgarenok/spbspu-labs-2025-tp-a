@@ -1,23 +1,8 @@
 #include "format_wrapper.hpp"
 #include <iostream>
+#include <delimiterIO.hpp>
 #include "utils.hpp"
 #include "format_guard.hpp"
-
-std::istream &pilugina::operator>>(std::istream &in, DelimiterIO &&dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-
-  char c = 0;
-  if ((in >> c) && (c != dest.exp))
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
-}
 
 std::istream &pilugina::operator>>(std::istream &in, UnsignedLongLongOCT &&dest)
 {
@@ -105,7 +90,7 @@ std::istream &pilugina::operator>>(std::istream &in, StringIO &&dest)
     return in;
   }
 
-  return std::getline(in >> DelimiterIO {'"'}, dest.ref, '"');
+  return std::getline(in >> DelimiterIO{'"'}, dest.ref, '"');
 }
 
 std::ostream &pilugina::output::operator<<(std::ostream &out, const UnsignedLongLongOCT &dest)
