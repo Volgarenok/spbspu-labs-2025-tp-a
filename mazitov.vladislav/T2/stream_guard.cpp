@@ -1,6 +1,6 @@
 #include "stream_guard.hpp"
 
-mazitov::StreamGuard::StreamGuard(std::basic_ios< char >& s):
+mazitov::StreamGuard::StreamGuard(std::basic_ios< char > &s):
   s_(s),
   fill_(s.fill()),
   precision_(s.precision()),
