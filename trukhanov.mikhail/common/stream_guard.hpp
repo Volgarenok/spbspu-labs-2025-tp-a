@@ -21,4 +21,3 @@ namespace trukhanov
 }
 
 #endif
-
