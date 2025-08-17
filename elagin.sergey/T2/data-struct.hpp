@@ -5,18 +5,16 @@
 #include <iostream>
 #include <string>
 
-namespace elagin
-{
-    struct DataStruct
-    {
-        unsigned long long key1;
-        std::complex<double> key2;
-        std::string key3;
-    };
+namespace elagin {
+struct DataStruct {
+  unsigned long long key1;
+  std::complex<double> key2;
+  std::string key3;
+};
 
-    bool operator<(const DataStruct &lhs, const DataStruct &rhs);
-    std::istream &operator>>(std::istream &in, DataStruct &dst);
-    std::ostream &operator<<(std::ostream &out, const DataStruct &dst);
-}
+bool operator<(const DataStruct &lhs, const DataStruct &rhs);
+std::istream &operator>>(std::istream &in, DataStruct &dst);
+std::ostream &operator<<(std::ostream &out, const DataStruct &dst);
+} // namespace elagin
 
-#endif //DATA_STRUCT_HPP
+#endif // DATA_STRUCT_HPP
