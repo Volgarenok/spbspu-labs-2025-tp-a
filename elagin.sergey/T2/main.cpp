@@ -13,18 +13,15 @@ int main()
 
     std::vector<DataStruct> data;
 
-    while (!std::cin.eof())
-    {
-        if (std::cin.fail())
-        {
+    while (!std::cin.eof()) {
+        if (std::cin.fail()) {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
         std::copy(input_it_t{std::cin}, input_it_t{}, std::back_inserter(data));
     }
 
-    if (std::cin.bad())
-    {
+    if (std::cin.bad()) {
         std::cerr << "Input error\n";
         return 1;
     }

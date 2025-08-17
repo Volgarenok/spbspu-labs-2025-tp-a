@@ -2,42 +2,42 @@
 #define IO_HELPERS_HPP
 
 #include <complex>
+#include <iostream>
 #include <string>
 
 namespace elagin
 {
     struct HexIOIn
     {
-        unsigned long long &value;
+        unsigned long long& ref;
     };
 
     struct HexIOOut
     {
-        unsigned long long value;
+        unsigned long long val;
     };
 
     struct ComplexIOIn
     {
-        std::complex<double> &value;
+        std::complex<double>& ref;
     };
 
     struct ComplexIOOut
     {
-        std::complex<double> value;
+        std::complex<double> val;
     };
 
     struct StringIO
     {
-        std::string &value;
+        std::string& ref;
     };
 
-    std::istream &operator>>(std::istream &in, const HexIOIn &&dest);
-    std::istream &operator>>(std::istream &in, const ComplexIOIn &&dest);
-    std::istream &operator>>(std::istream &in, const StringIO &dest);
+    std::istream& operator>>(std::istream& in, const HexIOIn&& dest);
+    std::istream& operator>>(std::istream& in, const ComplexIOIn&& dest);
+    std::istream& operator>>(std::istream& in, const StringIO& dest);
 
-    std::ostream &operator<<(std::ostream &out, const HexIOOut &dest);
-    std::ostream &operator<<(std::ostream &out, const ComplexIOOut &dest);
+    std::ostream& operator<<(std::ostream& out, const HexIOOut& dest);
+    std::ostream& operator<<(std::ostream& out, const ComplexIOOut& dest);
 }
 
-
-#endif //IO_HELPERS_HPP
+#endif
