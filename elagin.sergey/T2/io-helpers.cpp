@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <sstream>
 
-std::istream& elagin::operator>>(std::istream& in, const HexIOIn&& dest)
+std::istream& elagin::operator>>(std::istream& in, const HexIO&& dest)
 {
   std::istream::sentry sentry(in);
   if (!sentry) {
@@ -20,7 +20,7 @@ std::istream& elagin::operator>>(std::istream& in, const HexIOIn&& dest)
   }
 
   std::istringstream iss(hexStr);
-  iss >> std::hex >> dest.ref;
+  iss >> std::hex >> dest.value;
 
   if (!iss) {
     in.setstate(std::ios::failbit);
@@ -29,7 +29,7 @@ std::istream& elagin::operator>>(std::istream& in, const HexIOIn&& dest)
   return in;
 }
 
-std::istream& elagin::operator>>(std::istream& in, const ComplexIOIn&& dest)
+std::istream& elagin::operator>>(std::istream& in, const ComplexIO&& dest)
 {
   std::istream::sentry sentry(in);
   if (!sentry) {
@@ -43,7 +43,7 @@ std::istream& elagin::operator>>(std::istream& in, const ComplexIOIn&& dest)
   >> DelimiterIO{'('} >> real >> imag >> DelimiterIO{')'};
 
   if (in) {
-    dest.ref = std::complex<double>(real, imag);
+    dest.value = std::complex<double>(real, imag);
   }
 
   return in;
@@ -55,10 +55,10 @@ std::istream& elagin::operator>>(std::istream& in, const StringIO& dest)
   if (!sentry) {
     return in;
   }
-  return std::getline(in >> DelimiterIO{'"'}, dest.ref, '"');
+  return std::getline(in >> DelimiterIO{'"'}, dest.value, '"');
 }
 
-std::ostream& elagin::operator<<(std::ostream& out, const HexIOOut& dest)
+std::ostream& elagin::operator<<(std::ostream& out, const HexIO& dest)
 {
   std::ostream::sentry sentry(out);
   if (!sentry) {
@@ -66,11 +66,11 @@ std::ostream& elagin::operator<<(std::ostream& out, const HexIOOut& dest)
   }
 
   StreamGuard guard(out);
-  out << "0x" << std::uppercase << std::hex << dest.val;
+  out << "0x" << std::uppercase << std::hex << dest.value;
   return out;
 }
 
-std::ostream& elagin::operator<<(std::ostream& out, const ComplexIOOut& dest)
+std::ostream& elagin::operator<<(std::ostream& out, const ComplexIO& dest)
 {
   std::ostream::sentry sentry(out);
   if (!sentry) {
@@ -78,7 +78,7 @@ std::ostream& elagin::operator<<(std::ostream& out, const ComplexIOOut& dest)
   }
 
   StreamGuard guard(out);
-  out << "#c(" << dest.val.real()
-      << " " << dest.val.imag() << ")";
+  out << "#c(" << dest.value.real()
+      << " " << dest.value.imag() << ")";
   return out;
 }

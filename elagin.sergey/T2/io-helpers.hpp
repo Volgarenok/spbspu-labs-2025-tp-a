@@ -7,37 +7,27 @@
 
 namespace elagin
 {
-  struct HexIOIn
+  struct HexIO
   {
-    unsigned long long& ref;
+    unsigned long long& value;
   };
 
-  struct HexIOOut
+  struct ComplexIO
   {
-    unsigned long long val;
-  };
-
-  struct ComplexIOIn
-  {
-    std::complex<double>& ref;
-  };
-
-  struct ComplexIOOut
-  {
-    std::complex<double> val;
+    std::complex<double>& value;
   };
 
   struct StringIO
   {
-    std::string& ref;
+    std::string& value;
   };
 
-  std::istream& operator>>(std::istream& in, const HexIOIn&& dest);
-  std::istream& operator>>(std::istream& in, const ComplexIOIn&& dest);
+  std::istream& operator>>(std::istream& in, const HexIO&& dest);
+  std::istream& operator>>(std::istream& in, const ComplexIO&& dest);
   std::istream& operator>>(std::istream& in, const StringIO& dest);
 
-  std::ostream& operator<<(std::ostream& out, const HexIOOut& dest);
-  std::ostream& operator<<(std::ostream& out, const ComplexIOOut& dest);
+  std::ostream& operator<<(std::ostream& out, const HexIO& dest);
+  std::ostream& operator<<(std::ostream& out, const ComplexIO& dest);
 }
 
 #endif
