@@ -1,11 +1,12 @@
-#include "data-struct.hpp"
 #include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <limits>
 #include <vector>
+#include "data-struct.hpp"
 
-int main() {
+int main()
+{
   using namespace elagin;
   using input_it_t = std::istream_iterator<DataStruct>;
   using output_it_t = std::ostream_iterator<DataStruct>;
@@ -23,6 +24,11 @@ int main() {
   if (std::cin.bad()) {
     std::cerr << "Input error\n";
     return 1;
+  }
+
+  if (data.empty()) {
+    std::cout << "Looks like there is no supported record. Cannot determine input. Test skipped\n";
+    return 0;
   }
 
   std::sort(data.begin(), data.end());

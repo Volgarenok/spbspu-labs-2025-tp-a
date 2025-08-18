@@ -3,7 +3,8 @@
 #include "io-helpers.hpp"
 #include "stream-guard.hpp"
 
-bool elagin::operator<(const DataStruct &lhs, const DataStruct &rhs) {
+bool elagin::operator<(const DataStruct& lhs, const DataStruct& rhs)
+{
   if (lhs.key1 != rhs.key1) {
     return lhs.key1 < rhs.key1;
   }
@@ -16,7 +17,8 @@ bool elagin::operator<(const DataStruct &lhs, const DataStruct &rhs) {
   return lhs.key3.size() < rhs.key3.size();
 }
 
-std::istream &elagin::operator>>(std::istream &in, DataStruct &dst) {
+std::istream& elagin::operator>>(std::istream& in, DataStruct& dst)
+{
   std::istream::sentry sentry(in);
   if (!sentry) {
     return in;
@@ -29,22 +31,25 @@ std::istream &elagin::operator>>(std::istream &in, DataStruct &dst) {
 
   in >> DelimiterIO{'('};
   for (int i = 0; i < 3; ++i) {
-    in >> DelimiterIO{':'} >> DelimiterIO{'k'} >> DelimiterIO{'e'} >>
-        DelimiterIO{'y'};
+    in >> DelimiterIO{':'} >> DelimiterIO{'k'}
+    >> DelimiterIO{'e'} >> DelimiterIO{'y'};
 
     int keyNum = 0;
     in >> keyNum;
 
     if (keyNum == 1 && !hasKey1) {
-      in >> HexIOIn{temp.key1};
+      in >> HexIO{temp.key1};
       hasKey1 = true;
-    } else if (keyNum == 2 && !hasKey2) {
-      in >> ComplexIOIn{temp.key2};
+    }
+    else if (keyNum == 2 && !hasKey2) {
+      in >> ComplexIO{temp.key2};
       hasKey2 = true;
-    } else if (keyNum == 3 && !hasKey3) {
+    }
+    else if (keyNum == 3 && !hasKey3) {
       in >> StringIO{temp.key3};
       hasKey3 = true;
-    } else {
+    }
+    else {
       in.setstate(std::ios::failbit);
       return in;
     }
@@ -54,22 +59,25 @@ std::istream &elagin::operator>>(std::istream &in, DataStruct &dst) {
 
   if (in && hasKey1 && hasKey2 && hasKey3) {
     dst = temp;
-  } else {
+  }
+  else {
     in.setstate(std::ios::failbit);
   }
 
   return in;
 }
 
-std::ostream &elagin::operator<<(std::ostream &out, const DataStruct &dst) {
+std::ostream& elagin::operator<<(std::ostream& out, const DataStruct& dst)
+{
   std::ostream::sentry sentry(out);
   if (!sentry) {
     return out;
   }
 
   StreamGuard guard(out);
-  out << "(:key1 " << HexIOOut{dst.key1} << ":key2 " << ComplexIOOut{dst.key2}
-      << ":key3 \"" << dst.key3 << "\":)";
+  out << "(:key1 " << HexIO{dst.key1}
+  << ":key2 " << ComplexIO{dst.key2}
+  << ":key3 \"" << dst.key3 << "\":)";
 
   return out;
 }

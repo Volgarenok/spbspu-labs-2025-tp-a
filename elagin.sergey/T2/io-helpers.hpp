@@ -5,33 +5,29 @@
 #include <iostream>
 #include <string>
 
-namespace elagin {
-struct HexIOIn {
-  unsigned long long &ref;
-};
+namespace elagin
+{
+  struct HexIO
+  {
+    unsigned long long& value;
+  };
 
-struct HexIOOut {
-  unsigned long long val;
-};
+  struct ComplexIO
+  {
+    std::complex<double>& value;
+  };
 
-struct ComplexIOIn {
-  std::complex<double> &ref;
-};
+  struct StringIO
+  {
+    std::string& value;
+  };
 
-struct ComplexIOOut {
-  std::complex<double> val;
-};
+  std::istream& operator>>(std::istream& in, const HexIO&& dest);
+  std::istream& operator>>(std::istream& in, const ComplexIO&& dest);
+  std::istream& operator>>(std::istream& in, const StringIO& dest);
 
-struct StringIO {
-  std::string &ref;
-};
-
-std::istream &operator>>(std::istream &in, const HexIOIn &&dest);
-std::istream &operator>>(std::istream &in, const ComplexIOIn &&dest);
-std::istream &operator>>(std::istream &in, const StringIO &dest);
-
-std::ostream &operator<<(std::ostream &out, const HexIOOut &dest);
-std::ostream &operator<<(std::ostream &out, const ComplexIOOut &dest);
-} // namespace elagin
+  std::ostream& operator<<(std::ostream& out, const HexIO& dest);
+  std::ostream& operator<<(std::ostream& out, const ComplexIO& dest);
+}
 
 #endif
