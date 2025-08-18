@@ -38,11 +38,11 @@ std::istream& elagin::operator>>(std::istream& in, DataStruct& dst)
     in >> keyNum;
 
     if (keyNum == 1 && !hasKey1) {
-      in >> HexIO{temp.key1};
+      in >> HexIOIn{temp.key1};
       hasKey1 = true;
     }
     else if (keyNum == 2 && !hasKey2) {
-      in >> ComplexIO{temp.key2};
+      in >> ComplexIOIn{temp.key2};
       hasKey2 = true;
     }
     else if (keyNum == 3 && !hasKey3) {
@@ -75,8 +75,8 @@ std::ostream& elagin::operator<<(std::ostream& out, const DataStruct& dst)
   }
 
   StreamGuard guard(out);
-  out << "(:key1 " << HexIO{dst.key1}
-  << ":key2 " << ComplexIO{dst.key2}
+  out << "(:key1 " << HexIOOut{dst.key1}
+  << ":key2 " << ComplexIOOut{dst.key2}
   << ":key3 \"" << dst.key3 << "\":)";
 
   return out;
