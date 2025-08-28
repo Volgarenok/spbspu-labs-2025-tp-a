@@ -13,3 +13,4 @@ struct DataStruct
 bool operator<(const DataStruct& lhs, const DataStruct& rhs);
 
 #endif
+
