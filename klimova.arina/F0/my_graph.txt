@@ -1,0 +1,8 @@
+MyGraph
+A B C D E
+A B
+B C
+B E
+C D
+D E
+

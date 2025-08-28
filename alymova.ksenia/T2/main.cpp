@@ -4,7 +4,7 @@
 #include <iterator>
 #include <algorithm>
 #include "structs.hpp"
-#include "stream-guard.hpp"
+#include <stream-guard.hpp>
 
 int main()
 {
