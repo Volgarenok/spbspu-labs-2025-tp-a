@@ -15,8 +15,6 @@ int main()
         std::back_inserter(data)
     );
 
-    std::cerr << "Objects read: " << data.size() << "\n";
-
     std::sort(data.begin(), data.end());
 
     std::copy(
