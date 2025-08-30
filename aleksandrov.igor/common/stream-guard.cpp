@@ -18,3 +18,4 @@ namespace aleksandrov
     s_.flags(fmt_);
   }
 }
+
