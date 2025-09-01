@@ -8,6 +8,7 @@
 #include <iterator>
 #include <stdexcept>
 #include <cctype>
+#include <io.h>
 
 namespace
 {
