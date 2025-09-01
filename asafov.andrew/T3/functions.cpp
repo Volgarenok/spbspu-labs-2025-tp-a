@@ -31,14 +31,6 @@ namespace
   {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
   }
-
-  void skipWhitespace(const std::string& str, size_t& pos)
-  {
-    while (pos < str.size() && isWhitespace(str[pos]))
-    {
-      ++pos;
-    }
-  }
 }
 
 namespace asafov
