@@ -64,7 +64,7 @@ namespace asafov
       ++pos;
     }
   }
-  
+
   bool tryParseNumber(const std::string& str, size_t& pos, size_t& result)
   {
     result = 0;
@@ -79,7 +79,7 @@ namespace asafov
 
     return foundDigit;
   }
-  
+
   size_t parseVertexCount(const std::string& str, size_t& pos)
   {
     skipWhitespace(str, pos);
@@ -260,7 +260,7 @@ namespace asafov
         [](const Polygon& a, const Polygon& b) {
           return computeArea(a) < computeArea(b);
         });
-      
+
       printArea(computeArea(*it));
     }
     else if (arg == "VERTEXES")

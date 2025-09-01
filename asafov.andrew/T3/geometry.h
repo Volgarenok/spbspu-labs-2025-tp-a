@@ -10,7 +10,7 @@ namespace asafov
   {
     int x;
     int y;
-    
+
     bool operator==(const Point& other) const;
     bool operator!=(const Point& other) const;
   };
@@ -18,7 +18,7 @@ namespace asafov
   struct Polygon
   {
     std::vector<Point> points;
-    
+
     bool operator==(const Polygon& other) const;
   };
 

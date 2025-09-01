@@ -34,12 +34,12 @@ namespace asafov
   bool Polygon::operator==(const Polygon& other) const
   {
     if (points.size() != other.points.size()) return false;
-    
+
     for (size_t i = 0; i < points.size(); ++i)
     {
       if (points[i] != other.points[i]) return false;
     }
-    
+
     return true;
   }
 
@@ -97,12 +97,12 @@ namespace asafov
     double d2 = crossProduct(b1, b2, a2);
     double d3 = crossProduct(a1, a2, b1);
     double d4 = crossProduct(a1, a2, b2);
-    
+
     if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0)))
     {
       return true;
     }
-    
+
     return isPointOnSegment(a1, b1, b2) || isPointOnSegment(a2, b1, b2) || isPointOnSegment(b1, a1, a2) || isPointOnSegment(b2, a1, a2);
   }
 
