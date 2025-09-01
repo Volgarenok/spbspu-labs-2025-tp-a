@@ -200,7 +200,7 @@ namespace asafov
       int dy1 = b.y - a.y;
       int dx2 = c.x - b.x;
       int dy2 = c.y - b.y;
-      
+
       if (dx1 * dx2 + dy1 * dy2 != 0)
       {
         return false;

@@ -269,7 +269,7 @@ namespace asafov
         [](const Polygon& a, const Polygon& b) {
           return a.points.size() < b.points.size();
         });
-      
+
       printCount(it->points.size());
     }
     else
