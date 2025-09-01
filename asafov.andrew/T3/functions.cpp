@@ -2,12 +2,12 @@
 #include "geometry.h"
 #include <iostream>
 #include <iomanip>
-#include <sstream>
 #include <algorithm>
 #include <functional>
 #include <numeric>
 #include <iterator>
 #include <stdexcept>
+#include <cctype>
 
 namespace
 {
@@ -15,20 +15,84 @@ namespace
   {
     std::cout << std::fixed << std::setprecision(1) << area << '\n';
   }
-  
+
   void printCount(size_t count)
   {
     std::cout << count << '\n';
   }
-  
+
   void printBool(bool value)
   {
     std::cout << (value ? "<TRUE>" : "<FALSE>") << '\n';
+  }
+
+  bool isWhitespace(char c)
+  {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+  }
+
+  void skipWhitespace(const std::string& str, size_t& pos)
+  {
+    while (pos < str.size() && isWhitespace(str[pos]))
+    {
+      ++pos;
+    }
   }
 }
 
 namespace asafov
 {
+  void parseCommand(const std::string& cmd, std::string& command, std::string& arg)
+  {
+    command.clear();
+    arg.clear();
+
+    size_t pos = 0;
+    skipWhitespace(cmd, pos);
+
+    while (pos < cmd.size() && !isWhitespace(cmd[pos]))
+    {
+      command += cmd[pos];
+      ++pos;
+    }
+
+    skipWhitespace(cmd, pos);
+
+    while (pos < cmd.size())
+    {
+      arg += cmd[pos];
+      ++pos;
+    }
+  }
+  
+  bool tryParseNumber(const std::string& str, size_t& pos, size_t& result)
+  {
+    result = 0;
+    bool foundDigit = false;
+
+    while (pos < str.size() && std::isdigit(str[pos]))
+    {
+      result = result * 10 + (str[pos] - '0');
+      ++pos;
+      foundDigit = true;
+    }
+
+    return foundDigit;
+  }
+  
+  size_t parseVertexCount(const std::string& str, size_t& pos)
+  {
+    skipWhitespace(str, pos);
+
+    size_t vertexCount = 0;
+    if (!tryParseNumber(str, pos, vertexCount))
+    {
+      throw std::invalid_argument("Invalid vertex count");
+    }
+
+    return vertexCount;
+  }
+
   void processCommand(const std::vector<Polygon>& polygons, const std::string& cmd)
   {
     if (cmd.empty())
@@ -36,14 +100,11 @@ namespace asafov
       std::cout << "<INVALID COMMAND>\n";
       return;
     }
-    
-    std::istringstream iss(cmd);
+
     std::string command;
-    iss >> command;
-    
     std::string arg;
-    std::getline(iss >> std::ws, arg);
-    
+    parseCommand(cmd, command, arg);
+
     try
     {
       if (command == "AREA")
@@ -118,10 +179,10 @@ namespace asafov
     if (arg == "MEAN")
     {
       if (polygons.empty()) throw std::invalid_argument("No polygons");
-      
+
       double total = std::accumulate(polygons.begin(), polygons.end(), 0.0,
         [](double sum, const Polygon& poly) { return sum + computeArea(poly); });
-      
+
       printArea(total / polygons.size());
     }
     else if (arg == "EVEN")
@@ -130,7 +191,7 @@ namespace asafov
         [](double sum, const Polygon& poly) {
           return poly.points.size() % 2 == 0 ? sum + computeArea(poly) : sum;
         });
-      
+
       printArea(sum);
     }
     else if (arg == "ODD")
@@ -139,39 +200,39 @@ namespace asafov
         [](double sum, const Polygon& poly) {
           return poly.points.size() % 2 != 0 ? sum + computeArea(poly) : sum;
         });
-      
+
       printArea(sum);
     }
     else
     {
-      try
-      {
-        size_t vertexCount = std::stoul(arg);
-        double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-          [vertexCount](double sum, const Polygon& poly) {
-            return poly.points.size() == vertexCount ? sum + computeArea(poly) : sum;
-          });
-        
-        printArea(sum);
-      }
-      catch (...)
+      size_t vertexCount = 0;
+      size_t pos = 0;
+
+      if (!tryParseNumber(arg, pos, vertexCount) || pos != arg.size())
       {
         throw std::invalid_argument("Invalid AREA argument");
       }
+
+      double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+        [vertexCount](double sum, const Polygon& poly) {
+          return poly.points.size() == vertexCount ? sum + computeArea(poly) : sum;
+        });
+
+      printArea(sum);
     }
   }
 
   void handleMaxCommands(const std::vector<Polygon>& polygons, const std::string& arg)
   {
     if (polygons.empty()) throw std::invalid_argument("No polygons");
-    
+
     if (arg == "AREA")
     {
       auto it = std::max_element(polygons.begin(), polygons.end(),
         [](const Polygon& a, const Polygon& b) {
           return computeArea(a) < computeArea(b);
         });
-      
+
       printArea(computeArea(*it));
     }
     else if (arg == "VERTEXES")
@@ -180,7 +241,7 @@ namespace asafov
         [](const Polygon& a, const Polygon& b) {
           return a.points.size() < b.points.size();
         });
-      
+
       printCount(it->points.size());
     }
     else
@@ -192,7 +253,7 @@ namespace asafov
   void handleMinCommands(const std::vector<Polygon>& polygons, const std::string& arg)
   {
     if (polygons.empty()) throw std::invalid_argument("No polygons");
-    
+
     if (arg == "AREA")
     {
       auto it = std::min_element(polygons.begin(), polygons.end(),
@@ -223,30 +284,30 @@ namespace asafov
     {
       size_t count = std::count_if(polygons.begin(), polygons.end(),
         [](const Polygon& poly) { return poly.points.size() % 2 == 0; });
-      
+
       printCount(count);
     }
     else if (arg == "ODD")
     {
       size_t count = std::count_if(polygons.begin(), polygons.end(),
         [](const Polygon& poly) { return poly.points.size() % 2 != 0; });
-      
+
       printCount(count);
     }
     else
     {
-      try
-      {
-        size_t vertexCount = std::stoul(arg);
-        size_t count = std::count_if(polygons.begin(), polygons.end(),
-          [vertexCount](const Polygon& poly) { return poly.points.size() == vertexCount; });
-        
-        printCount(count);
-      }
-      catch (...)
+      size_t vertexCount = 0;
+      size_t pos = 0;
+
+      if (!tryParseNumber(arg, pos, vertexCount) || pos != arg.size())
       {
         throw std::invalid_argument("Invalid COUNT argument");
       }
+
+      size_t count = std::count_if(polygons.begin(), polygons.end(),
+        [vertexCount](const Polygon& poly) { return poly.points.size() == vertexCount; });
+
+      printCount(count);
     }
   }
 
@@ -255,7 +316,7 @@ namespace asafov
     Polygon target = parsePolygonFromString(arg);
     size_t count = std::count_if(polygons.begin(), polygons.end(),
       [&target](const Polygon& poly) { return arePolygonsSame(poly, target); });
-    
+
     printCount(count);
   }
 
@@ -264,7 +325,7 @@ namespace asafov
     Polygon target = parsePolygonFromString(arg);
     size_t maxSeq = 0;
     size_t currentSeq = 0;
-    
+
     for (const auto& poly : polygons)
     {
       if (arePolygonsSame(poly, target))
@@ -277,7 +338,7 @@ namespace asafov
         currentSeq = 0;
       }
     }
-    
+
     printCount(maxSeq);
   }
 
@@ -294,7 +355,7 @@ namespace asafov
         }
         return false;
       });
-    
+
     polygons.erase(newEnd, polygons.end());
     printCount(removed);
   }
@@ -304,7 +365,7 @@ namespace asafov
     Polygon target = parsePolygonFromString(arg);
     size_t added = 0;
     std::vector<Polygon> result;
-    
+
     for (const auto& poly : polygons)
     {
       result.push_back(poly);
@@ -314,7 +375,7 @@ namespace asafov
         ++added;
       }
     }
-    
+
     polygons = result;
     printCount(added);
   }
@@ -323,10 +384,10 @@ namespace asafov
   {
     Polygon target = parsePolygonFromString(arg);
     double targetArea = computeArea(target);
-    
+
     size_t count = std::count_if(polygons.begin(), polygons.end(),
       [targetArea](const Polygon& poly) { return computeArea(poly) < targetArea; });
-    
+
     printCount(count);
   }
 
@@ -334,30 +395,30 @@ namespace asafov
   {
     Polygon target = parsePolygonFromString(arg);
     Polygon bbox = getBoundingBox(polygons);
-    
+
     bool allInside = std::all_of(target.points.begin(), target.points.end(),
       [&bbox](const Point& point) { return isPointInPolygon(point, bbox); });
-    
+
     printBool(allInside);
   }
 
   void handleIntersectionsCommand(const std::vector<Polygon>& polygons, const std::string& arg)
   {
     Polygon target = parsePolygonFromString(arg);
-    
+
     size_t count = std::count_if(polygons.begin(), polygons.end(),
       [&target](const Polygon& poly) { return doPolygonsIntersect(poly, target); });
-    
+
     printCount(count);
   }
 
   void handleSameCommand(const std::vector<Polygon>& polygons, const std::string& arg)
   {
     Polygon target = parsePolygonFromString(arg);
-    
+
     size_t count = std::count_if(polygons.begin(), polygons.end(),
       [&target](const Polygon& poly) { return arePolygonsSame(poly, target); });
-    
+
     printCount(count);
   }
 
@@ -365,7 +426,7 @@ namespace asafov
   {
     size_t count = std::count_if(polygons.begin(), polygons.end(),
       [](const Polygon& poly) { return isPolygonRectangle(poly); });
-    
+
     printCount(count);
   }
 
@@ -373,7 +434,7 @@ namespace asafov
   {
     size_t count = std::count_if(polygons.begin(), polygons.end(),
       [](const Polygon& poly) { return hasRightAngle(poly); });
-    
+
     printCount(count);
   }
 }

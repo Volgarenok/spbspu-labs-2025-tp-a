@@ -22,6 +22,10 @@ namespace asafov
   void handleSameCommand(const std::vector<Polygon>& polygons, const std::string& arg);
   void handleRectsCommand(const std::vector<Polygon>& polygons);
   void handleRightShapesCommand(const std::vector<Polygon>& polygons);
+
+  void parseCommand(const std::string& cmd, std::string& command, std::string& arg);
+  size_t parseVertexCount(const std::string& str, size_t& pos);
+  bool tryParseNumber(const std::string& str, size_t& pos, size_t& result);
 }
 
 #endif

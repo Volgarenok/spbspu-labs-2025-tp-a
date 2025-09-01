@@ -10,12 +10,12 @@ int main(int argc, char* argv[])
     std::cerr << "Usage: " << argv[0] << " <filename>\n";
     return 1;
   }
-  
+
   try
   {
     std::vector<asafov::Polygon> polygons = asafov::readPolygonsFromFile(argv[1]);
     std::string command;
-    
+
     while (std::getline(std::cin, command))
     {
       if (command.empty()) continue;
@@ -27,6 +27,6 @@ int main(int argc, char* argv[])
     std::cerr << "Error: " << e.what() << '\n';
     return 1;
   }
-  
+
   return 0;
 }
