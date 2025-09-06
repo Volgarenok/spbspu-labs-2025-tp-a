@@ -114,38 +114,6 @@ void asafov::processCommand(const std::vector<Polygon>& polygons, const std::str
     {
       asafov::handleCountCommands(polygons, arg);
     }
-    else if (command == "PERMS")
-    {
-      int count = 0;
-      for (const auto& poly : polygons)
-      {
-        if (asafov::arePolygonsPermutations(poly, arg))
-        {
-          ++count;
-        }
-      }
-      std::cout << count << "\n";
-    }
-    else if (command == "MAXSEQ")
-    {
-      asafov::handleMaxSeqCommand(polygons, arg);
-    }
-    else if (command == "RMECHO")
-    {
-      asafov::handleRmechoCommand(const_cast<std::vector<Polygon>&>(polygons), arg);
-    }
-    else if (command == "ECHO")
-    {
-      asafov::handleEchoCommand(const_cast<std::vector<Polygon>&>(polygons), arg);
-    }
-    else if (command == "LESSAREA")
-    {
-      asafov::handleLessAreaCommand(polygons, arg);
-    }
-    else if (command == "INFRAME")
-    {
-      asafov::handleInFrameCommand(polygons, arg);
-    }
     else if (command == "INTERSECTIONS")
     {
       asafov::handleIntersectionsCommand(polygons, arg);
@@ -153,14 +121,6 @@ void asafov::processCommand(const std::vector<Polygon>& polygons, const std::str
     else if (command == "SAME")
     {
       asafov::handleSameCommand(polygons, arg);
-    }
-    else if (command == "RECTS")
-    {
-      asafov::handleRectsCommand(polygons);
-    }
-    else if (command == "RIGHTSHAPES")
-    {
-      asafov::handleRightShapesCommand(polygons);
     }
     else
     {
@@ -316,139 +276,6 @@ void asafov::handleCountCommands(const std::vector<Polygon>& polygons, const std
   }
 }
 
-void asafov::handlePermsCommand(const std::vector<Polygon>& polygons, const std::string& arg)
-{
-  try
-  {
-    Polygon target = asafov::parsePolygonFromString(arg);
-    size_t count = std::count_if(polygons.begin(), polygons.end(),
-      [&target](const Polygon& poly) { return asafov::arePolygonsSame(poly, target); });
-
-    printCount(count);
-  }
-  catch (const std::exception&)
-  {
-    throw std::invalid_argument("Invalid PERMS argument");
-  }
-}
-
-void asafov::handleMaxSeqCommand(const std::vector<Polygon>& polygons, const std::string& arg)
-{
-  try
-  {
-    Polygon target = asafov::parsePolygonFromString(arg);
-    size_t maxSeq = 0;
-    size_t currentSeq = 0;
-
-    for (const auto& poly : polygons)
-    {
-      if (asafov::arePolygonsSame(poly, target))
-      {
-        ++currentSeq;
-        maxSeq = std::max(maxSeq, currentSeq);
-      }
-      else
-      {
-        currentSeq = 0;
-      }
-    }
-
-    printCount(maxSeq);
-  }
-  catch (const std::exception&)
-  {
-    throw std::invalid_argument("Invalid MAXSEQ argument");
-  }
-}
-
-void asafov::handleRmechoCommand(std::vector<Polygon>& polygons, const std::string& arg)
-{
-  try
-  {
-    Polygon target = asafov::parsePolygonFromString(arg);
-    size_t removed = 0;
-    auto newEnd = std::unique(polygons.begin(), polygons.end(),
-      [&target, &removed](const Polygon& a, const Polygon& b) {
-        if (asafov::arePolygonsSame(a, target) && asafov::arePolygonsSame(b, target))
-        {
-          ++removed;
-          return true;
-        }
-        return false;
-      });
-
-    polygons.erase(newEnd, polygons.end());
-    printCount(removed);
-  }
-  catch (const std::exception&)
-  {
-    throw std::invalid_argument("Invalid RMECHO argument");
-  }
-}
-
-void asafov::handleEchoCommand(std::vector<Polygon>& polygons, const std::string& arg)
-{
-  try
-  {
-    Polygon target = asafov::parsePolygonFromString(arg);
-    size_t added = 0;
-    std::vector<Polygon> result;
-
-    for (const auto& poly : polygons)
-    {
-      result.push_back(poly);
-      if (asafov::arePolygonsSame(poly, target))
-      {
-        result.push_back(poly);
-        ++added;
-      }
-    }
-
-    polygons = result;
-    printCount(added);
-  }
-  catch (const std::exception&)
-  {
-    throw std::invalid_argument("Invalid ECHO argument");
-  }
-}
-
-void asafov::handleLessAreaCommand(const std::vector<Polygon>& polygons, const std::string& arg)
-{
-  try
-  {
-    Polygon target = asafov::parsePolygonFromString(arg);
-    double targetArea = asafov::computeArea(target);
-
-    size_t count = std::count_if(polygons.begin(), polygons.end(),
-      [targetArea](const Polygon& poly) { return asafov::computeArea(poly) < targetArea; });
-
-    printCount(count);
-  }
-  catch (const std::exception&)
-  {
-    throw std::invalid_argument("Invalid LESSAREA argument");
-  }
-}
-
-void asafov::handleInFrameCommand(const std::vector<Polygon>& polygons, const std::string& arg)
-{
-  try
-  {
-    Polygon target = asafov::parsePolygonFromString(arg);
-    Polygon bbox = asafov::getBoundingBox(polygons);
-
-    bool allInside = std::all_of(target.points.begin(), target.points.end(),
-      [&bbox](const Point& point) { return asafov::isPointInPolygon(point, bbox); });
-
-    printBool(allInside);
-  }
-  catch (const std::exception&)
-  {
-    throw std::invalid_argument("Invalid INFRAME argument");
-  }
-}
-
 void asafov::handleIntersectionsCommand(const std::vector<Polygon>& polygons, const std::string& arg)
 {
   try
@@ -481,20 +308,4 @@ void asafov::handleSameCommand(const std::vector<Polygon>& polygons, const std::
   {
     throw std::invalid_argument("Invalid SAME argument");
   }
-}
-
-void asafov::handleRectsCommand(const std::vector<Polygon>& polygons)
-{
-  size_t count = std::count_if(polygons.begin(), polygons.end(),
-    [](const Polygon& poly) { return asafov::isPolygonRectangle(poly); });
-
-  printCount(count);
-}
-
-void asafov::handleRightShapesCommand(const std::vector<Polygon>& polygons)
-{
-  size_t count = std::count_if(polygons.begin(), polygons.end(),
-    [](const Polygon& poly) { return asafov::hasRightAngle(poly); });
-
-  printCount(count);
 }

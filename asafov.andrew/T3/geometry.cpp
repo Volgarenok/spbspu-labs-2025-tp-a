@@ -135,29 +135,6 @@ bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
   return false;
 }
 
-bool asafov::arePolygonsPermutations(const Polygon& a, const Polygon& b)
-{
-  if (a.points.size() != b.points.size())
-  {
-    return false;
-  }
-
-  auto sortPoints = [](const Polygon& poly)
-  {
-    std::vector<Point> pts = poly.points;
-    std::sort(pts.begin(), pts.end(), [](const Point& p1, const Point& p2)
-    {
-      return (p1.x == p2.x) ? (p1.y < p2.y) : (p1.x < p2.x);
-    });
-    return pts;
-  };
-
-  auto sortedA = sortPoints(a);
-  auto sortedB = sortPoints(b);
-
-  return sortedA == sortedB;
-}
-
 bool asafov::edgesIntersect(const Point& a1, const Point& a2, const Point& b1, const Point& b2)
 {
   auto orientation = [](const Point& p, const Point& q, const Point& r) -> int
