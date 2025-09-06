@@ -116,7 +116,15 @@ void asafov::processCommand(const std::vector<Polygon>& polygons, const std::str
     }
     else if (command == "PERMS")
     {
-      asafov::arePolygonsPermutations(polygons, arg);
+      int count = 0;
+      for (const auto& poly : polygons)
+      {
+        if (asafov::arePolygonsPermutations(poly, arg))
+        {
+          ++count;
+        }
+      }
+      std::cout << count << "\n";
     }
     else if (command == "MAXSEQ")
     {
