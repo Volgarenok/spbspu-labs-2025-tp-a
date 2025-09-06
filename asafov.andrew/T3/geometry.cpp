@@ -74,9 +74,31 @@ bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
     return false;
   }
   const size_t n = a.points.size();
-  if (n == 0)
+  if (n < 3)
   {
-    return true;
+    return false;
+  }
+
+  auto getEdgeLengths = [&](const Polygon& poly)
+  {
+    std::vector<double> lengths;
+    for (size_t i = 0; i < n; ++i)
+    {
+      size_t j = (i + 1) % n;
+      double dx = poly.points[j].x - poly.points[i].x;
+      double dy = poly.points[j].y - poly.points[i].y;
+      lengths.push_back(std::sqrt(dx*dx + dy*dy));
+    }
+    return lengths;
+  };
+
+  auto A = getEdgeLengths(a);
+  auto B = getEdgeLengths(b);
+
+  double scale = A[0] / B[0];
+  for (double &l : B)
+  {
+    l *= scale;
   }
 
   for (size_t shift = 0; shift < n; ++shift)
@@ -84,9 +106,7 @@ bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
     bool ok = true;
     for (size_t i = 0; i < n; ++i)
     {
-      const Point& pa = a.points[i];
-      const Point& pb = b.points[(shift + i) % n];
-      if (!(pa == pb))
+      if (std::abs(A[i] - B[(i+shift)%n]) > 1e-6)
       {
         ok = false;
         break;
@@ -96,18 +116,11 @@ bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
     {
       return true;
     }
-  }
 
-  for (size_t shift = 0; shift < n; ++shift)
-  {
-    bool ok = true;
+    ok = true;
     for (size_t i = 0; i < n; ++i)
     {
-      const Point& pa = a.points[i];
-
-      size_t idx = (shift + n - i) % n;
-      const Point& pb = b.points[idx];
-      if (!(pa == pb))
+      if (std::abs(A[i] - B[(shift+n-i)%n]) > 1e-6)
       {
         ok = false;
         break;
