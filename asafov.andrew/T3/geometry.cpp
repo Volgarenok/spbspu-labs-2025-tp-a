@@ -256,7 +256,7 @@ bool asafov::hasRightAngle(const Polygon& poly)
   return false;
 }
 
-Polygon asafov::getBoundingBox(const std::vector<Polygon>& polygons)
+asafov::Polygon asafov::getBoundingBox(const std::vector<Polygon>& polygons)
 {
   if (polygons.empty())
   {

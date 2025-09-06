@@ -88,7 +88,7 @@ bool asafov::parsePoint(const std::string& str, size_t& pos, Point& point)
   return true;
 }
 
-std::vector<Polygon> asafov::readPolygonsFromFile(const std::string& filename)
+std::vector<asafov::Polygon> asafov::readPolygonsFromFile(const std::string& filename)
 {
   std::ifstream file(filename);
   if (!file.is_open())
@@ -123,7 +123,7 @@ std::vector<Polygon> asafov::readPolygonsFromFile(const std::string& filename)
   return polygons;
 }
 
-Polygon asafov::parsePolygonFromString(const std::string& str)
+asafov::Polygon asafov::parsePolygonFromString(const std::string& str)
 {
   Polygon poly;
   size_t pos = 0;
