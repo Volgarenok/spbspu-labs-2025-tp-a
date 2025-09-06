@@ -67,7 +67,7 @@ double asafov::computeArea(const Polygon& poly)
   return std::abs(area) / 2.0;
 }
 
-bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
+bool arePolygonsSame(const Polygon& a, const Polygon& b)
 {
   if (a.points.size() != b.points.size())
   {
@@ -75,36 +75,41 @@ bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
   }
 
   const size_t n = a.points.size();
-
-  for (size_t offset = 0; offset < n; ++offset)
+  if (n == 0)
   {
-    bool match = true;
+    return true;
+  }
+
+  for (size_t start = 0; start < n; ++start)
+  {
+    bool matchForward = true;
     for (size_t i = 0; i < n; ++i)
     {
-      if (a.points[i] != b.points[(i + offset) % n])
+      size_t aIndex = i;
+      size_t bIndex = (start + i) % n;
+      if (a.points[aIndex] != b.points[bIndex])
       {
-        match = false;
+        matchForward = false;
         break;
       }
     }
-    if (match)
+    if (matchForward)
     {
       return true;
     }
-  }
 
-  for (size_t offset = 0; offset < n; ++offset)
-  {
-    bool match = true;
+    bool matchReverse = true;
     for (size_t i = 0; i < n; ++i)
     {
-      if (a.points[i] != b.points[(n - 1 - i + offset) % n])
+      size_t aIndex = i;
+      size_t bIndex = (start + n - i - 1) % n;
+      if (a.points[aIndex] != b.points[bIndex])
       {
-        match = false;
+        matchReverse = false;
         break;
       }
     }
-    if (match)
+    if (matchReverse)
     {
       return true;
     }
@@ -115,17 +120,54 @@ bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
 
 bool asafov::edgesIntersect(const Point& a1, const Point& a2, const Point& b1, const Point& b2)
 {
-  double d1 = crossProduct(b1, b2, a1);
-  double d2 = crossProduct(b1, b2, a2);
-  double d3 = crossProduct(a1, a2, b1);
-  double d4 = crossProduct(a1, a2, b2);
+  auto orientation = [](const Point& p, const Point& q, const Point& r) -> int
+  {
+    int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+    if (val == 0)
+    {
+      return 0;
+    }
+    return (val > 0) ? 1 : 2;
+  };
 
-  if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0)))
+  auto onSegment = [](const Point& p, const Point& q, const Point& r) -> bool
+  {
+    if (q.x <= std::max(p.x, r.x) && q.x >= std::min(p.x, r.x) &&
+        q.y <= std::max(p.y, r.y) && q.y >= std::min(p.y, r.y))
+    {
+      return true;
+    }
+    return false;
+  };
+
+  int o1 = orientation(a1, a2, b1);
+  int o2 = orientation(a1, a2, b2);
+  int o3 = orientation(b1, b2, a1);
+  int o4 = orientation(b1, b2, a2);
+
+  if (o1 != o2 && o3 != o4)
   {
     return true;
   }
 
-  return isPointOnSegment(a1, b1, b2) || isPointOnSegment(a2, b1, b2) || isPointOnSegment(b1, a1, a2) || isPointOnSegment(b2, a1, a2);
+  if (o1 == 0 && onSegment(a1, b1, a2))
+  {
+    return true;
+  }
+  if (o2 == 0 && onSegment(a1, b2, a2))
+  {
+    return true;
+  }
+  if (o3 == 0 && onSegment(b1, a1, b2))
+  {
+    return true;
+  }
+  if (o4 == 0 && onSegment(b1, a2, b2))
+  {
+    return true;
+  }
+
+  return false;
 }
 
 bool asafov::doPolygonsIntersect(const Polygon& a, const Polygon& b)
@@ -150,11 +192,18 @@ bool asafov::doPolygonsIntersect(const Polygon& a, const Polygon& b)
     }
   }
 
+  if (isPointInPolygon(a.points[0], b) || isPointInPolygon(b.points[0], a))
+  {
+    return true;
+  }
+
   return false;
 }
 
 bool asafov::isPointInPolygon(const Point& point, const Polygon& poly)
 {
+  if (poly.points.size() < 3) return false;
+
   bool inside = false;
   const size_t n = poly.points.size();
 
@@ -163,7 +212,13 @@ bool asafov::isPointInPolygon(const Point& point, const Polygon& poly)
     const Point& p1 = poly.points[i];
     const Point& p2 = poly.points[j];
 
-    if (((p1.y > point.y) != (p2.y > point.y)) && (point.x < (p2.x - p1.x) * (point.y - p1.y) / (p2.y - p1.y) + p1.x))
+    if (isPointOnSegment(point, p1, p2))
+    {
+      return true;
+    }
+
+    if (((p1.y > point.y) != (p2.y > point.y)) &&
+        (point.x < (p2.x - p1.x) * (point.y - p1.y) / static_cast<double>(p2.y - p1.y) + p1.x))
     {
       inside = !inside;
     }
@@ -279,5 +334,5 @@ asafov::Polygon asafov::getBoundingBox(const std::vector<Polygon>& polygons)
     }
   }
 
-  return Polygon{{{minX, minY}, {maxX, minY}, {maxX, maxY}, {minX, maxY}}};
+  return Polygon{ { Point{ minX, minY }, Point{ maxX, minY }, Point{ maxX, maxY }, Point{ minX, maxY } } };
 }
