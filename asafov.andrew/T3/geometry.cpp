@@ -68,7 +68,6 @@ double asafov::computeArea(const Polygon& poly)
 }
 
 bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
-bool arePolygonsSame(const Polygon& a, const Polygon& b)
 {
   if (a.points.size() != b.points.size())
   {
