@@ -1,21 +1,7 @@
 #include "input_struct.hpp"
+#include <delimiter.hpp>
 #include "stream_guard.hpp"
 
-std::istream &mazitov::operator>>(std::istream &in, DelimiterInput &&dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-  char c = '\0';
-  in >> c;
-  if (in && (c != dest.exp))
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
-}
 
 std::istream &mazitov::operator>>(std::istream &in, StringInput &&dest)
 {
