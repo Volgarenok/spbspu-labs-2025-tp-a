@@ -22,11 +22,6 @@ namespace
     std::cout << count << '\n';
   }
 
-  void printBool(bool value)
-  {
-    std::cout << (value ? "<TRUE>" : "<FALSE>") << '\n';
-  }
-
   bool isWhitespace(char c)
   {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
