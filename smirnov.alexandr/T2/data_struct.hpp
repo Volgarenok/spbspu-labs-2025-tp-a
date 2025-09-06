@@ -2,6 +2,7 @@
 #define DATA_STRUCT_HPP
 #include <iostream>
 #include <string>
+#include <delimetr.hpp>
 
 namespace smirnov
 {
@@ -23,14 +24,9 @@ namespace smirnov
   {
     std::string & ref;
   };
-  struct DelimiterIO
-  {
-    char exp;
-  };
   std::istream & operator>>(std::istream & in, ULLIO && dest);
   std::istream & operator>>(std::istream & in, LLIO && dest);
   std::istream & operator>>(std::istream & in, QuotedStringIO && dest);
-  std::istream & operator>>(std::istream & in, DelimiterIO && dest);
   bool compare(const DataStruct & lhs, const DataStruct & rhs);
   std::istream & operator>>(std::istream & in, DataStruct & data);
   std::ostream & operator<<(std::ostream & out, const DataStruct & data);
