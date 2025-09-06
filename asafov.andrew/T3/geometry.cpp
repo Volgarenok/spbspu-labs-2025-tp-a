@@ -68,6 +68,7 @@ double asafov::computeArea(const Polygon& poly)
 }
 
 bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
+bool arePolygonsSame(const Polygon& a, const Polygon& b)
 {
   if (a.points.size() != b.points.size())
   {
@@ -80,6 +81,20 @@ bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
     return true;
   }
 
+  auto getVectors = [](const Polygon& poly)
+  {
+    std::vector<std::pair<int, int>> vectors;
+    for (size_t i = 0; i < poly.points.size(); ++i)
+    {
+      size_t next = (i + 1) % poly.points.size();
+      vectors.emplace_back(poly.points[next].x - poly.points[i].x, poly.points[next].y - poly.points[i].y);
+    }
+    return vectors;
+  };
+
+  auto vectorsA = getVectors(a);
+  auto vectorsB = getVectors(b);
+
   for (size_t start = 0; start < n; ++start)
   {
     bool matchForward = true;
@@ -87,7 +102,7 @@ bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
     {
       size_t aIndex = i;
       size_t bIndex = (start + i) % n;
-      if (a.points[aIndex] != b.points[bIndex])
+      if (vectorsA[aIndex] != vectorsB[bIndex])
       {
         matchForward = false;
         break;
@@ -103,7 +118,7 @@ bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
     {
       size_t aIndex = i;
       size_t bIndex = (start + n - i - 1) % n;
-      if (a.points[aIndex] != b.points[bIndex])
+      if (vectorsA[aIndex] != vectorsB[bIndex])
       {
         matchReverse = false;
         break;
