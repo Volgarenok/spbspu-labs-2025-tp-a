@@ -27,9 +27,6 @@ namespace asafov
   bool doPolygonsIntersect(const Polygon& a, const Polygon& b);
   bool edgesIntersect(const Point& a1, const Point& a2, const Point& b1, const Point& b2);
   bool isPointInPolygon(const Point& point, const Polygon& poly);
-  bool isPolygonConvex(const Polygon& poly);
-  bool isPolygonRectangle(const Polygon& poly);
-  bool hasRightAngle(const Polygon& poly);
   Polygon getBoundingBox(const std::vector<Polygon>& polygons);
 }
 
