@@ -38,6 +38,9 @@ namespace khokhryakova
   void loadXref(std::istream& in, std::ostream& out, XrefDictionary& dict);
   void loadXrefFromPath(std::ostream& out, const std::string& fileName, XrefDictionary& dict);
   void restoreText(std::istream& in, std::ostream& out, const XrefDictionary& dict);
+  void insertWord(std::istream& in, std::ostream& out, XrefDictionary& dict);
+  void deleteWord(std::istream& in, std::ostream& out, XrefDictionary& dict);
+  void outputWord(std::istream& in, std::ostream& out, const XrefDictionary& dict);
   void showHelp(std::istream& in, std::ostream& out);
 }
 

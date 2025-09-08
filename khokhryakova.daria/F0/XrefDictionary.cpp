@@ -327,6 +327,86 @@ void khokhryakova::restoreText(std::istream& in, std::ostream& out, const XrefDi
   out << "Text restored from \"" << id << "\" and written to \"" << outputFile << "\"\n";
 }
 
+void khokhryakova::insertWord(std::istream& in, std::ostream& out, XrefDictionary& dict)
+{
+  std::string dictName, word;
+  int lineNum, position;
+  in >> dictName >> lineNum >> position >> word;
+  auto it = dict.dicts.find(dictName);
+  if (it == dict.dicts.end())
+  {
+    out << "<DictionaryError>\n";
+    return;
+  }
+  if (lineNum <= 0 || lineNum > static_cast< int >(it->second.text.size()))
+  {
+    out << "<PositionError>\n";
+    return;
+  }
+  auto& line = it->second.text[lineNum - 1];
+  if (position < 0 || position > static_cast< int >(line.size()))
+  {
+    out << "<PositionError>\n";
+    return;
+  }
+  cleanWord(word);
+  line.insert(line.begin() + position, word);
+  it->second.dictionary[word].push_back({ static_cast< size_t >(lineNum), static_cast< size_t >(position + 1) });
+  out << "Word \"" << word << "\" added to line " << lineNum << " at position " << position << "\n";
+}
+
+void khokhryakova::deleteWord(std::istream& in, std::ostream& out, XrefDictionary& dict)
+{
+  std::string dictName;
+  int lineNum, position;
+  in >> dictName >> lineNum >> position;
+  auto it = dict.dicts.find(dictName);
+  if (it == dict.dicts.end())
+  {
+    out << "<DictionaryError>\n";
+    return;
+  }
+  if (lineNum <= 0 || lineNum > static_cast< int >(it->second.text.size()))
+  {
+    out << "<PositionError>\n";
+    return;
+  }
+  auto& line = it->second.text[lineNum - 1];
+  if (position <= 0 || position > static_cast< int >(line.size()))
+  {
+    out << "<PositionError>\n";
+    return;
+  }
+  std::string deletedWord = line[position - 1];
+  line.erase(line.begin() + position - 1);
+  out << "Word \"" << deletedWord << "\" deleted from line " << lineNum << " at position " << position << "\n";
+}
+
+void khokhryakova::outputWord(std::istream& in, std::ostream& out, const XrefDictionary& dict)
+{
+  std::string dictName;
+  int lineNum, position;
+  in >> dictName >> lineNum >> position;
+  auto it = dict.dicts.find(dictName);
+  if (it == dict.dicts.end())
+  {
+    out << "<DictionaryError>\n";
+    return;
+  }
+  if (lineNum <= 0 || lineNum > static_cast< int >(it->second.text.size()))
+  {
+    out << "<PositionError>\n";
+    return;
+  }
+  const auto& line = it->second.text[lineNum - 1];
+  if (position <= 0 || position > static_cast< int >(line.size()))
+  {
+    out << "<PositionError>\n";
+    return;
+  }
+  out << "Word \"" << line[position - 1] << "\" found at line " << lineNum << " position " << position << "\n";
+}
+
 void khokhryakova::showHelp(std::istream&, std::ostream& out)
 {
   out << "Text analyzer with cross-reference dictionary\n";
@@ -342,4 +422,7 @@ void khokhryakova::showHelp(std::istream&, std::ostream& out)
   out << "SAVE <file> - save dictionaries\n";
   out << "LOAD <file> - load dictionaries\n";
   out << "RESTORE <id> <file> - restore text from dictionary\n";
+  out << "INSERT_WORD <dict> <line> <pos> <word> - insert word\n";
+  out << "DELETE_WORD <dict> <line> <pos> - delete word\n";
+  out << "OUTPUT_WORD <dict> <line> <pos> - output word\n";
 }

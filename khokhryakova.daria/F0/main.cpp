@@ -26,6 +26,9 @@ int main(int argc, char * argv[])
   cmds["SAVE"] = std::bind(khokhryakova::saveXref, std::ref(std::cin), std::ref(std::cout), std::cref(dict));
   cmds["LOAD"] = std::bind(khokhryakova::loadXref, std::ref(std::cin), std::ref(std::cout), std::ref(dict));
   cmds["RESTORE"] = std::bind(khokhryakova::restoreText, std::ref(std::cin), std::ref(std::cout), std::cref(dict));
+  cmds["INSERT_WORD"] = std::bind(khokhryakova::insertWord, std::ref(std::cin), std::ref(std::cout), std::ref(dict));
+  cmds["DELETE_WORD"] = std::bind(khokhryakova::deleteWord, std::ref(std::cin), std::ref(std::cout), std::ref(dict));
+  cmds["OUTPUT_WORD"] = std::bind(khokhryakova::outputWord, std::ref(std::cin), std::ref(std::cout), std::cref(dict));
   cmds["--help"] = std::bind(khokhryakova::showHelp, std::ref(std::cin), std::ref(std::cout));
   std::string command;
   while (!(std::cin >> command).eof())
