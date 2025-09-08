@@ -411,18 +411,18 @@ void khokhryakova::showHelp(std::istream&, std::ostream& out)
 {
   out << "Text analyzer with cross-reference dictionary\n";
   out << "Commands:\n";
-  out << "BUILD <file> <id> - build cross-reference dictionary\n";
-  out << "PRINT <id> - print dictionary\n";
-  out << "FIND <word> <id> - find word occurrences\n";
-  out << "COUNT <word> <id> - count word occurrences\n";
-  out << "CONTEXT <word> <radius> <id> - show word context\n";
-  out << "MERGE <id1> <id2> <new_id> - merge dictionaries\n";
-  out << "INTERSECT <id1> <id2> <new_id> - intersect dictionaries\n";
-  out << "DIFF <id1> <id2> <new_id> - difference of dictionaries\n";
-  out << "SAVE <file> - save dictionaries\n";
-  out << "LOAD <file> - load dictionaries\n";
-  out << "RESTORE <id> <file> - restore text from dictionary\n";
-  out << "INSERT_WORD <dict> <line> <pos> <word> - insert word\n";
-  out << "DELETE_WORD <dict> <line> <pos> - delete word\n";
-  out << "OUTPUT_WORD <dict> <line> <pos> - output word\n";
+  out << "BUILD <file_path> <dict_name> - build cross-reference dictionary\n";
+  out << "PRINT <dict_name> - print dictionary\n";
+  out << "FIND <word> <dict_name> - find word occurrences\n";
+  out << "COUNT <word> <dict_name> - count word occurrences\n";
+  out << "CONTEXT <word> <radius> <dict_name> - show word context\n";
+  out << "MERGE <dict1> <dict2> <result_dict> - merge dictionaries\n";
+  out << "INTERSECT <dict1> <dict2> <result_dict> - intersect dictionaries\n";
+  out << "DIFF <dict1> <dict2> <result_dict> - difference of dictionaries\n";
+  out << "SAVE <dict_name> - save dictionaries\n";
+  out << "LOAD <dict_name> - load dictionaries\n";
+  out << "RESTORE <dict_name> <output_file> - restore text from dictionary\n";
+  out << "INSERT_WORD <dict_name> <line_num> <position> <word> - insert word\n";
+  out << "DELETE_WORD <dict_name> <line_num> <position> - delete word\n";
+  out << "OUTPUT_WORD <dict_name> <line_num> <position> - output word\n";
 }
