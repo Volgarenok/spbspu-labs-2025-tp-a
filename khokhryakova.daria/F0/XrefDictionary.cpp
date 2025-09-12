@@ -19,7 +19,8 @@ namespace
 
 void khokhryakova::buildXref(std::istream& in, std::ostream& out, XrefDictionary& dict)
 {
-  std::string fileName, id;
+  std::string fileName;
+  std::string id;
   in >> fileName >> id;
   if (dict.dicts.find(id) != dict.dicts.end())
   {
@@ -74,7 +75,8 @@ void khokhryakova::printDict(std::istream& in, std::ostream& out, const XrefDict
 
 void khokhryakova::findWord(std::istream& in, std::ostream& out, const XrefDictionary& dict)
 {
-  std::string word, id;
+  std::string word;
+  std::string id;
   in >> word >> id;
   auto it = dict.dicts.find(id);
   if (it == dict.dicts.end())
@@ -102,7 +104,8 @@ void khokhryakova::findWord(std::istream& in, std::ostream& out, const XrefDicti
 
 void khokhryakova::countWord(std::istream& in, std::ostream& out, const XrefDictionary& dict)
 {
-  std::string word, id;
+  std::string word;
+  std::string id;
   in >> word >> id;
   auto it = dict.dicts.find(id);
   if (it == dict.dicts.end())
@@ -122,7 +125,8 @@ void khokhryakova::countWord(std::istream& in, std::ostream& out, const XrefDict
 
 void khokhryakova::getContext(std::istream& in, std::ostream& out, const XrefDictionary& dict)
 {
-  std::string word, id;
+  std::string word;
+  std::string id;
   int radius;
   in >> word >> radius >> id;
   if (radius <= 0)
@@ -149,7 +153,9 @@ void khokhryakova::getContext(std::istream& in, std::ostream& out, const XrefDic
 
 void khokhryakova::mergeXref(std::istream& in, std::ostream& out, XrefDictionary& dict)
 {
-  std::string id1, id2, newId;
+  std::string id1;
+  std::string id2;
+  std::string newId;
   in >> id1 >> id2 >> newId;
   if (dict.dicts.find(newId) != dict.dicts.end())
   {
@@ -172,7 +178,9 @@ void khokhryakova::mergeXref(std::istream& in, std::ostream& out, XrefDictionary
 
 void khokhryakova::intersectXref(std::istream& in, std::ostream& out, XrefDictionary& dict)
 {
-  std::string id1, id2, newId;
+  std::string id1;
+  std::string id2;
+  std::string newId;
   in >> id1 >> id2 >> newId;
   if (dict.dicts.find(newId) != dict.dicts.end())
   {
@@ -201,7 +209,9 @@ void khokhryakova::intersectXref(std::istream& in, std::ostream& out, XrefDictio
 
 void khokhryakova::diffXref(std::istream& in, std::ostream& out, XrefDictionary& dict)
 {
-  std::string id1, id2, newId;
+  std::string id1;
+  std::string id2;
+  std::string newId;
   in >> id1 >> id2 >> newId;
   if (dict.dicts.find(newId) != dict.dicts.end())
   {
@@ -308,7 +318,8 @@ void khokhryakova::loadXrefFromPath(std::ostream& out, const std::string& fileNa
 
 void khokhryakova::restoreText(std::istream& in, std::ostream& out, const XrefDictionary& dict)
 {
-  std::string id, outputFile;
+  std::string id;
+  std::string outputFile;
   in >> id >> outputFile;
   auto it = dict.dicts.find(id);
   if (it == dict.dicts.end())
@@ -329,8 +340,10 @@ void khokhryakova::restoreText(std::istream& in, std::ostream& out, const XrefDi
 
 void khokhryakova::insertWord(std::istream& in, std::ostream& out, XrefDictionary& dict)
 {
-  std::string dictName, word;
-  int lineNum, position;
+  std::string dictName;
+  std::string word;
+  int lineNum;
+  int position;
   in >> dictName >> lineNum >> position >> word;
   auto it = dict.dicts.find(dictName);
   if (it == dict.dicts.end())
@@ -358,7 +371,8 @@ void khokhryakova::insertWord(std::istream& in, std::ostream& out, XrefDictionar
 void khokhryakova::deleteWord(std::istream& in, std::ostream& out, XrefDictionary& dict)
 {
   std::string dictName;
-  int lineNum, position;
+  int lineNum;
+  int position;
   in >> dictName >> lineNum >> position;
   auto it = dict.dicts.find(dictName);
   if (it == dict.dicts.end())
@@ -385,7 +399,8 @@ void khokhryakova::deleteWord(std::istream& in, std::ostream& out, XrefDictionar
 void khokhryakova::outputWord(std::istream& in, std::ostream& out, const XrefDictionary& dict)
 {
   std::string dictName;
-  int lineNum, position;
+  int lineNum;
+  int position;
   in >> dictName >> lineNum >> position;
   auto it = dict.dicts.find(dictName);
   if (it == dict.dicts.end())
