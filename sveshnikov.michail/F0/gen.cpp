@@ -1,6 +1,7 @@
 #include "gen.hpp"
-#include <algorithm>
 #include <array>
+#include <cassert>
+#include <algorithm>
 #include <functional>
 #include <stream-guard.hpp>
 
@@ -71,16 +72,21 @@ bool sveshnikov::Gen::operator!=(const Gen &other) const
 
 const std::string &sveshnikov::Gen::get_nucleotides() const noexcept
 {
+  assert(!nucleotides_.empty());
   return nucleotides_;
 }
 
 int sveshnikov::Gen::calc_fitness() const
 {
+  if (nucleotides_.empty())
+  {
+    return 0;
+  }
   using namespace std::placeholders;
   std::array< size_t, 3 > vals;
   std::transform(nucleotides_.begin(), nucleotides_.end(), vals.begin(),
       std::bind(getNucleotideValue, _1));
-  return vals[0] * 64 + vals[1] * 16 + vals[2] * 4 + vals[3];
+  return vals[0] * 16 + vals[1] * 4 + vals[2];
 }
 
 std::istream &sveshnikov::operator>>(std::istream &in, Gen &gen)
