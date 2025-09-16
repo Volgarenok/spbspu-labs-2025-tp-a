@@ -3,18 +3,19 @@
 #include <algorithm>
 #include <stdexcept>
 
-sveshnikov::Individual::Individual(const std::string &name, const Genotype &genes, size_t age = 0):
+sveshnikov::Individual::Individual(const std::string &name, const Genotype &genotype,
+    size_t age = 0):
   name_(name),
-  genotype_(genes),
+  genotype_(genotype),
   age_(age),
   parents_("", "")
 {}
 
 sveshnikov::Individual::Individual(const std::string &name, const Genotype &genotype,
-    const std::string &parent1, const std::string &parent2):
+    const std::string &parent1, const std::string &parent2, size_t age = 0):
   name_(name),
   genotype_(genotype),
-  age_(0),
+  age_(age),
   parents_(parent1, parent2)
 {}
 
