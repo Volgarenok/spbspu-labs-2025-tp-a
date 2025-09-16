@@ -19,12 +19,12 @@ namespace sveshnikov
     const std::string &get_name() const noexcept;
     const Genotype &get_genotype() const noexcept;
     size_t get_age() const noexcept;
+    const std::pair< std::string, std::string > &get_parents() const;
 
     void make_older(size_t years) noexcept;
     void mutate(const Genotype &genotype);
     int calc_fitness() const;
     Individual crossover(const std::string &name, const Individual &other) const;
-    std::ostream &print_pedigree(std::ostream &out) const noexcept;
 
   private:
     std::string name_;
