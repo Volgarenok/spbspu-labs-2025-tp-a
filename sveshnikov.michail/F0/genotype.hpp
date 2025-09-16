@@ -11,12 +11,12 @@ namespace sveshnikov
     Genotype() = default;
     explicit Genotype(const std::vector< Gen > &genes);
 
-    bool operator==(const Genotype &other) const;
-    bool operator!=(const Genotype &other) const;
+    bool operator==(const Genotype &other) const noexcept;
+    bool operator!=(const Genotype &other) const noexcept;
 
     const std::vector< Gen > &get_genes() const noexcept;
     int calc_fitness() const;
-    Genotype crossover(const Genotype &other);
+    Genotype crossover(const Genotype &other) const;
 
   private:
     std::vector< Gen > genes_;

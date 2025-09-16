@@ -46,12 +46,12 @@ sveshnikov::Genotype::Genotype(const std::vector< Gen > &genes):
   }
 }
 
-bool sveshnikov::Genotype::operator==(const Genotype &other) const
+bool sveshnikov::Genotype::operator==(const Genotype &other) const noexcept
 {
   return std::equal(genes_.begin(), genes_.end(), other.genes_.begin());
 }
 
-bool sveshnikov::Genotype::operator!=(const Genotype &other) const
+bool sveshnikov::Genotype::operator!=(const Genotype &other) const noexcept
 {
   return !(*this == other);
 }
@@ -76,7 +76,7 @@ int sveshnikov::Genotype::calc_fitness() const
   return base + epistasis + dominance;
 }
 
-sveshnikov::Genotype sveshnikov::Genotype::crossover(const Genotype &other)
+sveshnikov::Genotype sveshnikov::Genotype::crossover(const Genotype &other) const
 {
   std::vector< Gen > combinations[14];
   for (size_t i = 1; i < 15; ++i)

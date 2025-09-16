@@ -1,7 +1,7 @@
 #ifndef GEN_HPP
 #define GEN_HPP
-#include <iostream>
 #include <string>
+#include <iostream>
 
 namespace sveshnikov
 {
