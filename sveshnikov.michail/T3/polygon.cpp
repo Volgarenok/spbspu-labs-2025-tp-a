@@ -4,32 +4,7 @@
 #include <iterator>
 #include <algorithm>
 #include <functional>
-
-namespace
-{
-  struct DelimiterIO
-  {
-    char exp;
-  };
-
-  std::istream &operator>>(std::istream &in, DelimiterIO &&dest);
-
-  std::istream &operator>>(std::istream &in, DelimiterIO &&dest)
-  {
-    std::istream::sentry sentry(in);
-    if (!sentry)
-    {
-      return in;
-    }
-    char c = '0';
-    in >> c;
-    if (in && (c != dest.exp))
-    {
-      in.setstate(std::ios::failbit);
-    }
-    return in;
-  }
-}
+#include <delimeter-io.hpp>
 
 int sveshnikov::get_x(const sveshnikov::Point &p)
 {
