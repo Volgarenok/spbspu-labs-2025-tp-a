@@ -1,5 +1,5 @@
-#ifndef ANALYZE_FUNCTORS_HPP
-#define ANALYZE_FUNCTORS_HPP
+#ifndef ANALYZE_FUNCTORS_H
+#define ANALYZE_FUNCTORS_H
 
 #include <map>
 #include <vector>

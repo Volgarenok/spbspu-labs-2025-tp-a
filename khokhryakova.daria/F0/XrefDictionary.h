@@ -1,5 +1,5 @@
-#ifndef XREF_DICTIONARY_HPP
-#define XREF_DICTIONARY_HPP
+#ifndef XREF_DICTIONARY_H
+#define XREF_DICTIONARY_H
 
 #include <unordered_map>
 #include <map>
