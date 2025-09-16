@@ -1,7 +1,7 @@
 #ifndef DATASTRUCT_HPP
 #define DATASTRUCT_HPP
 #include <string>
-
+#include <delimiterIO.hpp>
 namespace abramov
 {
   struct DataStruct
@@ -13,11 +13,6 @@ namespace abramov
   std::ostream &operator<<(std::ostream &out, const DataStruct &data);
   std::istream &operator>>(std::istream &in, DataStruct &data);
   bool operator<(const DataStruct &lhs, const DataStruct &rhs);
-  struct DelimiterIO
-  {
-    char delim;
-  };
-  std::istream &operator>>(std::istream &in, DelimiterIO &&dest);
 
   struct DoubleIO
   {

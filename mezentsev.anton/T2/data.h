@@ -11,10 +11,6 @@ namespace mezentsev
     char key2;
     std::string key3;
   };
-  struct DelimiterIO
-  {
-    char exp;
-  };
   struct DelimitersIO
   {
     std::string exp;
@@ -31,7 +27,6 @@ namespace mezentsev
   {
     long long& def;
   };
-  std::istream& operator>>(std::istream& input, DelimiterIO&& dest);
   std::istream& operator>>(std::istream& input, DelimitersIO&& dest);
   std::istream& operator>>(std::istream& input, LongLongIO&& dest);
   std::istream& operator>>(std::istream& input, CharIO&& dest);

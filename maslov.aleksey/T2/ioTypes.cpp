@@ -1,7 +1,8 @@
 #include "ioTypes.hpp"
 #include <iomanip>
 #include <cmath>
-#include "streamGuard.hpp"
+#include <streamGuard.hpp>
+#include <ioDelimiter.hpp>
 
 std::ostream & maslov::operator<<(std::ostream & out, const DataStruct & data)
 {
@@ -17,22 +18,6 @@ std::ostream & maslov::operator<<(std::ostream & out, const DataStruct & data)
   out << "':key3 \"" << data.key3;
   out << "\":)";
   return out;
-}
-
-std::istream & maslov::operator>>(std::istream & in, DelimiterIO && dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-  char c = '0';
-  in >> c;
-  if (in && (c != dest.exp))
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
 }
 
 std::istream & maslov::operator>>(std::istream & in, DoubleSciIO && dest)

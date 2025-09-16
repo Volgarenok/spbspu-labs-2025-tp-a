@@ -1,16 +1,11 @@
-#ifndef IO_UTILS_H
-#define IO_UTILS_H
+#ifndef IO_UTILS_HPP
+#define IO_UTILS_HPP
 #include <cstddef>
 #include <string>
 #include <iostream>
 
 namespace savintsev
 {
-  struct DelimiterIO
-  {
-    char exp_;
-  };
-
   struct DoubleI
   {
     double & ref_;
@@ -36,7 +31,6 @@ namespace savintsev
     std::string exp_;
   };
 
-  std::istream & operator>>(std::istream & in, DelimiterIO && dest);
   std::istream & operator>>(std::istream & in, DoubleI && dest);
   std::istream & operator>>(std::istream & in, StringIO && dest);
   std::istream & operator>>(std::istream & in, UllIO && dest);

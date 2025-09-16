@@ -1,6 +1,6 @@
 #include "output_wrapper_structs.hpp"
 #include <cmath>
-#include "format_guard.hpp"
+#include <format_guard.hpp>
 
 namespace
 {
@@ -65,4 +65,3 @@ std::ostream &puzikov::output::operator<<(std::ostream &out, const StringValue &
   FormatGuard guard(out);
   return out << '\"' << source.ref << '\"';
 }
-

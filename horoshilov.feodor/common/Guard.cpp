@@ -14,3 +14,4 @@ horoshilov::Guard::~Guard()
   s_.precision(precision_);
   s_.fill(fill_);
 }
+

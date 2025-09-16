@@ -39,7 +39,7 @@ std::istream& khokhryakova::operator>>(std::istream& in, Point& p)
   {
     return in;
   }
-  khokhryakova::StreamGuard guard(in);
+  StreamGuard guard(in);
   in >> khokhryakova::DelimiterIO{ '(' };
   in >> p.x;
   in >> khokhryakova::DelimiterIO{ ';' };
@@ -55,7 +55,7 @@ std::ostream& khokhryakova::operator<<(std::ostream& out, const Point& p)
   {
     return out;
   }
-  khokhryakova::StreamGuard guard(out);
+  StreamGuard guard(out);
   out << "(" << p.x << ";" << p.y << ")";
   return out;
 }

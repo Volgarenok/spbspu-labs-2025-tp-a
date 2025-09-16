@@ -1,0 +1,50 @@
+# Description:
+
+Program implements code parsing (semantic analysis) on restricted and not significantly changed C99
+
+
+# Command line arguments:
+
+--help print manual info
+-c <files...> parse code from files before start. If parsing fails in any of the files, print
+  the corresponding errors and exit with a non-zero return code without completing processing
+  of the remaining files
+--load <file> load saved data (only fully parsed). If loading fails, print the corresponding
+  errors but start interactive environment (if there is no -c flag)
+-E stop on preprocessor parsing stage
+-L stop on tokenizer parsing stage
+-o print result in the corresponding files (.i after preprocessor, .lex after tokenizer,
+  .json after full parsing). If it is specified, interactive environment will not be started
+-I <path> add global include path
+
+
+# Interactive environment commands:
+
+* save [<save_file>] - save (rewrite) fully parsed data to file
+* load [<save_file>] - load (reload) reload saved data (only fully parsed). Replaces existing data
+  only on success
+* parse <files...> - parse files. Replaces existing data only on full success
+* parse-after [<parsed>] - parse input in non-interactive environment in file context. On success
+  prints id, which will be equal to filename
+* reload-all - reparse all existing files (with reloading). On success removes unreal files (from parse-after)
+
+* external - print all external symbols
+* exposition <parsed> <class_like_obj> - print struct/union/enum exposition
+* defines <parsed> - print all macros that have ever appeared in file
+* tree <parsed> [<function>] - print tree for file/function
+* files - print all parsed filenames and ids
+
+* dependencies <parsed> <symbol> - find and print all symbol's dependencies (symbol =
+  function/global variable)
+* uses <parsed> (<symbol> || <class_like_obj>) - find and print all places where
+  symbol/struct/union/enum is used
+* intersections - find and print exactly the same symbols/macros
+* diff [<parsed...>] - find and print symbols/macros with same names, but with different types/different
+  arglists or bodies
+* unopen-defines <parsed> - print all preprocessed lines, which contain macro names, but it is not opened
+  (before #define or after #undef or inside literals)
+
+
+**1 non-interactive environment = before "$EOF" or eof
+**2 default save file - last saved place or "./save.json"
+**3 if files repeat in the same pack it will be parsed only once

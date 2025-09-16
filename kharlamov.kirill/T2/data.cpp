@@ -2,7 +2,7 @@
 #include <cctype>
 #include <istream>
 #include <ostream>
-#include "guard.h"
+#include <guard.h>
 
 std::istream& kharlamov::operator>>(std::istream& in, kharlamov::SymbolIO&& dest)
 {

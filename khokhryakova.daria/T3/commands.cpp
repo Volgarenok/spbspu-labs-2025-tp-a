@@ -1,11 +1,11 @@
+#include <limits>
+#include <fstream>
 #include <map>
 #include <functional>
 #include <algorithm>
 #include <iomanip>
 #include <vector>
 #include <numeric>
-#include <limits>
-#include <fstream>
 #include <stdexcept>
 #include <string>
 #include "commands.h"
@@ -159,30 +159,21 @@ void khokhryakova::area(std::istream& in, std::ostream& out, const std::vector< 
   subcommands["EVEN"] = std::bind(areaEven, std::cref(polygons));
   subcommands["ODD"] = std::bind(areaOdd, std::cref(polygons));
   subcommands["MEAN"] = std::bind(areaMedian, std::cref(polygons));
-  if (subcommands.count(command))
+  double size = 0;
+  try
   {
-    out << std::fixed << std::setprecision(1) << subcommands.at(command)() << "\n";
+    size = subcommands.at(command)();
   }
-  else
+  catch (const std::exception&)
   {
-    try
+    size_t angles = std::stoull(command);
+    if (angles < 3)
     {
-      size_t angles = std::stoull(command);
-      if (angles < 3)
-      {
-        throw std::logic_error("<INVALID COMMAND>");
-      }
-      out << std::fixed << std::setprecision(1) << areaNum(polygons, angles) << "\n";
+      throw std::logic_error("Error: vertices < 3");
     }
-    catch (const std::invalid_argument&)
-    {
-      throw std::logic_error("<INVALID COMMAND>");
-    }
-    catch (const std::out_of_range&)
-    {
-      throw std::logic_error("<INVALID COMMAND>");
-    }
+    size = areaNum(polygons, angles);
   }
+  out << std::fixed << std::setprecision(1) << size;
 }
 
 void khokhryakova::max(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
@@ -195,11 +186,11 @@ void khokhryakova::max(std::istream& in, std::ostream& out, const std::vector< P
   }
   if (command == "AREA")
   {
-    out << std::fixed << std::setprecision(1) << areaMax(polygons) << "\n";
+    out << std::fixed << std::setprecision(1) << areaMax(polygons);
   }
   else if (command == "VERTEXES")
   {
-    out << vertexMax(polygons) << "\n";
+    out << vertexMax(polygons);
   }
   else
   {
@@ -217,11 +208,11 @@ void khokhryakova::min(std::istream& in, std::ostream& out, const std::vector< P
   }
   if (command == "AREA")
   {
-    out << std::fixed << std::setprecision(1) << areaMin(polygons) << "\n";
+    out << std::fixed << std::setprecision(1) << areaMin(polygons);
   }
   else if (command == "VERTEXES")
   {
-    out << vertexMin(polygons) << "\n";
+    out << vertexMin(polygons);
   }
   else
   {
@@ -235,24 +226,24 @@ void khokhryakova::count(std::istream& in, std::ostream& out, const std::vector<
   in >> command;
   if (command == "EVEN")
   {
-    out << countEven(polygons) << "\n";
+    out << countEven(polygons);
   }
   else if (command == "ODD")
   {
-    out << countOdd(polygons) << "\n";
+    out << countOdd(polygons);
   }
   else
   {
     try
     {
       size_t n = std::stoull(command);
-      out << countNum(polygons, n) << "\n";
+      out << countNum(polygons, n);
     }
-    catch (const std::invalid_argument&)
+    catch(const std::out_of_range&)
     {
       throw std::logic_error("<INVALID COMMAND>");
     }
-    catch (const std::out_of_range&)
+    catch (const std::invalid_argument&)
     {
       throw std::logic_error("<INVALID COMMAND>");
     }
@@ -270,7 +261,7 @@ void khokhryakova::echo(std::istream& in, std::ostream& out, std::vector< Polygo
   }
   size_t count = 0;
   std::vector< Polygon > newPolygons;
-  for (const auto& p : polygons)
+  for (const auto& p: polygons)
   {
     newPolygons.push_back(p);
     if (p == poly)
@@ -284,17 +275,17 @@ void khokhryakova::echo(std::istream& in, std::ostream& out, std::vector< Polygo
   {
     throw std::runtime_error("Failed to open file for writing");
   }
-  for (const auto& p : newPolygons)
+  for (const auto& p: newPolygons)
   {
     file << p.points.size();
-    for (const auto& point : p.points)
+    for (const auto& point: p.points)
     {
       file << " (" << point.x << ";" << point.y << ")";
     }
     file << "\n";
   }
   polygons = newPolygons;
-  out << count << "\n";
+  out << count;
 }
 
 void khokhryakova::maxSeq(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
@@ -308,7 +299,7 @@ void khokhryakova::maxSeq(std::istream& in, std::ostream& out, const std::vector
   }
   size_t maxCount = 0;
   size_t currentCount = 0;
-  for (const auto& p : polygons)
+  for (const auto& p: polygons)
   {
     if (p == poly)
     {
@@ -320,5 +311,5 @@ void khokhryakova::maxSeq(std::istream& in, std::ostream& out, const std::vector
       currentCount = 0;
     }
   }
-  out << maxCount << "\n";
+  out << maxCount;
 }

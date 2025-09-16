@@ -1,6 +1,7 @@
 #include "data-struct.hpp"
+#include <delimiter.hpp>
+#include <stream-guard.hpp>
 #include "io-helpers.hpp"
-#include "stream-guard.hpp"
 
 bool belyaev::operator<(const DataStruct& lhs, const DataStruct& rhs)
 {
@@ -26,14 +27,14 @@ std::istream& belyaev::operator>>(std::istream& in, DataStruct& dst)
 
   DataStruct newDS;
   bool hasKeys[] = {false, false, false};
-  in >> DelimeterIO{'('};
+  in >> DelimiterIO{'('};
 
   for (int i = 0; i < 3; i++)
   {
-    in >> DelimeterIO{':'};
-    in >> DelimeterIO{'k'};
-    in >> DelimeterIO{'e'};
-    in >> DelimeterIO{'y'};
+    in >> DelimiterIO{':'};
+    in >> DelimiterIO{'k'};
+    in >> DelimiterIO{'e'};
+    in >> DelimiterIO{'y'};
 
     int keyNum = 0;
     in >> keyNum;
@@ -59,8 +60,8 @@ std::istream& belyaev::operator>>(std::istream& in, DataStruct& dst)
     }
   }
 
-  in >> DelimeterIO{':'};
-  in >> DelimeterIO{')'};
+  in >> DelimiterIO{':'};
+  in >> DelimiterIO{')'};
 
   if (!(hasKeys[0] && hasKeys[1] && hasKeys[2]))
   {
