@@ -90,7 +90,7 @@ namespace shramko
     in >> subcmd;
     StreamGuard guard(out);
     out << std::fixed << std::setprecision(1);
-    if (subcmd == "EVEN" || subcmd == "ODD" || (subcmd != "MEAN" && std::all_of(subcmd.begin(), subcmd.end(), ::isdigit)))
+    if (subcmd == "EVEN" || subcmd == "ODD")
     {
       double sum = 0.0;
       if (!polygons.empty())
@@ -113,40 +113,41 @@ namespace shramko
             }
           );
         }
-        else
-        {
-          size_t vertexCount = std::stoul(subcmd);
-          if (vertexCount < 3)
-          {
-            throw std::invalid_argument("Invalid vertex count");
-          }
-          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-            [vertexCount](double acc, const Polygon& p)
-            {
-              return acc + (details::hasVertexCount(p, vertexCount) ? getPolygonArea(p) : 0.0);
-            }
-          );
-        }
       }
       out << sum;
     }
     else if (subcmd == "MEAN")
     {
-      double total = 0.0;
+      if (polygons.empty())
+      {
+        throw std::invalid_argument("No polygons available");
+      }
+      double total = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+        [](double acc, const Polygon& p)
+        {
+          return acc + getPolygonArea(p);
+        }
+      );
+      out << total / polygons.size();
+    }
+    else if (std::all_of(subcmd.begin(), subcmd.end(), ::isdigit))
+    {
+      size_t vertexCount = std::stoul(subcmd);
+      if (vertexCount < 3)
+      {
+        throw std::invalid_argument("Invalid vertex count");
+      }
+      double sum = 0.0;
       if (!polygons.empty())
       {
-        total = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-          [](double acc, const Polygon& p)
+        sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+          [vertexCount](double acc, const Polygon& p)
           {
-            return acc + getPolygonArea(p);
+            return acc + (details::hasVertexCount(p, vertexCount) ? getPolygonArea(p) : 0.0);
           }
         );
-        out << total / polygons.size();
       }
-      else
-      {
-        out << total;
-      }
+      out << sum;
     }
     else
     {

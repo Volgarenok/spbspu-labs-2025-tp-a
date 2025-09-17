@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
+#include <ios>
 #include "polygon.hpp"
 #include "printCmd.hpp"
 
@@ -24,11 +25,11 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  std::vector<shramko::Polygon> polygons;
+  std::vector< shramko::Polygon > polygons;
   while (!inputFile.eof())
   {
-    std::copy(std::istream_iterator<shramko::Polygon>(inputFile),
-      std::istream_iterator<shramko::Polygon>(), std::back_inserter(polygons));
+    std::copy(std::istream_iterator< shramko::Polygon >(inputFile),
+      std::istream_iterator< shramko::Polygon >(), std::back_inserter(polygons));
     if (inputFile.fail())
     {
       inputFile.clear();
@@ -79,8 +80,12 @@ int main(int argc, char* argv[])
     }
     catch (const std::exception&)
     {
-      std::cout << "<INVALID COMMAND>\n";
+      if (std::cin.fail())
+      {
+        std::cin.clear(std::cin.rdstate() ^ std::ios::failbit);
+      }
       std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+      std::cout << "<INVALID COMMAND>\n";
     }
   }
 
