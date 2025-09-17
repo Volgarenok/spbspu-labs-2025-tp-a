@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
+#include "polygon.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -22,12 +23,11 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  std::vector<shramko::Polygon> polygons;
+  std::vector< shramko::Polygon > polygons;
   while (!inputFile.eof())
   {
-    std::copy(std::istream_iterator<shramko::Polygon>(inputFile),
-              std::istream_iterator<shramko::Polygon>(),
-              std::back_inserter(polygons));
+    std::copy(std::istream_iterator< shramko::Polygon >(inputFile), std::istream_iterator< shramko::Polygon >(),
+      std::back_inserter(polygons));
     if (inputFile.fail())
     {
       inputFile.clear();
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
   }
 
   using cmd_func = std::function<void()>;
-  std::map<std::string, cmd_func> commands;
+  std::map< std::string, cmd_func > commands;
   commands["AREA"] = [&polygons]() { shramko::printArea(polygons, std::cin, std::cout); };
   commands["MAX"] = [&polygons]() { shramko::printMax(polygons, std::cin, std::cout); };
   commands["MIN"] = [&polygons]() { shramko::printMin(polygons, std::cin, std::cout); };
