@@ -1,10 +1,8 @@
 #include "population.hpp"
-#include <algorithm>
 #include <functional>
+#include <algorithm>
 #include <iterator>
-#include <limits>
 #include <numeric>
-#include <stdexcept>
 #include <vector>
 
 namespace
@@ -31,12 +29,6 @@ namespace
     return a.second.get_age() < b.second.get_age();
   }
 
-  const sveshnikov::Individual *convertToPtr(
-      const std::pair< std::string, sveshnikov::Individual > &p)
-  {
-    return &p.second;
-  }
-
   struct AgeIncreaser
   {
     size_t years_;
@@ -44,6 +36,40 @@ namespace
     void operator()(std::pair< const std::string, sveshnikov::Individual > &p) const
     {
       p.second.make_older(years_);
+    }
+  };
+
+  struct IndividualWithTag
+  {
+    const sveshnikov::Individual &individual;
+    std::string tag;
+  };
+
+  std::ostream &operator<<(std::ostream &out, const IndividualWithTag &item)
+  {
+    return out << item.individual << " " << item.tag;
+  }
+
+  struct AddTag
+  {
+    std::string tag;
+
+    IndividualWithTag operator()(const std::pair< std::string, sveshnikov::Individual > &p) const
+    {
+      return {p.second, tag};
+    }
+  };
+
+  struct IsNotInPopulation
+  {
+    const std::map< std::string, sveshnikov::Individual > &population_;
+    const std::map< std::string, sveshnikov::Individual > &cemetery_;
+
+    bool operator()(const std::pair< std::string, sveshnikov::Individual > &p) const
+    {
+      bool isNotAlive = population_.find(p.first) == population_.end();
+      bool isNotInCemetery = cemetery_.find(p.first) == cemetery_.end();
+      return isNotAlive && isNotInCemetery;
     }
   };
 }
@@ -142,22 +168,14 @@ void sveshnikov::Population::crossover(const std::string &name, const std::strin
 
 void sveshnikov::Population::print_list(std::ostream &out, const std::string &life_specifier) const
 {
-  using out_iter = std::ostream_iterator< Individual >;
+  using out_iter = std::ostream_iterator< IndividualWithTag >;
   if (life_specifier == "<ALIVE>" || life_specifier == "<ALL>")
   {
-    std::vector< const Individual * > individuals;
-    std::transform(population_.begin(), population_.end(), std::back_inserter(individuals),
-        convertToPtr);
-
-    std::copy(individuals.begin(), individuals.end(), out_iter(out, " <ALIVE>\n"));
+    std::transform(population_.begin(), population_.end(), out_iter(out, "\n"), AddTag{"<ALIVE>"});
   }
   if (life_specifier == "<DIED>" || life_specifier == "<ALL>")
   {
-    std::vector< const Individual * > individuals;
-    std::transform(cemetery_.begin(), cemetery_.end(), std::back_inserter(individuals),
-        convertToPtr);
-
-    std::copy(individuals.begin(), individuals.end(), out_iter(out, " <DIED>\n"));
+    std::transform(cemetery_.begin(), cemetery_.end(), out_iter(out, "\n"), AddTag{"<DIED>"});
   }
 }
 
@@ -241,23 +259,22 @@ void sveshnikov::Population::select(int survival_threshold)
   auto it = population_.begin();
   while (it != population_.end())
   {
-    auto prev_it = it;
-    it++;
-    if (prev_it->second.calc_fitness() < survival_threshold)
+    if (it->second.calc_fitness() < survival_threshold)
     {
-      cemetery_.insert(std::move(*prev_it));
-      population_.erase(prev_it);
+      cemetery_.insert(std::move(*it));
+      it = population_.erase(it);
+    }
+    else
+    {
+      it++;
     }
   }
 }
 
 void sveshnikov::Population::unite(const Population &other)
 {
-  for (auto i = other.population_.begin(); i != other.population_.end(); i++)
-  {
-    if (population_.find(i->first) == population_.end())
-    {
-      population_.insert({i->first, i->second});
-    }
-  }
+  IsNotInPopulation pred{population_, cemetery_};
+  auto begin = other.population_.begin();
+  auto end = other.population_.end();
+  std::copy_if(begin, end, std::inserter(population_, population_.end()), pred);
 }
