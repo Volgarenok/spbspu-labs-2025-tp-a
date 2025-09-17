@@ -86,60 +86,71 @@ namespace shramko
 
   void printArea(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
   {
-    if (polygons.empty())
-    {
-      throw std::invalid_argument("No polygons available");
-    }
     std::string subcmd;
     in >> subcmd;
     StreamGuard guard(out);
     out << std::fixed << std::setprecision(1);
-    if (subcmd == "EVEN")
+    if (subcmd == "EVEN" || subcmd == "ODD" || (subcmd != "MEAN" && std::all_of(subcmd.begin(), subcmd.end(), ::isdigit)))
     {
-      double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-        [](double acc, const Polygon& p)
+      double sum = 0.0;
+      if (!polygons.empty())
+      {
+        if (subcmd == "EVEN")
         {
-          return acc + (details::isEven(p) ? getPolygonArea(p) : 0.0);
+          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+            [](double acc, const Polygon& p)
+            {
+              return acc + (details::isEven(p) ? getPolygonArea(p) : 0.0);
+            }
+          );
         }
-      );
-      out << sum;
-    }
-    else if (subcmd == "ODD")
-    {
-      double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-        [](double acc, const Polygon& p)
+        else if (subcmd == "ODD")
         {
-          return acc + (details::isOdd(p) ? getPolygonArea(p) : 0.0);
+          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+            [](double acc, const Polygon& p)
+            {
+              return acc + (details::isOdd(p) ? getPolygonArea(p) : 0.0);
+            }
+          );
         }
-      );
+        else
+        {
+          size_t vertexCount = std::stoul(subcmd);
+          if (vertexCount < 3)
+          {
+            throw std::invalid_argument("Invalid vertex count");
+          }
+          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+            [vertexCount](double acc, const Polygon& p)
+            {
+              return acc + (details::hasVertexCount(p, vertexCount) ? getPolygonArea(p) : 0.0);
+            }
+          );
+        }
+      }
       out << sum;
     }
     else if (subcmd == "MEAN")
     {
-      double total = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-        [](double acc, const Polygon& p)
-        {
-          return acc + getPolygonArea(p);
-        }
-      );
-      out << total / polygons.size();
+      double total = 0.0;
+      if (!polygons.empty())
+      {
+        total = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+          [](double acc, const Polygon& p)
+          {
+            return acc + getPolygonArea(p);
+          }
+        );
+        out << total / polygons.size();
+      }
+      else
+      {
+        out << total;
+      }
     }
     else
     {
-      size_t vertexCount = std::stoul(subcmd);
-      if (vertexCount < 3)
-      {
-        throw std::invalid_argument("Invalid vertex count");
-      }
-
-      double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-        [vertexCount](double acc, const Polygon& p)
-        {
-          return acc + (details::hasVertexCount(p, vertexCount) ? getPolygonArea(p) : 0.0);
-        }
-      );
-
-      out << sum;
+      throw std::invalid_argument("Invalid subcommand for AREA");
     }
   }
 
@@ -224,8 +235,12 @@ namespace shramko
   void printLessArea(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
   {
     Polygon ref;
-    in >> ref;
-    if (!in || in.peek() != '\n')
+    std::istream::sentry sentry(in);
+    if (!sentry)
+    {
+      throw std::invalid_argument("Invalid input stream");
+    }
+    if (!(in >> ref) || in.peek() != '\n')
     {
       throw std::invalid_argument("Invalid reference polygon");
     }

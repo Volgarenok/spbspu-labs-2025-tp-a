@@ -22,8 +22,7 @@ namespace
 
   double calculateTriangleArea(const Triangle& tri)
   {
-    return 0.5 * std::abs(tri.a.x * (tri.b.y - tri.c.y) + tri.b.x *
-      (tri.c.y - tri.a.y) + tri.c.x * (tri.a.y - tri.b.y));
+    return 0.5 * std::abs(tri.a.x * (tri.b.y - tri.c.y) + tri.b.x * (tri.c.y - tri.a.y) + tri.c.x * (tri.a.y - tri.b.y));
   }
 }
 
@@ -74,14 +73,22 @@ std::istream& shramko::operator>>(std::istream& in, Polygon& polygon)
     in.setstate(std::ios::failbit);
     return in;
   }
-  std::vector< Point > temp(numPoints);
+  std::vector<Point> temp(numPoints);
   for (size_t i = 0; i < numPoints; ++i)
   {
-    in >> temp[i];
+    if (!(in >> temp[i]))
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
   }
-  if (in)
+  if (in && in.peek() == '\n')
   {
     polygon.points = std::move(temp);
+  }
+  else
+  {
+    in.setstate(std::ios::failbit);
   }
   return in;
 }
