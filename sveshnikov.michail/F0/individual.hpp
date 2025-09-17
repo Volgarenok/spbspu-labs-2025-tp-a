@@ -9,9 +9,8 @@ namespace sveshnikov
   {
   public:
     Individual() = default;
-    Individual(const std::string &name, const Genotype &genotype, size_t age = 0);
-    Individual(const std::string &name, const Genotype &genotype, const std::string &parent1,
-        const std::string &parent2, size_t age = 0);
+    Individual(const std::string &name, const Genotype &genotype, size_t age = 0,
+        const std::string &parent1 = "", const std::string &parent2 = "");
 
     bool operator==(const Individual &other) const noexcept;
     bool operator!=(const Individual &other) const noexcept;

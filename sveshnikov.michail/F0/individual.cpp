@@ -2,17 +2,10 @@
 #include <functional>
 #include <algorithm>
 #include <stdexcept>
+#include <stream-guard.hpp>
 
 sveshnikov::Individual::Individual(const std::string &name, const Genotype &genotype,
-    size_t age = 0):
-  name_(name),
-  genotype_(genotype),
-  age_(age),
-  parents_("", "")
-{}
-
-sveshnikov::Individual::Individual(const std::string &name, const Genotype &genotype,
-    const std::string &parent1, const std::string &parent2, size_t age = 0):
+    size_t age = 0, const std::string &parent1 = "", const std::string &parent2 = ""):
   name_(name),
   genotype_(genotype),
   age_(age),
@@ -68,29 +61,49 @@ sveshnikov::Individual sveshnikov::Individual::crossover(const std::string &name
     const Individual &other) const
 {
   Genotype new_genotype = genotype_.crossover(other.genotype_);
-  return Individual(name, new_genotype, name_, other.name_);
+  return Individual(name, new_genotype, 0, name_, other.name_);
 }
 
 std::istream &sveshnikov::operator>>(std::istream &in, Individual &individual)
 {
+  std::istream::sentry sentry(in);
+  if (!sentry)
+  {
+    return in;
+  }
   std::string name;
   Genotype genotype;
   size_t age = 0;
+  std::string parent1 = "";
+  std::string parent2 = "";
 
   in >> name >> genotype;
   if (in.peek() != std::char_traits< char >::eof())
   {
     in >> age;
   }
-  individual = Individual(name, genotype, age);
+  if (in.peek() != std::char_traits< char >::eof())
+  {
+    in >> parent1 >> parent2;
+  }
+  individual = Individual(name, genotype, age, parent1, parent2);
   return in;
 }
 
 std::ostream &sveshnikov::operator<<(std::ostream &out, const Individual &individual)
 {
+  std::ostream::sentry sentry(out);
+  if (!sentry)
+  {
+    return out;
+  }
+  StreamGuard streamguard(out);
+
   out << individual.get_name();
   out << " " << individual.calc_fitness();
   out << " " << individual.get_age();
   out << " " << individual.get_genotype();
+  out << " " << individual.get_parents().first;
+  out << " " << individual.get_parents().second;
   return out;
 }

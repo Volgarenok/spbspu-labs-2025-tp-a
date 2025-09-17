@@ -9,7 +9,7 @@
 
 namespace
 {
-  size_t countNucleotide(const std::vector< sveshnikov::Gen > &genes, char nucleotide)
+  size_t countNucleotide(const std::vector< sveshnikov::Gene > &genes, char nucleotide)
   {
     size_t count = 0;
     for (size_t i = 0; i < 4; i++)
@@ -20,7 +20,7 @@ namespace
     return count;
   }
 
-  bool checkGenotypeComplementarity(const std::vector< sveshnikov::Gen > &genes)
+  bool checkGenotypeComplementarity(const std::vector< sveshnikov::Gene > &genes)
   {
     std::string nucleotides = "ATCG";
     std::vector< size_t > counts;
@@ -33,7 +33,7 @@ namespace
   }
 }
 
-sveshnikov::Genotype::Genotype(const std::vector< Gen > &genes):
+sveshnikov::Genotype::Genotype(const std::vector< Gene > &genes):
   genes_(genes)
 {
   if (genes_.size() != 4)
@@ -56,7 +56,7 @@ bool sveshnikov::Genotype::operator!=(const Genotype &other) const noexcept
   return !(*this == other);
 }
 
-const std::vector< sveshnikov::Gen > &sveshnikov::Genotype::get_genes() const noexcept
+const std::vector< sveshnikov::Gene > &sveshnikov::Genotype::get_genes() const noexcept
 {
   return genes_;
 }
@@ -66,7 +66,7 @@ int sveshnikov::Genotype::calc_fitness() const
   using namespace std::placeholders;
   std::vector< int > gene_vals;
   gene_vals.reserve(4);
-  auto calc_gene_fitness = std::bind(&Gen::calc_fitness, _1);
+  auto calc_gene_fitness = std::bind(&Gene::calc_fitness, _1);
   std::transform(genes_.begin(), genes_.end(), std::back_inserter(gene_vals), calc_gene_fitness);
 
   int base = std::accumulate(gene_vals.begin(), gene_vals.end(), 0);
@@ -78,7 +78,7 @@ int sveshnikov::Genotype::calc_fitness() const
 
 sveshnikov::Genotype sveshnikov::Genotype::crossover(const Genotype &other) const
 {
-  std::vector< Gen > combinations[14];
+  std::vector< Gene > combinations[14];
   for (size_t i = 1; i < 15; ++i)
   {
     combinations[i - 1].reserve(4);
@@ -104,14 +104,14 @@ std::istream &sveshnikov::operator>>(std::istream &in, Genotype &genotype)
     return in;
   }
 
-  std::vector< Gen > genes;
+  std::vector< Gene > genes;
   genes.reserve(4);
-  Gen g;
+  Gene g;
   in >> DelimiterIO{'<'};
   in >> std::noskipws >> g;
   genes.push_back(g);
   in >> std::skipws;
-  using in_iter = std::istream_iterator< Gen >;
+  using in_iter = std::istream_iterator< Gene >;
   std::copy_n(in_iter(in), 3, std::back_inserter(genes));
   in >> std::noskipws >> DelimiterIO{'>'} >> std::skipws;
 
@@ -125,14 +125,14 @@ std::istream &sveshnikov::operator>>(std::istream &in, Genotype &genotype)
 std::ostream &sveshnikov::operator<<(std::ostream &out, const Genotype &genotype)
 {
   std::ostream::sentry sentry(out);
-  const std::vector< sveshnikov::Gen > &genes = genotype.get_genes();
+  const std::vector< sveshnikov::Gene > &genes = genotype.get_genes();
   if (!sentry || genes.empty())
   {
     return out;
   }
   StreamGuard guard(out);
 
-  using out_iter = std::ostream_iterator< Gen >;
+  using out_iter = std::ostream_iterator< Gene >;
   out << '<';
   std::copy(genes.begin(), std::prev(genes.end()), out_iter(std::cout, " "));
   out << genes.back() << '>';

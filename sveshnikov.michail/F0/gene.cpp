@@ -1,4 +1,4 @@
-#include "gen.hpp"
+#include "gene.hpp"
 #include <array>
 #include <cassert>
 #include <algorithm>
@@ -12,16 +12,16 @@ namespace
     return n == 'A' || n == 'T' || n == 'C' || n == 'G';
   }
 
-  bool hasSubstr(const std::string &gen, const std::string &nucleotides)
+  bool hasSubstr(const std::string &gene, const std::string &nucleotides)
   {
-    return gen.find(nucleotides) == gen.npos;
+    return gene.find(nucleotides) == gene.npos;
   }
 
-  bool checkComplementarity(const std::string &gen)
+  bool checkComplementarity(const std::string &gene)
   {
     using namespace std::placeholders;
     std::array< std::string, 8 > forbidden_seq = {"CA", "AA", "AC", "AG", "GA", "GT", "GG", "TG"};
-    auto is_not_found = std::bind(hasSubstr, gen, _1);
+    auto is_not_found = std::bind(hasSubstr, gene, _1);
     return std::all_of(forbidden_seq.begin(), forbidden_seq.end(), is_not_found);
   }
 
@@ -41,12 +41,12 @@ namespace
   }
 }
 
-sveshnikov::Gen::Gen(const std::string &nucleotides):
+sveshnikov::Gene::Gene(const std::string &nucleotides):
   nucleotides_(nucleotides)
 {
   if (nucleotides_.size() != 3)
   {
-    throw std::invalid_argument("ERROR: gen must be 3 characters long!");
+    throw std::invalid_argument("ERROR: gene must be 3 characters long!");
   }
 
   if (!std::all_of(nucleotides_.begin(), nucleotides_.end(), checkNucleotideValidation))
@@ -56,27 +56,27 @@ sveshnikov::Gen::Gen(const std::string &nucleotides):
 
   if (checkComplementarity(nucleotides_))
   {
-    throw std::invalid_argument("ERROR: gen is not complementary!");
+    throw std::invalid_argument("ERROR: gene is not complementary!");
   }
 }
 
-bool sveshnikov::Gen::operator==(const Gen &other) const
+bool sveshnikov::Gene::operator==(const Gene &other) const
 {
   return nucleotides_ == other.nucleotides_;
 }
 
-bool sveshnikov::Gen::operator!=(const Gen &other) const
+bool sveshnikov::Gene::operator!=(const Gene &other) const
 {
   return !(*this == other);
 }
 
-const std::string &sveshnikov::Gen::get_nucleotides() const noexcept
+const std::string &sveshnikov::Gene::get_nucleotides() const noexcept
 {
   assert(!nucleotides_.empty());
   return nucleotides_;
 }
 
-int sveshnikov::Gen::calc_fitness() const
+int sveshnikov::Gene::calc_fitness() const
 {
   if (nucleotides_.empty())
   {
@@ -89,7 +89,7 @@ int sveshnikov::Gen::calc_fitness() const
   return vals[0] * 16 + vals[1] * 4 + vals[2];
 }
 
-std::istream &sveshnikov::operator>>(std::istream &in, Gen &gen)
+std::istream &sveshnikov::operator>>(std::istream &in, Gene &gene)
 {
   std::istream::sentry sentry(in);
   if (!sentry)
@@ -99,11 +99,11 @@ std::istream &sveshnikov::operator>>(std::istream &in, Gen &gen)
 
   std::string nucleotides;
   in >> nucleotides;
-  gen = Gen(nucleotides);
+  gene = Gene(nucleotides);
   return in;
 }
 
-std::ostream &sveshnikov::operator<<(std::ostream &out, const Gen &gen)
+std::ostream &sveshnikov::operator<<(std::ostream &out, const Gene &gene)
 {
   std::ostream::sentry sentry(out);
   if (!sentry)
@@ -112,6 +112,6 @@ std::ostream &sveshnikov::operator<<(std::ostream &out, const Gen &gen)
   }
   StreamGuard streamguard(out);
 
-  out << gen.get_nucleotides();
+  out << gene.get_nucleotides();
   return out;
 }
