@@ -83,7 +83,7 @@ namespace shramko
       return false;
     }
 
-    double sumAreas(const std::vector< Polygon >& polys, auto pred)
+    double sumAreas(const std::vector< Polygon >& polys, bool (*pred)(const Polygon&))
     {
       std::vector< double > areas;
       std::transform(polys.begin(), polys.end(), std::back_inserter(areas),
