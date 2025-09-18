@@ -25,7 +25,6 @@ namespace
     std::string nucleotides = "ATCG";
     std::vector< size_t > counts;
     counts.reserve(4);
-    size_t k = 0;
     using namespace std::placeholders;
     std::transform(nucleotides.begin(), nucleotides.end(), counts.begin(),
         std::bind(countNucleotide, std::cref(genes), _1));

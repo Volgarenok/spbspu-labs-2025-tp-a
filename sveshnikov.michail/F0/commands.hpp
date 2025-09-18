@@ -6,27 +6,27 @@ namespace sveshnikov
 {
   using populations_t = std::map< std::string, Population >;
 
-  void add_population(populations_t &populations, std::istream &in);
-  void remove_population(populations_t &populations, std::istream &in);
+  void addPopulation(populations_t &populations, std::istream &in);
+  void removePopulation(populations_t &populations, std::istream &in);
 
   void add(populations_t &populations, std::istream &in);
-  void remove(populations_t &populations, std::istream &in);
+  void removeInds(populations_t &populations, std::istream &in);
   void mutate(populations_t &populations, std::istream &in);
-  void calc_fitness(const populations_t &populations, std::istream &in, std::ostream &out);
-  void print_pedigree(const populations_t &populations, std::istream &in, std::ostream &out);
+  void calcFitness(const populations_t &populations, std::istream &in, std::ostream &out);
+  void printPedigree(const populations_t &populations, std::istream &in, std::ostream &out);
   void crossover(populations_t &populations, std::istream &in);
 
-  void print_list(const populations_t &populations, std::istream &in, std::ostream &out);
-  void print_stats(const populations_t &populations, std::istream &in, std::ostream &out);
+  void printList(const populations_t &populations, std::istream &in, std::ostream &out);
+  void printStats(const populations_t &populations, std::istream &in, std::ostream &out);
 
-  void select(populations_t &populations, std::istream &in);
+  void selectInds(populations_t &populations, std::istream &in);
 
-  void make_older(populations_t &populations, std::istream &in);
+  void makeOlder(populations_t &populations, std::istream &in);
   void unite(populations_t &populations, std::istream &in);
-  void list_population(const populations_t &populations, std::ostream &out);
+  void listPopulation(const populations_t &populations, std::ostream &out);
 
   void save(const populations_t &populations, std::istream &in, std::ostream &out);
-  void load(populations_t &populations, std::istream &in, std::ostream &out);
+  void load(populations_t &populations, std::istream &in);
 }
 
 #endif

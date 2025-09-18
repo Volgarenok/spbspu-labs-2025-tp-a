@@ -1,5 +1,6 @@
 #include "programme-options.hpp"
 #include <functional>
+#include <algorithm>
 #include <fstream>
 
 namespace

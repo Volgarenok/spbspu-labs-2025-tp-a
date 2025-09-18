@@ -38,6 +38,7 @@ namespace
     case 'T':
       return 3;
     }
+    throw std::invalid_argument("ERROR: unknown nucleotide!");
   }
 }
 

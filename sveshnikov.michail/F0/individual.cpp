@@ -4,8 +4,8 @@
 #include <stdexcept>
 #include <stream-guard.hpp>
 
-sveshnikov::Individual::Individual(const std::string &name, const Genotype &genotype,
-    size_t age = 0, const std::string &parent1 = "", const std::string &parent2 = ""):
+sveshnikov::Individual::Individual(const std::string &name, const Genotype &genotype, size_t age,
+    const std::string &parent1, const std::string &parent2):
   name_(name),
   genotype_(genotype),
   age_(age),

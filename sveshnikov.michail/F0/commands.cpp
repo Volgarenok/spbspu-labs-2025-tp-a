@@ -5,7 +5,7 @@
 #include <fstream>
 #include <limits>
 
-void sveshnikov::add_population(populations_t &populations, std::istream &in)
+void sveshnikov::addPopulation(populations_t &populations, std::istream &in)
 {
   std::string name;
   in >> name;
@@ -18,7 +18,7 @@ void sveshnikov::add_population(populations_t &populations, std::istream &in)
   populations.insert({name, p});
 }
 
-void sveshnikov::remove_population(populations_t &populations, std::istream &in)
+void sveshnikov::removePopulation(populations_t &populations, std::istream &in)
 {
   std::string name;
   in >> name;
@@ -57,7 +57,7 @@ void sveshnikov::add(populations_t &populations, std::istream &in)
   }
 }
 
-void sveshnikov::remove(populations_t &populations, std::istream &in)
+void sveshnikov::removeInds(populations_t &populations, std::istream &in)
 {
   std::string population_name, name;
   in >> population_name >> name;
@@ -91,7 +91,7 @@ void sveshnikov::mutate(populations_t &populations, std::istream &in)
   }
 }
 
-void sveshnikov::calc_fitness(const populations_t &populations, std::istream &in, std::ostream &out)
+void sveshnikov::calcFitness(const populations_t &populations, std::istream &in, std::ostream &out)
 {
   std::string population_name, name;
   in >> population_name >> name;
@@ -103,7 +103,7 @@ void sveshnikov::calc_fitness(const populations_t &populations, std::istream &in
 
   try
   {
-    populations.find(population_name)->second.calc_fitness(name);
+    out << populations.find(population_name)->second.calc_fitness(name);
   }
   catch (const std::invalid_argument &e)
   {
@@ -112,7 +112,7 @@ void sveshnikov::calc_fitness(const populations_t &populations, std::istream &in
   }
 }
 
-void sveshnikov::print_pedigree(const populations_t &populations, std::istream &in,
+void sveshnikov::printPedigree(const populations_t &populations, std::istream &in,
     std::ostream &out)
 {
   std::string population_name, name;
@@ -159,7 +159,7 @@ void sveshnikov::crossover(populations_t &populations, std::istream &in)
   }
 }
 
-void sveshnikov::print_list(const populations_t &populations, std::istream &in, std::ostream &out)
+void sveshnikov::printList(const populations_t &populations, std::istream &in, std::ostream &out)
 {
   std::string population_name, specifier;
   in >> population_name >> specifier;
@@ -172,7 +172,7 @@ void sveshnikov::print_list(const populations_t &populations, std::istream &in, 
   populations.find(population_name)->second.print_list(out, specifier);
 }
 
-void sveshnikov::print_stats(const populations_t &populations, std::istream &in, std::ostream &out)
+void sveshnikov::printStats(const populations_t &populations, std::istream &in, std::ostream &out)
 {
   std::string population_name;
   in >> population_name;
@@ -192,7 +192,7 @@ void sveshnikov::print_stats(const populations_t &populations, std::istream &in,
   out << "max_age: " << p.get_max_age() << "\n";
 }
 
-void sveshnikov::select(populations_t &populations, std::istream &in)
+void sveshnikov::selectInds(populations_t &populations, std::istream &in)
 {
   std::string population_name;
   int threshold;
@@ -205,7 +205,7 @@ void sveshnikov::select(populations_t &populations, std::istream &in)
   populations[population_name].select(threshold);
 }
 
-void sveshnikov::make_older(populations_t &populations, std::istream &in)
+void sveshnikov::makeOlder(populations_t &populations, std::istream &in)
 {
   std::string population_name;
   size_t years;
@@ -223,7 +223,7 @@ void sveshnikov::unite(populations_t &populations, std::istream &in)
   std::string p_name1, p_name2;
   in >> p_name1 >> p_name2;
   auto end = populations.end();
-  if ((populations.find(p_name1) == end) || (populations.find(p_name1) == end))
+  if ((populations.find(p_name1) == end) || (populations.find(p_name2) == end))
   {
     std::cout << "<NO SUCH POPULATION>\n";
     return;
@@ -231,7 +231,7 @@ void sveshnikov::unite(populations_t &populations, std::istream &in)
   populations[p_name1].unite(populations[p_name2]);
 }
 
-void sveshnikov::list_population(const populations_t &populations, std::ostream &out)
+void sveshnikov::listPopulation(const populations_t &populations, std::ostream &out)
 {
   using namespace std::placeholders;
   using out_iter = std::ostream_iterator< std::string >;
@@ -259,16 +259,8 @@ void sveshnikov::save(const populations_t &populations, std::istream &in, std::o
   p->second.print_list(file, "<ALL>");
 }
 
-void sveshnikov::load(populations_t &populations, std::istream &in, std::ostream &out)
+void sveshnikov::load(populations_t &populations, std::istream &in)
 {
-  std::string filename;
-  in >> filename;
-  std::ifstream file(filename);
-  if (!file)
-  {
-    out << "<NON-EXISTENT FILE>\n";
-    return;
-  }
   populations.clear();
 
   while (!in.eof())
