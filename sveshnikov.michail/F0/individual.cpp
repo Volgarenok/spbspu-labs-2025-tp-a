@@ -87,6 +87,16 @@ std::istream &sveshnikov::operator>>(std::istream &in, Individual &individual)
     in >> parent1 >> parent2;
   }
   individual = Individual(name, genotype, age, parent1, parent2);
+  if (in.peek() != std::char_traits< char >::eof())
+  {
+    int fitness = 0;
+    in >> fitness;
+    if (!in || fitness != individual.calc_fitness())
+    {
+      in.setstate(std::ios::failbit);
+      throw std::invalid_argument("ERROR: incorrect fitness!");
+    }
+  }
   return in;
 }
 
@@ -100,10 +110,13 @@ std::ostream &sveshnikov::operator<<(std::ostream &out, const Individual &indivi
   StreamGuard streamguard(out);
 
   out << individual.get_name();
-  out << " " << individual.calc_fitness();
-  out << " " << individual.get_age();
   out << " " << individual.get_genotype();
-  out << " " << individual.get_parents().first;
-  out << " " << individual.get_parents().second;
+  out << " " << individual.get_age();
+  if (individual.get_parents().first != "")
+  {
+    out << " " << individual.get_parents().first;
+    out << " " << individual.get_parents().second;
+  }
+  out << " " << individual.calc_fitness();
   return out;
 }

@@ -1,5 +1,5 @@
-#ifndef GEN_HPP
-#define GEN_HPP
+#ifndef GENE_HPP
+#define GENE_HPP
 #include <string>
 #include <iostream>
 
