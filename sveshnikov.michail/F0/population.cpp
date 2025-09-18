@@ -169,6 +169,10 @@ void sveshnikov::Population::crossover(const std::string &name, const std::strin
 void sveshnikov::Population::print_list(std::ostream &out, const std::string &life_specifier) const
 {
   using out_iter = std::ostream_iterator< IndividualWithTag >;
+  if (life_specifier != "<ALIVE>" && life_specifier != "<DIED>" && life_specifier != "<ALL>")
+  {
+    throw std::invalid_argument("ERROR: unknown life specifier!");
+  }
   if (life_specifier == "<ALIVE>" || life_specifier == "<ALL>")
   {
     std::transform(population_.begin(), population_.end(), out_iter(out, "\n"), AddTag{"<ALIVE>"});
@@ -277,4 +281,37 @@ void sveshnikov::Population::unite(const Population &other)
   auto begin = other.population_.begin();
   auto end = other.population_.end();
   std::copy_if(begin, end, std::inserter(population_, population_.end()), pred);
+}
+
+std::istream &sveshnikov::operator>>(std::istream &in, Population &p)
+{
+  size_t size = 0;
+  in >> size;
+  for (size_t i = 0; i < size; i++)
+  {
+    Individual ind;
+    std::string life_specifier;
+    in >> ind >> life_specifier;
+    if (life_specifier == "<ALIVE>")
+    {
+      p.add(ind);
+    }
+    else if (life_specifier == "<DIED>")
+    {
+      p.add(ind);
+      p.remove(ind.get_name());
+    }
+    else
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+  }
+  return in;
+}
+
+std::ostream &sveshnikov::operator<<(std::ostream &out, const Population &p)
+{
+  p.print_list(out, "<ALL>");
+  return out;
 }

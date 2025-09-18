@@ -26,7 +26,7 @@ namespace sveshnikov
   void list_population(const populations_t &populations, std::ostream &out);
 
   void save(const populations_t &populations, std::istream &in, std::ostream &out);
-  void load(populations_t &populations, std::istream &in);
+  void load(populations_t &populations, std::istream &in, std::ostream &out);
 }
 
 #endif

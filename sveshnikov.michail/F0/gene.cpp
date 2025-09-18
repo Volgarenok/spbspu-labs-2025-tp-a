@@ -97,9 +97,14 @@ std::istream &sveshnikov::operator>>(std::istream &in, Gene &gene)
     return in;
   }
 
-  std::string nucleotides;
-  in >> nucleotides;
-  gene = Gene(nucleotides);
+  char nucleotides[3];
+  in.read(nucleotides, 3);
+  if (in.gcount() != 3)
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  gene = Gene(std::string(nucleotides, 3));
   return in;
 }
 

@@ -39,8 +39,8 @@ namespace sveshnikov
         const std::string &parentName, std::ostream &out) const;
   };
 
-  std::istream &operator>>(std::istream &in, Population &genotype);
-  std::ostream &operator<<(std::ostream &out, const Population &genotype);
+  std::istream &operator>>(std::istream &in, Population &p);
+  std::ostream &operator<<(std::ostream &out, const Population &p);
 }
 
 #endif
