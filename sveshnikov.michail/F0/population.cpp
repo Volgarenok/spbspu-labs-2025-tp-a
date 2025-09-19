@@ -278,9 +278,12 @@ void sveshnikov::Population::select(int survival_threshold)
 void sveshnikov::Population::unite(const Population &other)
 {
   IsNotInPopulation pred{population_, cemetery_};
-  auto begin = other.population_.begin();
-  auto end = other.population_.end();
-  std::copy_if(begin, end, std::inserter(population_, population_.end()), pred);
+  auto begin_p = other.population_.begin();
+  auto end_p = other.population_.end();
+  std::copy_if(begin_p, end_p, std::inserter(population_, population_.end()), pred);
+  auto begin_c = other.cemetery_.begin();
+  auto end_c = other.cemetery_.end();
+  std::copy_if(begin_c, end_c, std::inserter(cemetery_, cemetery_.end()), pred);
 }
 
 std::istream &sveshnikov::operator>>(std::istream &in, Population &p)

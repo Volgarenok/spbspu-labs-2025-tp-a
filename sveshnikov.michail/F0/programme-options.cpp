@@ -92,13 +92,9 @@ namespace
       {
         return false;
       }
-
-      for (auto i = s.begin(); i != s.end(); i++)
-      {
-        if (!std::isdigit(*i))
-          return false;
-      }
-      return true;
+      using namespace std::placeholders;
+      return std::all_of(s.begin(), s.end(),
+          std::bind(static_cast< int (*)(int) >(std::isdigit), _1));
     }
   };
 }

@@ -93,10 +93,22 @@ int main(int argc, char *argv[])
       std::cin.clear();
       std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
     }
+    catch (const std::bad_alloc &e)
+    {
+      std::cerr << e.what() << '\n';
+      std::cin.clear();
+      return 1;
+    }
     catch (const std::exception &e)
     {
       std::cerr << e.what() << '\n';
-      return 1;
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+    }
+    catch (...)
+    {
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
     }
   }
   return 0;

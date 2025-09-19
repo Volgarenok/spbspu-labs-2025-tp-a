@@ -28,7 +28,7 @@ namespace
     using namespace std::placeholders;
     std::transform(nucleotides.begin(), nucleotides.end(), counts.begin(),
         std::bind(countNucleotide, std::cref(genes), _1));
-    return (counts[0] != counts[1] || counts[2] != counts[3]);
+    return (counts[0] == counts[1] && counts[2] == counts[3]);
   }
 }
 
@@ -133,7 +133,7 @@ std::ostream &sveshnikov::operator<<(std::ostream &out, const Genotype &genotype
 
   using out_iter = std::ostream_iterator< Gene >;
   out << '<';
-  std::copy(genes.begin(), std::prev(genes.end()), out_iter(std::cout, " "));
+  std::copy(genes.begin(), std::prev(genes.end()), out_iter(out, " "));
   out << genes.back() << '>';
   return out;
 }

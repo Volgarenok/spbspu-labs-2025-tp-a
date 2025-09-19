@@ -12,17 +12,26 @@ namespace
     return n == 'A' || n == 'T' || n == 'C' || n == 'G';
   }
 
-  bool hasSubstr(const std::string &gene, const std::string &nucleotides)
+  bool checkPair(char a, char b)
   {
-    return gene.find(nucleotides) == gene.npos;
+    if ((a == 'A' && b != 'T') || (a == 'G' && b != 'C'))
+    {
+      return false;
+    }
+    if ((b == 'A' && a != 'T') || (b == 'G' && a != 'C'))
+    {
+      return false;
+    }
+    return true;
   }
 
   bool checkComplementarity(const std::string &gene)
   {
-    using namespace std::placeholders;
-    std::array< std::string, 8 > forbidden_seq = {"CA", "AA", "AC", "AG", "GA", "GT", "GG", "TG"};
-    auto is_not_found = std::bind(hasSubstr, gene, _1);
-    return std::all_of(forbidden_seq.begin(), forbidden_seq.end(), is_not_found);
+    if (gene.size() != 3)
+    {
+      return false;
+    }
+    return checkPair(gene[0], gene[1]) && checkPair(gene[1], gene[2]);
   }
 
   size_t getNucleotideValue(char n)
@@ -55,7 +64,7 @@ sveshnikov::Gene::Gene(const std::string &nucleotides):
     throw std::invalid_argument("ERROR: invalid nucleotide!");
   }
 
-  if (checkComplementarity(nucleotides_))
+  if (!checkComplementarity(nucleotides_))
   {
     throw std::invalid_argument("ERROR: gene is not complementary!");
   }

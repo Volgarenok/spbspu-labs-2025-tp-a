@@ -103,7 +103,7 @@ void sveshnikov::calcFitness(const populations_t &populations, std::istream &in,
 
   try
   {
-    out << populations.find(population_name)->second.calc_fitness(name);
+    out << populations.find(population_name)->second.calc_fitness(name) << '\n';
   }
   catch (const std::invalid_argument &e)
   {
@@ -229,13 +229,14 @@ void sveshnikov::unite(populations_t &populations, std::istream &in)
     return;
   }
   populations[p_name1].unite(populations[p_name2]);
+  populations.erase(p_name2);
 }
 
 void sveshnikov::listPopulation(const populations_t &populations, std::ostream &out)
 {
   using namespace std::placeholders;
   using out_iter = std::ostream_iterator< std::string >;
-  std::transform(populations.begin(), populations.end(), out_iter(out, "\n"),
+  std::transform(populations.begin(), --populations.end(), out_iter(out, "\n"),
       std::bind(&populations_t::value_type::first, _1));
 }
 
