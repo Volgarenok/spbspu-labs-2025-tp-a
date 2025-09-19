@@ -40,3 +40,19 @@ void fedorova::add_word(std::istream& is, std::ostream& os, DictSet& set)
 
   os << "<WORD AND TRANSLATE WERE ADDED>";
 }
+
+void fedorova::delete_word(std::istream& is, std::ostream& os, DictSet& set)
+{
+  std::string word, name;
+  is >> word >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  Dictionary& dict = set.at(name);
+  dict.at(word);
+  dict.erase(word);
+
+  os << "<SUCCESSFULLY DELETED>";
+}
