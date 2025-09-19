@@ -1,5 +1,13 @@
 #include "commands.h"
-#include "dictionary.h"
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
+#include <exception>
+#include <iomanip>
+#include <iostream>
+#include <iterator>
+#include <numeric>
+#include "Dictionary.h"
 
 namespace
 {
@@ -114,7 +122,6 @@ namespace
     WordSet res = intersectLists(list1, list2);
     return { pair.first, res };
   }
-
 }
 
 void fedorova::add_word(std::istream& is, std::ostream& os, DictSet& set)
@@ -205,3 +212,271 @@ void fedorova::see_dict(std::istream& is, std::ostream& os, const DictSet& set)
 
   os << word_letters;
 }
+
+void fedorova::start_with(std::istream& is, std::ostream& os, const DictSet& set)
+{
+  std::string name, prefix;
+  is >> name >> prefix;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  const Dictionary& dict = set.at(name);
+  Dictionary result;
+
+  StartsWith predicate{ prefix };
+  std::copy_if(dict.begin(), dict.end(), std::inserter(result, result.end()), predicate);
+
+  if (result.empty())
+  {
+    os << "<WORD WAS NOT FOUND>";
+    return;
+  }
+
+  os << result;
+}
+
+void fedorova::change_translation(std::istream& is, std::ostream& os, DictSet& set)
+{
+  std::string word, new_word, name;
+  is >> word >> new_word >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  Dictionary& dict = set.at(name);
+  dict[new_word] = dict.at(word);
+  dict.erase(word);
+
+  os << "<SUCCESSFULLY CHANGED>";
+}
+
+void fedorova::delete_translate(std::istream& is, std::ostream& os, DictSet& set)
+{
+  std::string word, translate, name;
+  is >> word >> translate >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  Dictionary& dict = set.at(name);
+  WordSet& translates = dict.at(word);
+  auto it = findTranslate(translates, translate);
+  if (it == translates.cend())
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  translates.erase(it);
+
+  os << "<SUCCESSFULLY DELETED>";
+}
+
+void fedorova::merge(std::istream& is, std::ostream& os, DictSet& set)
+{
+  std::string newname, name1, name2;
+  is >> newname >> name1 >> name2;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  const Dictionary& dict1 = set.at(name1);
+  const Dictionary& dict2 = set.at(name2);
+  Dictionary difference, tmp, unioned;
+
+  auto d_first = std::inserter(difference, difference.end());
+  std::set_difference(dict1.begin(), dict1.end(), dict2.begin(), dict2.end(), d_first, compareKeys);
+
+  d_first = std::inserter(tmp, tmp.end());
+  std::set_intersection(dict1.begin(), dict1.end(), dict2.begin(), dict2.end(), d_first, compareKeys);
+  std::transform(tmp.begin(), tmp.end(), std::inserter(unioned, unioned.end()), std::bind(unionListDict, _1, dict2));
+
+  unioned.insert(difference.begin(), difference.end());
+  set[newname] = unioned;
+
+  os << "<SUCCESSFULLY COMBINED>";
+}
+
+void fedorova::export_range(std::istream& is, std::ostream& os, const DictSet& set)
+{
+  std::string start, end, name;
+  is >> start >> end >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  const Dictionary& dict = set.at(name);
+  Dictionary result;
+
+  IsInRange predicate{ start, end };
+  std::copy_if(dict.begin(), dict.end(), std::inserter(result, result.end()), predicate);
+
+  os << result;
+}
+
+void fedorova::translate_in_dicts(std::istream& is, std::ostream& os, const DictSet& set)
+{
+  WordSet names;
+  std::string word;
+  is >> word >> names;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  std::list< Dictionary > dicts, suitable;
+  std::transform(names.begin(), names.end(), std::back_inserter(dicts), std::bind(returnDictionary, set, _1));
+
+  auto d_first1 = std::inserter(suitable, suitable.end());
+  std::copy_if(dicts.begin(), dicts.end(), d_first1, std::bind(hasKey, _1, word));
+
+  std::list< WordSet > translate_list;
+  auto d_first2 = std::back_inserter(translate_list);
+  std::transform(suitable.begin(), suitable.end(), d_first2, std::bind(returnWordSet, _1, word));
+
+  WordSet translates;
+  translates = std::accumulate(translate_list.begin(), translate_list.end(), translates, unionLists);
+  if (translates.empty())
+  {
+    os << "<WORD WAS NOT FOUND>";
+    return;
+  }
+
+  os << translates;
+}
+
+void fedorova::create_dict(std::istream& is, std::ostream& os, DictSet& set)
+{
+  std::string name;
+  is >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  if (set.find(name) != set.end())
+  {
+    os << "<DICTIONARY IS ALREADY EXISTING>";
+    return;
+  }
+
+  Dictionary dict;
+  set.emplace(name, dict);
+
+  os << "<SUCCESSFULLY CREATED>";
+}
+
+void fedorova::delete_dict(std::istream& is, std::ostream& os, DictSet& set)
+{
+  std::string name;
+  is >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  set.at(name);
+  set.erase(name);
+
+  os << "<SUCCESSFULLY DELETED>";
+}
+
+void fedorova::list_dicts(std::ostream& os, const DictSet& set)
+{
+  if (set.empty())
+  {
+    return;
+  }
+
+  WordSet names;
+  std::transform(set.begin(), set.end(), std::back_inserter(names), returnName< Dictionary >);
+
+  os << names;
+}
+
+void fedorova::size_of_dict(std::istream& is, std::ostream& os, const DictSet& set)
+{
+  std::string name;
+  is >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  const Dictionary& dict = set.at(name);
+  if (dict.size() == 0)
+  {
+    os << "<DICTIONARY IS EMPTY>";
+    return;
+  }
+
+  os << dict.size();
+}
+
+void fedorova::contains(std::istream& is, std::ostream& os, const DictSet& set)
+{
+  std::string subword, name;
+  is >> subword >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  const Dictionary& dict = set.at(name);
+  WordSet words, suitable;
+  std::transform(dict.begin(), dict.end(), std::back_inserter(words), returnName< WordSet >);
+  std::copy_if(words.begin(), words.end(), std::back_inserter(suitable), std::bind(hasSubword, _1, subword));
+  if (suitable.empty())
+  {
+    os << "<WORD WAS NOT FOUND>";
+    return;
+  }
+
+  os << suitable;
+}
+
+void fedorova::add_translate(std::istream& is, std::ostream& os, DictSet& set)
+{
+  std::string word, translate, name;
+  is >> word >> translate >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  Dictionary& dict = set.at(name);
+  WordSet& translates = dict.at(word);
+  if (findTranslate(translates, translate) != translates.cend())
+  {
+    os << "<TRANSLATE WAS ALREADY ADDED>";
+    return;
+  }
+
+  translates.push_back(translate);
+
+  os << "<TRANSLATE HAS ALREADY BEEN ADDED>";
+}
+
+void fedorova::export_no_range(std::istream& is, std::ostream& os, const DictSet& set)
+{
+  std::string start, end, name;
+  is >> start >> end >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  const Dictionary& dict = set.at(name);
+  Dictionary result;
+
+  IsNotInRange predicate{ start, end };
+  std::copy_if(dict.begin(), dict.end(), std::inserter(result, result.end()), predicate);
+
+  os << result;
+}
+
