@@ -56,3 +56,46 @@ void fedorova::delete_word(std::istream& is, std::ostream& os, DictSet& set)
 
   os << "<SUCCESSFULLY DELETED>";
 }
+
+void fedorova::translate(std::istream& is, std::ostream& os, const DictSet& set)
+{
+  std::string word, name;
+  is >> word >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  const Dictionary& dict = set.at(name);
+
+  os << dict.at(word);
+}
+
+void fedorova::see_dict(std::istream& is, std::ostream& os, const DictSet& set)
+{
+  std::string name;
+  is >> name;
+  if (!is)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
+  const Dictionary& dict = set.at(name);
+  if (dict.empty())
+  {
+    return;
+  }
+
+  WordSet words;
+  std::transform(dict.begin(), dict.end(), std::back_inserter(words), returnName< WordSet >);
+  DictContent word_letters;
+  for (const auto& word : words)
+  {
+    if (!word.empty())
+    {
+      word_letters[word[0]].push_back(word);
+    }
+  }
+
+  os << word_letters;
+}
