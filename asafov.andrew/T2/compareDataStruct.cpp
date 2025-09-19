@@ -1,6 +1,6 @@
 #include "datastruct.h"
 
-bool asafov::cmpDataStruct(const DataStruct &a, const DataStruct &b)
+bool asafov::operator<(const DataStruct &a, const DataStruct &b)
 {
   if (a.key1 != b.key1)
   {

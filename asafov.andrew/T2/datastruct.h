@@ -8,11 +8,11 @@ namespace asafov
   struct DataStruct
   {
     unsigned long long key1 = 0;            //[ULL BIN]
-    std::complex<double> key2 = {0.0, 0.0}; //[CMP LSP]
+    std::complex< double > key2 = {0.0, 0.0}; //[CMP LSP]
     std::string key3;
   };
 
-  bool cmpDataStruct(const DataStruct &a, const DataStruct &b);
+  bool operator<(const DataStruct &a, const DataStruct &b);
   std::istream& operator>>(std::istream& is, DataStruct& data);
   std::ostream& operator<<(std::ostream& os, const DataStruct& data);
 }

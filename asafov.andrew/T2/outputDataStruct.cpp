@@ -1,44 +1,45 @@
 #include "datastruct.h"
-#include <iterator>
-#include <algorithm>
 #include <iomanip>
+#include <algorithm>
+#include <streamGuard.h>
 
 namespace
 {
-  std::string cmpLspToStr(const std::complex<double> data)
+  void outputULLBin(std::ostream& os, unsigned long long num)
   {
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(1);
-    oss << data.real();
-    std::string re = oss.str();
-    oss.str("");
-    oss << data.imag();
-    std::string im = oss.str();
-    return "#c(" + re + " " + im + ")";
-  }
+    os << "0b0";
 
-  std::string ullBinToStr(unsigned long long num)
-  {
     if (num == 0)
     {
-      return "0b0";
+      return;
     }
-    std::string binary;
-    for (int i = sizeof(num) * 8 - 1; i >= 0; --i)
+
+    int highest = 63;
+    while (((num >> highest) & 1ULL) == 0)
     {
-      binary += (num & (1ULL << i)) ? '1' : '0';
+      --highest;
     }
-    size_t firstOne = binary.find('1');
-    if (firstOne != std::string::npos)
+
+    for (int i = highest; i >= 0; --i)
     {
-      binary = binary.substr(firstOne);
+      os << (((num >> i) & 1ULL) ? '1' : '0');
     }
-    return "0b0" + binary;
+  }
+
+  void outputCmpLsp(std::ostream& os, const std::complex< double >& data)
+  {
+    os << std::fixed << std::setprecision(1);
+    os << "#c(" << data.real() << " " << data.imag() << ")";
   }
 }
 
 std::ostream& asafov::operator<<(std::ostream& os, const DataStruct& data)
 {
-  os << "(:key1 " << ullBinToStr(data.key1) << ":key2 " << cmpLspToStr(data.key2)<< ":key3 \"" << data.key3 << "\":)";
+  StreamGuard guard(os);
+  os << "(:key1 ";
+  outputULLBin(os, data.key1);
+  os << ":key2 ";
+  outputCmpLsp(os, data.key2);
+  os << ":key3 \"" << data.key3 << "\":)";
   return os;
 }
