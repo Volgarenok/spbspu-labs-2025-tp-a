@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <iterator>
-#include "dictionary.h"
+#include "Dictionary.h"
 
 namespace
 {
@@ -148,4 +148,110 @@ std::istream& fedorova::operator>>(std::istream& is, DictSetPairWrapper& pair)
   return is;
 }
 
+std::ostream& fedorova::operator<<(std::ostream& os, const std::list< std::string >& list)
+{
+  std::ostream::sentry sentry(os);
+  if (!sentry || list.empty())
+  {
+    return os;
+  }
 
+  std::list< std::string > copy(list);
+  copy.sort();
+  std::copy(copy.begin(), --copy.end(), std::ostream_iterator< std::string >(os, " "));
+  os << *(--copy.end());
+
+  return os;
+}
+
+std::ostream& fedorova::operator<<(std::ostream& os, const Dictionary& dict)
+{
+  std::ostream::sentry sentry(os);
+  if (!sentry || dict.empty())
+  {
+    return os;
+  }
+
+  auto it_output = std::ostream_iterator< DictPairWrapper >(os, "\n");
+  std::transform(dict.begin(), --dict.end(), it_output, returnDictPairWrapper);
+  os << returnDictPairWrapper(*(--dict.end()));
+
+  return os;
+}
+
+std::ostream& fedorova::operator<<(std::ostream& os, const DictSet& set)
+{
+  std::ostream::sentry sentry(os);
+  if (!sentry || set.empty())
+  {
+    return os;
+  }
+
+  auto it_output = std::ostream_iterator< DictSetPairWrapper >(os, "\n");
+  std::transform(set.begin(), --set.end(), it_output, returnDictSetPairWrapper);
+  os << returnDictSetPairWrapper(*(--set.end()));
+
+  return os;
+}
+
+std::ostream& fedorova::operator<<(std::ostream& os, const DictPairWrapper& pair)
+{
+  std::ostream::sentry sentry(os);
+  if (!sentry)
+  {
+    return os;
+  }
+
+  os << pair.p.first << ' ' << pair.p.second.size();
+  if (!pair.p.second.empty())
+  {
+    os << ' ' << pair.p.second;
+  }
+
+  return os;
+}
+
+std::ostream& fedorova::operator<<(std::ostream& os, const DictSetPairWrapper& pair)
+{
+  std::ostream::sentry sentry(os);
+  if (!sentry)
+  {
+    return os;
+  }
+
+  os << pair.p.first << ' ' << pair.p.second.size();
+  if (!pair.p.second.empty())
+  {
+    os << '\n' << pair.p.second;
+  }
+
+  return os;
+}
+
+std::ostream& fedorova::operator<<(std::ostream& os, const ContentPairWrapper& pair)
+{
+  std::ostream::sentry sentry(os);
+  if (!sentry)
+  {
+    return os;
+  }
+
+  os << pair.p.first << ' ' << pair.p.second;
+
+  return os;
+}
+
+std::ostream& fedorova::operator<<(std::ostream& os, const DictContent& dict)
+{
+  std::ostream::sentry sentry(os);
+  if (!sentry || dict.empty())
+  {
+    return os;
+  }
+
+  auto it_output = std::ostream_iterator< ContentPairWrapper >(os, "\n");
+  std::transform(dict.begin(), --dict.end(), it_output, returnContentPairWrapper);
+  os << returnContentPairWrapper(*(--dict.end()));
+
+  return os;
+}
