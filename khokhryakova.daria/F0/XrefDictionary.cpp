@@ -2,20 +2,7 @@
 #include <fstream>
 #include <algorithm>
 #include <regex>
-#include <sstream>
 #include "analyzeFunctors.h"
-
-namespace
-{
-  const std::regex kWordRegex("[A-Za-z]+");
-  struct IsEmptyVec
-  {
-    bool operator()(const std::vector< std::string >& v) const
-    {
-      return v.empty();
-    }
-  };
-}
 
 void khokhryakova::buildXref(std::istream& in, std::ostream& out, XrefDictionary& dict)
 {
@@ -34,21 +21,39 @@ void khokhryakova::buildXref(std::istream& in, std::ostream& out, XrefDictionary
     return;
   }
   OneXrefDict newDict;
-  std::string line;
-  size_t lineNum = 1;
-  while (std::getline(file, line))
+  std::vector< std::string > lines;
+  readFileLines(file, lines);
+  if (lines.empty())
   {
-    std::vector< std::string > words;
-    auto wordsBegin = std::sregex_iterator(line.begin(), line.end(), kWordRegex);
-    auto wordsEnd = std::sregex_iterator();
-    WordExtractor extractor{ words, newDict.dictionary, lineNum };
-    std::for_each(wordsBegin, wordsEnd, extractor);
-    if (!words.empty())
-    {
-      newDict.text.push_back(words);
-    }
-    ++lineNum;
+    out << "<EmptyText>\n";
+    return;
   }
+
+  struct RecursiveLineProcessor
+  {
+    const std::vector< std::string >& lines;
+    size_t index;
+    OneXrefDict& dict;
+    RecursiveLineProcessor(const std::vector< std::string >& l, size_t i, OneXrefDict& d):
+      lines(l), index(i), dict(d)
+    {}
+    void process()
+    {
+      if (index < lines.size())
+      {
+        processLineRecursive(lines[index], index + 1, dict);
+        if (index + 1 < lines.size())
+        {
+          RecursiveLineProcessor next(lines, index + 1, dict);
+          next.process();
+        }
+      }
+    }
+  };
+
+  RecursiveLineProcessor processor(lines, 0, newDict);
+  processor.process();
+
   const bool empty = std::all_of(newDict.text.begin(), newDict.text.end(), IsEmptyVec{});
   if (empty)
   {
@@ -70,7 +75,34 @@ void khokhryakova::printDict(std::istream& in, std::ostream& out, const XrefDict
     return;
   }
   PrintPair printer{ out };
-  std::for_each(it->second.dictionary.begin(), it->second.dictionary.end(), printer);
+
+  struct RecursiveDictPrinter
+  {
+    std::map< std::string, std::vector< Position > >::const_iterator current;
+    std::map< std::string, std::vector< Position > >::const_iterator end;
+    PrintPair& printer;
+    RecursiveDictPrinter(std::map< std::string, std::vector< Position > >::const_iterator c,
+        std::map< std::string, std::vector< Position > >::const_iterator e, PrintPair& p):
+      current(c), end(e), printer(p)
+    {}
+    void print()
+    {
+      if (current != end)
+      {
+        printer(*current);
+        auto next_it = current;
+        ++next_it;
+        if (next_it != end)
+        {
+          RecursiveDictPrinter next(next_it, end, printer);
+          next.print();
+        }
+      }
+    }
+  };
+
+  RecursiveDictPrinter dictPrinter(it->second.dictionary.begin(), it->second.dictionary.end(), printer);
+  dictPrinter.print();
 }
 
 void khokhryakova::findWord(std::istream& in, std::ostream& out, const XrefDictionary& dict)
@@ -93,12 +125,59 @@ void khokhryakova::findWord(std::istream& in, std::ostream& out, const XrefDicti
   }
   std::vector< size_t > lines;
   ExtractLine lineExtractor{ lines };
-  std::for_each(wordIt->second.begin(), wordIt->second.end(), lineExtractor);
+
+  struct RecursiveExtractor
+  {
+    const std::vector< Position >& positions;
+    size_t index;
+    ExtractLine& extractor;
+    RecursiveExtractor(const std::vector< Position >& pos, size_t i, ExtractLine& ext):
+      positions(pos), index(i), extractor(ext)
+    {}
+    void extract()
+    {
+      if (index < positions.size())
+      {
+        extractor(positions[index]);
+        if (index + 1 < positions.size())
+        {
+          RecursiveExtractor next(positions, index + 1, extractor);
+          next.extract();
+        }
+      }
+    }
+  };
+
+  RecursiveExtractor extractor(wordIt->second, 0, lineExtractor);
+  extractor.extract();
   std::sort(lines.begin(), lines.end());
   lines.erase(std::unique(lines.begin(), lines.end()), lines.end());
   out << "\"" << word << "\" occurs in lines: ";
   PrintNumbers printer{ out };
-  std::for_each(lines.begin(), lines.end(), printer);
+
+  struct RecursiveNumberPrinter
+  {
+    const std::vector< size_t >& numbers;
+    size_t index;
+    PrintNumbers& printer;
+    RecursiveNumberPrinter(const std::vector< size_t >& nums, size_t i, PrintNumbers& p):
+      numbers(nums), index(i), printer(p)
+    {}
+    void print()
+    {
+      if (index < numbers.size())
+      {
+        printer(numbers[index]);
+        if (index + 1 < numbers.size())
+        {
+          RecursiveNumberPrinter next(numbers, index + 1, printer);
+          next.print();
+        }
+      }
+    }
+  };
+  RecursiveNumberPrinter numPrinter(lines, 0, printer);
+  numPrinter.print();
   out << "\n";
 }
 
@@ -148,7 +227,31 @@ void khokhryakova::getContext(std::istream& in, std::ostream& out, const XrefDic
     return;
   }
   ContextPrinter ctxPrinter{ out, it->second.text, static_cast< size_t >(radius) };
-  std::for_each(wordIt->second.begin(), wordIt->second.end(), ctxPrinter);
+
+  struct RecursiveContextPrinter
+  {
+    const std::vector< Position >& positions;
+    size_t index;
+    ContextPrinter& printer;
+    RecursiveContextPrinter(const std::vector< Position >& pos, size_t i, ContextPrinter& p):
+      positions(pos), index(i), printer(p)
+    {}
+    void print()
+    {
+      if (index < positions.size())
+      {
+        printer(positions[index]);
+        if (index + 1 < positions.size())
+        {
+          RecursiveContextPrinter next(positions, index + 1, printer);
+          next.print();
+        }
+      }
+    }
+  };
+
+  RecursiveContextPrinter ctxProcessor(wordIt->second, 0, ctxPrinter);
+  ctxProcessor.print();
 }
 
 void khokhryakova::mergeXref(std::istream& in, std::ostream& out, XrefDictionary& dict)
@@ -171,7 +274,34 @@ void khokhryakova::mergeXref(std::istream& in, std::ostream& out, XrefDictionary
   }
   OneXrefDict merged = it1->second;
   MergeFunctor merger{ merged.dictionary };
-  std::for_each(it2->second.dictionary.begin(), it2->second.dictionary.end(), merger);
+
+  struct RecursiveMerger
+  {
+    std::map< std::string, std::vector< Position > >::const_iterator current;
+    std::map< std::string, std::vector< Position > >::const_iterator end;
+    MergeFunctor& merger;
+    RecursiveMerger(std::map< std::string, std::vector< Position > >::const_iterator c,
+        std::map< std::string, std::vector< Position > >::const_iterator e, MergeFunctor& m):
+      current(c), end(e), merger(m)
+    {}
+    void merge()
+    {
+      if (current != end)
+      {
+        merger(*current);
+        auto next_it = current;
+        ++next_it;
+        if (next_it != end)
+        {
+          RecursiveMerger next(next_it, end, merger);
+          next.merge();
+        }
+      }
+    }
+  };
+
+  RecursiveMerger mergeProcessor(it2->second.dictionary.begin(), it2->second.dictionary.end(), merger);
+  mergeProcessor.merge();
   dict.dicts[newId] = std::move(merged);
   std::cout << "Dictionaries \"" << id1 << "\" and \"" << id2 << "\" merged into \"" << newId << "\"" << '\n';
 }
@@ -197,7 +327,34 @@ void khokhryakova::intersectXref(std::istream& in, std::ostream& out, XrefDictio
   OneXrefDict result;
   result.text = it1->second.text;
   IntersectFunctor intersector{ it2->second.dictionary, result.dictionary };
-  std::for_each(it1->second.dictionary.begin(), it1->second.dictionary.end(), intersector);
+
+  struct RecursiveIntersector
+  {
+    std::map< std::string, std::vector< Position > >::const_iterator current;
+    std::map< std::string, std::vector< Position > >::const_iterator end;
+    IntersectFunctor& intersector;
+    RecursiveIntersector(std::map< std::string, std::vector< Position > >::const_iterator c,
+        std::map< std::string, std::vector< Position > >::const_iterator e, IntersectFunctor& i):
+      current(c), end(e), intersector(i)
+    {}
+    void intersect()
+    {
+      if (current != end)
+      {
+        intersector(*current);
+        auto next_it = current;
+        ++next_it;
+        if (next_it != end)
+        {
+          RecursiveIntersector next(next_it, end, intersector);
+          next.intersect();
+        }
+      }
+    }
+  };
+
+  RecursiveIntersector intProcessor(it1->second.dictionary.begin(), it1->second.dictionary.end(), intersector);
+  intProcessor.intersect();
   if (result.dictionary.empty())
   {
     out << "<NO INTERSECTIONS>\n";
@@ -228,9 +385,37 @@ void khokhryakova::diffXref(std::istream& in, std::ostream& out, XrefDictionary&
   OneXrefDict result;
   result.text = it1->second.text;
   DiffFunctor differ1{ it2->second.dictionary, result.dictionary };
-  std::for_each(it1->second.dictionary.begin(), it1->second.dictionary.end(), differ1);
+
+  struct RecursiveDiffer
+  {
+    std::map< std::string, std::vector< Position > >::const_iterator current;
+    std::map< std::string, std::vector< Position > >::const_iterator end;
+    DiffFunctor& differ;
+    RecursiveDiffer(std::map< std::string, std::vector< Position > >::const_iterator c,
+        std::map< std::string, std::vector< Position > >::const_iterator e, DiffFunctor& d):
+      current(c), end(e), differ(d)
+    {}
+    void diff()
+    {
+      if (current != end)
+      {
+        differ(*current);
+        auto next_it = current;
+        ++next_it;
+        if (next_it != end)
+        {
+          RecursiveDiffer next(next_it, end, differ);
+          next.diff();
+        }
+      }
+    }
+  };
+
+  RecursiveDiffer diffProcessor1(it1->second.dictionary.begin(), it1->second.dictionary.end(), differ1);
+  diffProcessor1.diff();
   DiffFunctor differ2{ it1->second.dictionary, result.dictionary };
-  std::for_each(it2->second.dictionary.begin(), it2->second.dictionary.end(), differ2);
+  RecursiveDiffer diffProcessor2(it2->second.dictionary.begin(), it2->second.dictionary.end(), differ2);
+  diffProcessor2.diff();
   if (result.dictionary.empty())
   {
     out << "<NO DIFFERENCES>\n";
@@ -251,7 +436,34 @@ void khokhryakova::saveXref(std::istream& in, std::ostream& out, const XrefDicti
     return;
   }
   SaveDict saver{ file };
-  std::for_each(dict.dicts.begin(), dict.dicts.end(), saver);
+
+  struct RecursiveSaver
+  {
+    std::unordered_map< std::string, OneXrefDict >::const_iterator current;
+    std::unordered_map< std::string, OneXrefDict >::const_iterator end;
+    SaveDict& saver;
+    RecursiveSaver(std::unordered_map< std::string, OneXrefDict >::const_iterator c,
+        std::unordered_map< std::string, OneXrefDict >::const_iterator e, SaveDict& s):
+      current(c), end(e), saver(s)
+    {}
+    void save()
+    {
+      if (current != end)
+      {
+        saver(*current);
+        auto next_it = current;
+        ++next_it;
+        if (next_it != end)
+        {
+          RecursiveSaver next(next_it, end, saver);
+          next.save();
+        }
+      }
+    }
+  };
+
+  RecursiveSaver saveProcessor(dict.dicts.begin(), dict.dicts.end(), saver);
+  saveProcessor.save();
   out << "<SavedSuccessfully>\n";
 }
 
@@ -271,48 +483,37 @@ void khokhryakova::loadXrefFromPath(std::ostream& out, const std::string& fileNa
     return;
   }
   dict.dicts.clear();
-  std::string line;
+  std::vector< std::string > lines;
+  readFileLines(file, lines);
   std::string currentId;
   OneXrefDict* currentDict = nullptr;
-  const std::regex posRegex("\\((\\d+),(\\d+)\\)");
-  while (std::getline(file, line))
+
+  struct RecursiveLoadProcessor
   {
-    if (line.empty())
+    const std::vector< std::string >& lines;
+    size_t index;
+    std::string& currentId;
+    OneXrefDict*& currentDict;
+    XrefDictionary& dict;
+    RecursiveLoadProcessor(const std::vector< std::string >& l, size_t i, std::string& id, OneXrefDict*& cd, XrefDictionary& d):
+      lines(l), index(i), currentId(id), currentDict(cd), dict(d)
+    {}
+    void process()
     {
-      continue;
-    }
-    else if (line[0] == '[')
-    {
-      currentId = line.substr(1, line.size() - 2);
-      currentDict = &dict.dicts[currentId];
-    }
-    else if (line.find("text:") == 0)
-    {
-      std::vector< std::string > words;
-      std::string textLine = line.substr(5);
-      auto wordsBegin = std::sregex_iterator(textLine.begin(), textLine.end(), kWordRegex);
-      auto wordsEnd = std::sregex_iterator();
-      TextWordExtractor extractor{ words };
-      std::for_each(wordsBegin, wordsEnd, extractor);
-      if (!words.empty() && currentDict)
+      if (index < lines.size())
       {
-        currentDict->text.push_back(words);
+        processLoadLine(lines[index], currentId, currentDict, dict);
+        if (index + 1 < lines.size())
+        {
+          RecursiveLoadProcessor next(lines, index + 1, currentId, currentDict, dict);
+          next.process();
+        }
       }
     }
-    else
-    {
-      size_t colonPos = line.find(':');
-      if (colonPos != std::string::npos && currentDict != nullptr)
-      {
-        std::string word = line.substr(0, colonPos);
-        std::string positions = line.substr(colonPos + 1);
-        auto posBegin = std::sregex_iterator(positions.begin(), positions.end(), posRegex);
-        auto posEnd = std::sregex_iterator();
-        PositionExtractor posExtractor{ currentDict->dictionary[word] };
-        std::for_each(posBegin, posEnd, posExtractor);
-      }
-    }
-  }
+  };
+
+  RecursiveLoadProcessor loadProcessor(lines, 0, currentId, currentDict, dict);
+  loadProcessor.process();
   out << "<LoadedSuccessfully>\n";
 }
 
@@ -334,7 +535,31 @@ void khokhryakova::restoreText(std::istream& in, std::ostream& out, const XrefDi
     return;
   }
   TextRestorer restorer{ file };
-  std::for_each(it->second.text.begin(), it->second.text.end(), restorer);
+
+  struct RecursiveRestorer
+  {
+    const std::vector< std::vector< std::string > >& text;
+    size_t index;
+    TextRestorer& restorer;
+    RecursiveRestorer(const std::vector< std::vector< std::string > >& t, size_t i, TextRestorer& r):
+      text(t), index(i), restorer(r)
+    {}
+    void restore()
+    {
+      if (index < text.size())
+      {
+        restorer(text[index]);
+        if (index + 1 < text.size())
+        {
+          RecursiveRestorer next(text, index + 1, restorer);
+          next.restore();
+        }
+      }
+    }
+  };
+
+  RecursiveRestorer restoreProcessor(it->second.text, 0, restorer);
+  restoreProcessor.restore();
   out << "Text restored from \"" << id << "\" and written to \"" << outputFile << "\"\n";
 }
 

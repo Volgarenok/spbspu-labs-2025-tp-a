@@ -1,6 +1,7 @@
 #include "analyzeFunctors.h"
 #include <algorithm>
 #include <cctype>
+#include <regex>
 
 char khokhryakova::ToLower::operator()(char c) const
 {
@@ -64,12 +65,60 @@ void khokhryakova::PrintPair::operator()(const std::pair< std::string, std::vect
 {
   std::vector< size_t > lines;
   ExtractLine lineExtractor{ lines };
-  std::for_each(p.second.begin(), p.second.end(), lineExtractor);
+
+  struct RecursiveLineExtractor
+  {
+    const std::vector< Position >& positions;
+    size_t index;
+    ExtractLine& extractor;
+    RecursiveLineExtractor(const std::vector< Position >& pos, size_t i, ExtractLine& ext):
+      positions(pos), index(i), extractor(ext)
+    {}
+    void extract()
+    {
+      if (index < positions.size())
+      {
+        extractor(positions[index]);
+        if (index + 1 < positions.size())
+        {
+          RecursiveLineExtractor next(positions, index + 1, extractor);
+          next.extract();
+        }
+      }
+    }
+  };
+
+  RecursiveLineExtractor extractor(p.second, 0, lineExtractor);
+  extractor.extract();
   std::sort(lines.begin(), lines.end());
   lines.erase(std::unique(lines.begin(), lines.end()), lines.end());
   out << p.first << ": ";
   PrintNumbers printer{ out };
-  std::for_each(lines.begin(), lines.end(), printer);
+
+  struct RecursiveNumberPrinter
+  {
+    const std::vector< size_t >& numbers;
+    size_t index;
+    PrintNumbers& printer;
+    RecursiveNumberPrinter(const std::vector< size_t >& nums, size_t i, PrintNumbers& p):
+      numbers(nums), index(i), printer(p)
+    {}
+    void print()
+    {
+      if (index < numbers.size())
+      {
+        printer(numbers[index]);
+        if (index + 1 < numbers.size())
+        {
+          RecursiveNumberPrinter next(numbers, index + 1, printer);
+          next.print();
+        }
+      }
+    }
+  };
+
+  RecursiveNumberPrinter numberPrinter(lines, 0, printer);
+  numberPrinter.print();
   out << '\n';
 }
 
@@ -98,7 +147,32 @@ void khokhryakova::ContextPrinter::operator()(const Position& pos) const
   const size_t end = std::min(pos.col + radius, line.size());
   out << '"';
   JoinWords join{ out };
-  std::for_each(line.begin() + start, line.begin() + end, join);
+
+  struct RecursivePrinter
+  {
+    const std::vector< std::string >& line;
+    size_t current;
+    size_t end;
+    JoinWords& joiner;
+    RecursivePrinter(const std::vector< std::string >& l, size_t s, size_t e, JoinWords& j):
+      line(l), current(s), end(e), joiner(j)
+    {}
+    void print() const
+    {
+      if (current < end && current < line.size())
+      {
+        joiner(line[current]);
+        if (current + 1 < end)
+        {
+          RecursivePrinter next(line, current + 1, end, joiner);
+          next.print();
+        }
+      }
+    }
+  };
+
+  RecursivePrinter printer(line, start, end, join);
+  printer.print();
   out << "\" (line " << pos.line << ")\n";
 }
 
@@ -129,11 +203,61 @@ void khokhryakova::DiffFunctor::operator()(const std::pair< std::string, std::ve
 void khokhryakova::SaveDict::operator()(const std::pair< std::string, OneXrefDict >& p) const
 {
   file << '[' << p.first << "]\n";
-
   SaveTextLine textSaver{ file };
-  std::for_each(p.second.text.begin(), p.second.text.end(), textSaver);
+
+  struct RecursiveTextSaver
+  {
+    const std::vector< std::vector< std::string > >& text;
+    size_t index;
+    SaveTextLine& saver;
+    RecursiveTextSaver(const std::vector< std::vector< std::string > >& t, size_t i, SaveTextLine& s):
+      text(t), index(i), saver(s)
+    {}
+    void save()
+    {
+      if (index < text.size())
+      {
+        saver(text[index]);
+        if (index + 1 < text.size())
+        {
+          RecursiveTextSaver next(text, index + 1, saver);
+          next.save();
+        }
+      }
+    }
+  };
+
+  RecursiveTextSaver textProcessor(p.second.text, 0, textSaver);
+  textProcessor.save();
   SaveWord wordSaver{ file };
-  std::for_each(p.second.dictionary.begin(), p.second.dictionary.end(), wordSaver);
+
+  struct RecursiveWordSaver
+  {
+    std::map< std::string, std::vector< Position > >::const_iterator current;
+    std::map< std::string, std::vector< Position > >::const_iterator end;
+    SaveWord& saver;
+    RecursiveWordSaver(std::map< std::string, std::vector< Position > >::const_iterator c,
+        std::map< std::string, std::vector< Position > >::const_iterator e, SaveWord& s):
+      current(c), end(e), saver(s)
+    {}
+    void save()
+    {
+      if (current != end)
+      {
+        saver(*current);
+        auto next_it = current;
+        ++next_it;
+        if (next_it != end)
+        {
+          RecursiveWordSaver next(next_it, end, saver);
+          next.save();
+        }
+      }
+    }
+  };
+
+  RecursiveWordSaver wordProcessor(p.second.dictionary.begin(), p.second.dictionary.end(), wordSaver);
+  wordProcessor.save();
   file << '\n';
 }
 
@@ -141,15 +265,63 @@ void khokhryakova::SaveTextLine::operator()(const std::vector< std::string >& li
 {
   file << "text:";
   WordPrinter wp{ file };
-  std::for_each(line.begin(), line.end(), wp);
+
+  struct RecursiveWordPrinter
+  {
+    const std::vector< std::string >& words;
+    size_t index;
+    WordPrinter& printer;
+    RecursiveWordPrinter(const std::vector< std::string >& w, size_t i, WordPrinter& p):
+      words(w), index(i), printer(p)
+    {}
+    void print()
+    {
+      if (index < words.size())
+      {
+        printer(words[index]);
+        if (index + 1 < words.size())
+        {
+          RecursiveWordPrinter next(words, index + 1, printer);
+          next.print();
+        }
+      }
+    }
+  };
+
+  RecursiveWordPrinter wordProcessor(line, 0, wp);
+  wordProcessor.print();
   file << '\n';
 }
 
-void khokhryakova::SaveWord::operator()(const std::pair< std::string, std::vector<Position > >& p) const
+void khokhryakova::SaveWord::operator()(const std::pair< std::string, std::vector< Position > >& p) const
 {
   file << p.first << ':';
   SavePosition posSaver{ file };
-  std::for_each(p.second.begin(), p.second.end(), posSaver);
+
+  struct RecursivePosSaver
+  {
+    const std::vector< Position >& positions;
+    size_t index;
+    SavePosition& saver;
+    RecursivePosSaver(const std::vector< Position >& pos, size_t i, SavePosition& s):
+      positions(pos), index(i), saver(s)
+    {}
+    void save()
+    {
+      if (index < positions.size())
+      {
+        saver(positions[index]);
+        if (index + 1 < positions.size())
+        {
+          RecursivePosSaver next(positions, index + 1, saver);
+          next.save();
+        }
+      }
+    }
+  };
+
+  RecursivePosSaver posProcessor(p.second, 0, posSaver);
+  posProcessor.save();
   file << '\n';
 }
 
@@ -166,7 +338,32 @@ void khokhryakova::SavePosition::operator()(const Position& pos) const
 void khokhryakova::TextRestorer::operator()(const std::vector< std::string >& line) const
 {
   WordPrinter wp{ file };
-  std::for_each(line.begin(), line.end(), wp);
+
+  struct RecursiveWordPrinter
+  {
+    const std::vector< std::string >& words;
+    size_t index;
+    WordPrinter& printer;
+
+    RecursiveWordPrinter(const std::vector< std::string >& w, size_t i, WordPrinter& p):
+      words(w), index(i), printer(p)
+    {}
+    void print()
+    {
+      if (index < words.size())
+      {
+        printer(words[index]);
+        if (index + 1 < words.size())
+        {
+          RecursiveWordPrinter next(words, index + 1, printer);
+          next.print();
+        }
+      }
+    }
+  };
+
+  RecursiveWordPrinter wordProcessor(line, 0, wp);
+  wordProcessor.print();
   file << '\n';
 }
 
@@ -178,4 +375,147 @@ void khokhryakova::WordPrinter::operator()(const std::string& word) const
   }
   file << word;
   first = false;
+}
+
+void khokhryakova::readFileLines(std::ifstream& file, std::vector< std::string >& lines)
+{
+  std::string line;
+  if (std::getline(file, line))
+  {
+    lines.push_back(line);
+    readFileLines(file, lines);
+  }
+}
+
+void khokhryakova::processLineRecursive(const std::string& line, size_t lineNum, OneXrefDict& dict)
+{
+  std::vector< std::string > words;
+  const std::regex kWordRegex("[A-Za-z]+");
+  auto wordsBegin = std::sregex_iterator(line.begin(), line.end(), kWordRegex);
+  auto wordsEnd = std::sregex_iterator();
+  WordExtractor extractor{ words, dict.dictionary, lineNum };
+
+  struct RecursiveProcessor
+  {
+    std::sregex_iterator current;
+    std::sregex_iterator end;
+    WordExtractor& extractor;
+    RecursiveProcessor(std::sregex_iterator c, std::sregex_iterator e, WordExtractor& ex):
+      current(c), end(e), extractor(ex)
+    {}
+    void process()
+    {
+      if (current != end)
+      {
+        extractor(*current);
+        ++current;
+        if (current != end)
+        {
+          RecursiveProcessor next(current, end, extractor);
+          next.process();
+        }
+      }
+    }
+  };
+
+  RecursiveProcessor processor(wordsBegin, wordsEnd, extractor);
+  processor.process();
+  if (!words.empty())
+  {
+    dict.text.push_back(words);
+  }
+}
+
+void khokhryakova::processLoadLine(const std::string& line, std::string& currentId, OneXrefDict*& currentDict, XrefDictionary& dict)
+{
+  const std::regex kWordRegex("[A-Za-z]+");
+  const std::regex posRegex("\\((\\d+),(\\d+)\\)");
+
+  if (line.empty())
+  {
+    return;
+  }
+  else if (line[0] == '[')
+  {
+    currentId = line.substr(1, line.size() - 2);
+    currentDict = &dict.dicts[currentId];
+  }
+  else if (line.find("text:") == 0)
+  {
+    std::vector< std::string > words;
+    std::string textLine = line.substr(5);
+    auto wordsBegin = std::sregex_iterator(textLine.begin(), textLine.end(), kWordRegex);
+    auto wordsEnd = std::sregex_iterator();
+    TextWordExtractor extractor{ words };
+
+  struct RecursiveTextProcessor
+  {
+    std::sregex_iterator current;
+    std::sregex_iterator end;
+    TextWordExtractor& extractor;
+    RecursiveTextProcessor(std::sregex_iterator c, std::sregex_iterator e, TextWordExtractor& ex):
+      current(c), end(e), extractor(ex)
+    {}
+    void process()
+    {
+      if (current != end)
+      {
+        extractor(*current);
+        ++current;
+        if (current != end)
+        {
+          RecursiveTextProcessor next(current, end, extractor);
+          next.process();
+        }
+      }
+    }
+  };
+
+  RecursiveTextProcessor textProcessor(wordsBegin, wordsEnd, extractor);
+  textProcessor.process();
+
+  if (!words.empty() && currentDict)
+  {
+    currentDict->text.push_back(words);
+  }
+  }
+  else
+  {
+    size_t colonPos = line.find(':');
+    if (colonPos != std::string::npos && currentDict != nullptr)
+    {
+      std::string word = line.substr(0, colonPos);
+      std::string positions = line.substr(colonPos + 1);
+      auto posBegin = std::sregex_iterator(positions.begin(), positions.end(), posRegex);
+      auto posEnd = std::sregex_iterator();
+      PositionExtractor posExtractor{ currentDict->dictionary[word] };
+
+    struct RecursivePosProcessor
+    {
+      std::sregex_iterator current;
+      std::sregex_iterator end;
+      PositionExtractor& extractor;
+
+      RecursivePosProcessor(std::sregex_iterator c, std::sregex_iterator e, PositionExtractor& ex):
+        current(c), end(e), extractor(ex)
+      {}
+      void process()
+      {
+        if (current != end)
+        {
+          extractor(*current);
+          ++current;
+          if (current != end)
+          {
+            RecursivePosProcessor next(current, end, extractor);
+            next.process();
+          }
+        }
+      }
+    };
+
+    RecursivePosProcessor posProcessor(posBegin, posEnd, posExtractor);
+    posProcessor.process();
+    }
+  }
 }

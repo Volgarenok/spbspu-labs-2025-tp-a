@@ -12,6 +12,9 @@
 namespace khokhryakova
 {
   void cleanWord(std::string& word);
+  void readFileLines(std::ifstream& file, std::vector< std::string >& lines);
+  void processLineRecursive(const std::string& line, size_t lineNum, OneXrefDict& dict);
+  void processLoadLine(const std::string& line, std::string& currentId, OneXrefDict*& currentDict, XrefDictionary& dict);
 
   struct ToLower
   {
@@ -69,7 +72,7 @@ namespace khokhryakova
   struct MergeFunctor
   {
     std::map< std::string, std::vector< Position > >& dest;
-    void operator()(const std::pair<std::string, std::vector< Position > >& p) const;
+    void operator()(const std::pair< std::string, std::vector< Position > >& p) const;
   };
 
   struct IntersectFunctor
@@ -129,6 +132,14 @@ namespace khokhryakova
     std::ostream& out;
     mutable bool first = true;
     void operator()(const std::string& w) const;
+  };
+
+  struct IsEmptyVec
+  {
+    bool operator()(const std::vector< std::string >& v) const
+    {
+      return v.empty();
+    }
   };
 }
 
