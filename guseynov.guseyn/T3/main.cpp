@@ -39,9 +39,9 @@ namespace
     return std::string(remainingStart, str.end());
   }
 
-  std::map< std::string, guseynov::commands::CommandHandler > createCommandMap()
+  std::map<std::string, guseynov::commands::CommandHandler> createCommandMap()
   {
-    std::map< std::string, guseynov::commands::CommandHandler > commands;
+    std::map<std::string, guseynov::commands::CommandHandler> commands;
     commands["AREA"] = guseynov::commands::handleAreaCommand;
     commands["MAX"] = guseynov::commands::handleMaxCommand;
     commands["MIN"] = guseynov::commands::handleMinCommand;
@@ -62,8 +62,9 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::vector< guseynov::Polygon > polygons = guseynov::utils::readPolygonsFromFile(argv[1]);
+    std::vector<guseynov::Polygon> polygons = guseynov::utils::readPolygonsFromFile(argv[1]);
     auto commandMap = createCommandMap();
+    
     std::string command;
     while (std::getline(std::cin, command))
     {
@@ -72,6 +73,7 @@ int main(int argc, char* argv[])
         str.erase(str.begin(), std::find_if_not(str.begin(), str.end(), isSpace));
         str.erase(std::find_if_not(str.rbegin(), str.rend(), isSpace).base(), str.end());
       };
+      
       trim(command);
       if (command.empty())
       {
