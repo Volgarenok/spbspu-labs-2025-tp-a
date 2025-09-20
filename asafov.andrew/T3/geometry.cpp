@@ -279,8 +279,9 @@ namespace
 
   class CheckEdgeIntersectFunctor
   {
+    using asafov::Point;
   public:
-    CheckEdgeIntersectFunctor(const asafov::Polygon& b, const EdgesIntersectFunctor& edgesIntersect, const asafov::Point& a1, const asafov::Point& a2):
+    CheckEdgeIntersectFunctor(const asafov::Polygon& b, const EdgesIntersectFunctor& edgesIntersect, const Point& a1, const Point& a2):
       b(b),
       edgesIntersect(edgesIntersect),
       a1(a1),
@@ -373,7 +374,8 @@ namespace
         return true;
       }
 
-      bool condition = ((p1.y > point.y) != (p2.y > point.y)) && (point.x < (p2.x - p1.x) * (point.y - p1.y) / static_cast<double>(p2.y - p1.y) + p1.x);
+      bool halfCondition = (point.x < (p2.x - p1.x) * (point.y - p1.y) / static_cast< double >(p2.y - p1.y) + p1.x);
+      bool condition = ((p1.y > point.y) != (p2.y > point.y)) && halfCondition;
       ++i;
       return condition;
     }
