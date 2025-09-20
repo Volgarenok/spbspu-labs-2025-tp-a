@@ -32,13 +32,16 @@ guseynov::Polygon guseynov::utils::parsePolygon(const std::string& line)
   size_t numVertices;
   if (!(iss >> numVertices))
   {
+    poly.points.clear();
     return poly;
   }
   if (numVertices < 3)
   {
+    poly.points.clear();
     return poly;
   }
 
+  size_t pointsRead = 0;
   for (size_t i = 0; i < numVertices; ++i)
   {
     std::string pointStr;
@@ -62,15 +65,37 @@ guseynov::Polygon guseynov::utils::parsePolygon(const std::string& line)
     {
       std::string xStr = pointStr.substr(1, semicolon - 1);
       std::string yStr = pointStr.substr(semicolon + 1, pointStr.size() - semicolon - 2);
+      if (xStr.empty() || yStr.empty())
+      {
+        poly.points.clear();
+        return poly;
+      }
+      for (char c : xStr) {
+        if (!std::isdigit(c) && c != '-') {
+          poly.points.clear();
+          return poly;
+        }
+      }
+      for (char c : yStr) {
+        if (!std::isdigit(c) && c != '-') {
+          poly.points.clear();
+          return poly;
+        }
+      }
       int x = std::stoi(xStr);
       int y = std::stoi(yStr);
       poly.points.push_back({x, y});
+      pointsRead++;
     }
     catch (const std::exception&)
     {
       poly.points.clear();
       return poly;
     }
+  }
+  if (pointsRead != numVertices)
+  {
+    poly.points.clear();
   }
   return poly;
 }
@@ -93,7 +118,7 @@ std::vector< guseynov::Polygon > guseynov::utils::readPolygonsFromFile(const std
     line.erase(line.find_last_not_of(" \t") + 1);
     if (line.empty()) continue;
     Polygon poly = parsePolygon(line);
-    if (poly.points.size() >= 3)
+    if (poly.points.size() >= 3 && poly.points.size() == std::stoul(line.substr(0, line.find(' '))))
     {
       polygons.push_back(poly);
     }
