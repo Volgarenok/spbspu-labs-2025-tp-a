@@ -197,101 +197,39 @@ double guseynov::commands::calculateArea(const Polygon& poly)
   return std::abs(area) / 2.0;
 }
 
-guseynov::Polygon guseynov::commands::parsePolygon(const std::string& line)
+void guseynov::commands::parsePolygon(std::istream& in, Polygon& poly)
 {
-  Polygon poly;
-  std::istringstream iss(line);
-  size_t numVertices = 0;
-  if (!(iss >> numVertices))
-  {
-    poly.points.clear();
-    return poly;
-  }
-  if (numVertices < 3)
-  {
-    poly.points.clear();
-    return poly;
-  }
-
-  for (size_t i = 0; i < numVertices; ++i)
-  {
-    std::string pointStr;
-    if (!(iss >> pointStr))
-    {
-      poly.points.clear();
-      return poly;
-    }
-    if (pointStr.size() < 5 || pointStr[0] != '(' || pointStr.back() != ')')
-    {
-      poly.points.clear();
-      return poly;
-    }
-    size_t semicolon = pointStr.find(';');
-    if (semicolon == std::string::npos || semicolon < 2 || semicolon > pointStr.size() - 2)
-    {
-      poly.points.clear();
-      return poly;
-    }
-    std::string xStr = pointStr.substr(1, semicolon - 1);
-    std::string yStr = pointStr.substr(semicolon + 1, pointStr.size() - semicolon - 2);
-    try
-    {
-      int x = std::stoi(xStr);
-      int y = std::stoi(yStr);
-      poly.points.push_back({x, y});
-    }
-    catch (const std::exception&)
-    {
-      poly.points.clear();
-      return poly;
-    }
-  }
-  std::string remaining;
-  if (iss >> remaining)
-  {
-    poly.points.clear();
-    return poly;
-  }
-  return poly;
+  poly.points.clear();
+  in >> poly;
 }
 
-std::vector<guseynov::Polygon> guseynov::commands::readPolygonsFromFile(const std::string& filename)
+void guseynov::commands::readPolygonsFromFile(std::istream& in, std::vector<Polygon>& polygons)
 {
-  std::vector<Polygon> polygons;
-  std::ifstream file(filename);
-  if (!file.is_open())
+  polygons.clear();
+  Polygon poly;
+  while (in >> poly)
   {
-    throw std::runtime_error("Cannot open file: " + filename);
-  }
-  std::string line;
-  while (std::getline(file, line))
-  {
-    std::istringstream iss(line);
-    std::string firstWord;
-    if (!(iss >> firstWord))
-    {
-      continue;
-    }
-    bool isNumber = true;
-    for (char c : firstWord)
-    {
-      if (!std::isdigit(static_cast<unsigned char>(c)))
-      {
-        isNumber = false;
-        break;
-      }
-    }
-    if (!isNumber)
-    {
-      continue;
-    }
-    Polygon poly = parsePolygon(line);
     if (poly.points.size() >= 3)
     {
       polygons.push_back(poly);
     }
+    poly.points.clear();
+    in.clear();
+    std::string line;
+    while (std::getline(in, line))
+    {
+      std::istringstream lineStream(line);
+      if (lineStream >> poly)
+      {
+        if (poly.points.size() >= 3)
+        {
+          polygons.push_back(poly);
+        }
+        poly.points.clear();
+        break;
+      }
+    }
   }
-  return polygons;
 }
 
 void guseynov::commands::handleAreaCommand(const std::vector<Polygon>& polygons, const std::string& param)
@@ -458,7 +396,9 @@ void guseynov::commands::handleInFrameCommand(const std::vector<Polygon>& polygo
     return;
   }
 
-  Polygon targetPoly = parsePolygon(param);
+  std::istringstream iss(param);
+  Polygon targetPoly;
+  parsePolygon(iss, targetPoly);
   if (targetPoly.points.size() < 3)
   {
     std::cout << "<INVALID COMMAND>\n";
@@ -478,7 +418,9 @@ void guseynov::commands::handleInFrameCommand(const std::vector<Polygon>& polygo
 
 void guseynov::commands::handleLessAreaCommand(const std::vector<Polygon>& polygons, const std::string& param)
 {
-  Polygon targetPoly = parsePolygon(param);
+  std::istringstream iss(param);
+  Polygon targetPoly;
+  parsePolygon(iss, targetPoly);
   if (targetPoly.points.size() < 3)
   {
     std::cout << "<INVALID COMMAND>\n";

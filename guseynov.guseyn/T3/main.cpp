@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cctype>
 #include <functional>
+#include <fstream>
 #include "polygon.hpp"
 #include "commands.hpp"
 
@@ -79,8 +80,17 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::vector<guseynov::Polygon> polygons = guseynov::commands::readPolygonsFromFile(argv[1]);
+    std::ifstream file(argv[1]);
+    if (!file.is_open())
+    {
+      throw std::runtime_error("Cannot open file: " + std::string(argv[1]));
+    }
+    
+    std::vector<guseynov::Polygon> polygons;
+    guseynov::commands::readPolygonsFromFile(file, polygons);
+    
     auto commandMap = createCommandMap();
+    
     std::string command;
     while (std::getline(std::cin, command))
     {
