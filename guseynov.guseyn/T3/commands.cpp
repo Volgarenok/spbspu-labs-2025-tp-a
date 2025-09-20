@@ -30,7 +30,9 @@ namespace
 
   struct HasVertexCount
   {
-    explicit HasVertexCount(size_t targetCount) : target(targetCount) {}
+    explicit HasVertexCount(size_t targetCount):
+      target(targetCount)
+    {}
     bool operator()(const guseynov::Polygon& poly) const
     {
       return poly.points.size() == target;
@@ -40,7 +42,9 @@ namespace
 
   struct HasLessArea
   {
-    explicit HasLessArea(double areaThreshold) : threshold(areaThreshold) {}
+    explicit HasLessArea(double areaThreshold):
+      threshold(areaThreshold)
+    {}
     bool operator()(const guseynov::Polygon& poly) const
     {
       return guseynov::utils::calculateArea(poly) < threshold;
@@ -56,65 +60,119 @@ namespace
     }
   };
 
-  struct ConditionalAreaAccumulator
+  struct ConditionalAreaAccumulatorEven
   {
-    explicit ConditionalAreaAccumulator(const std::function<bool(const guseynov::Polygon&)>& pred) : predicate(pred) {}
     double operator()(double sum, const guseynov::Polygon& poly) const
     {
-      if (predicate(poly))
-      {
-        return sum + guseynov::utils::calculateArea(poly);
-      }
-      return sum;
+      return IsEvenPolygon()(poly) ? sum + guseynov::utils::calculateArea(poly) : sum;
     }
-    std::function<bool(const guseynov::Polygon&)> predicate;
   };
 
-  struct ExtremeArea
+  struct ConditionalAreaAccumulatorOdd
   {
-    explicit ExtremeArea(bool findMax) : isMax(findMax), extremeValue(isMax ? 0.0 : std::numeric_limits<double>::max()) {}
+    double operator()(double sum, const guseynov::Polygon& poly) const
+    {
+      return IsOddPolygon()(poly) ? sum + guseynov::utils::calculateArea(poly) : sum;
+    }
+  };
+
+  struct ConditionalAreaAccumulatorVertexCount
+  {
+    explicit ConditionalAreaAccumulatorVertexCount(size_t target):
+      target_(target)
+    {}
+    double operator()(double sum, const guseynov::Polygon& poly) const
+    {
+      return HasVertexCount(target_)(poly) ? sum + guseynov::utils::calculateArea(poly) : sum;
+    }
+    size_t target_;
+  };
+
+  struct MaxAreaFinder
+  {
+    double maxArea = 0.0;
     void operator()(const guseynov::Polygon& poly)
     {
       double area = guseynov::utils::calculateArea(poly);
-      if ((isMax && area > extremeValue) || (!isMax && area < extremeValue))
+      if (area > maxArea)
       {
-        extremeValue = area;
+        maxArea = area;
       }
     }
-    bool isMax;
-    double extremeValue;
   };
 
-  struct ExtremeVertices
+  struct MinAreaFinder
   {
-    explicit ExtremeVertices(bool findMax) : isMax(findMax), extremeValue(isMax ? 0 : std::numeric_limits<size_t>::max()) {}
+    double minArea = std::numeric_limits<double>::max();
+    void operator()(const guseynov::Polygon& poly)
+    {
+      double area = guseynov::utils::calculateArea(poly);
+      if (area < minArea)
+      {
+        minArea = area;
+      }
+    }
+  };
+
+  struct MaxVerticesFinder
+  {
+    size_t maxVertices = 0;
     void operator()(const guseynov::Polygon& poly)
     {
       size_t vertices = poly.points.size();
-      if ((isMax && vertices > extremeValue) || (!isMax && vertices < extremeValue))
+      if (vertices > maxVertices)
       {
-        extremeValue = vertices;
+        maxVertices = vertices;
       }
     }
-    bool isMax;
-    size_t extremeValue;
   };
 
-  struct FrameBounds
+  struct MinVerticesFinder
+  {
+    size_t minVertices = std::numeric_limits<size_t>::max();
+    void operator()(const guseynov::Polygon& poly)
+    {
+      size_t vertices = poly.points.size();
+      if (vertices < minVertices)
+      {
+        minVertices = vertices;
+      }
+    }
+  };
+
+  struct FrameBoundsAccumulator
   {
     int minX = std::numeric_limits<int>::max();
     int maxX = std::numeric_limits<int>::min();
     int minY = std::numeric_limits<int>::max();
     int maxY = std::numeric_limits<int>::min();
-
     void operator()(const guseynov::Polygon& poly)
     {
-      std::for_each(poly.points.begin(), poly.points.end(), [this](const guseynov::Point& point) {
+      for (const auto& point : poly.points)
+      {
         minX = std::min(minX, point.x);
         maxX = std::max(maxX, point.x);
         minY = std::min(minY, point.y);
         maxY = std::max(maxY, point.y);
-      });
+      }
+    }
+  };
+
+  struct PointOutsideFrame
+  {
+    int minX;
+    int maxX;
+    int minY;
+    int maxY;
+    PointOutsideFrame(int minX_, int maxX_, int minY_, int maxY_):
+      minX(minX_),
+      maxX(maxX_),
+      minY(minY_),
+      maxY(maxY_)
+    {}
+    bool operator()(const guseynov::Point& point) const
+    {
+      return point.x < minX || point.x > maxX || point.y < minY || point.y > maxY;
     }
   };
 }
@@ -123,12 +181,12 @@ void guseynov::commands::handleAreaCommand(const std::vector<Polygon>& polygons,
 {
   if (param == "EVEN")
   {
-    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, ConditionalAreaAccumulator(IsEvenPolygon()));
+    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, ConditionalAreaAccumulatorEven());
     std::cout << std::fixed << std::setprecision(1) << sum << '\n';
   }
   else if (param == "ODD")
   {
-    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, ConditionalAreaAccumulator(IsOddPolygon()));
+    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, ConditionalAreaAccumulatorOdd());
     std::cout << std::fixed << std::setprecision(1) << sum << '\n';
   }
   else if (param == "MEAN")
@@ -149,8 +207,7 @@ void guseynov::commands::handleAreaCommand(const std::vector<Polygon>& polygons,
       std::cout << "<INVALID COMMAND>\n";
       return;
     }
-    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-                                ConditionalAreaAccumulator(HasVertexCount(target)));
+    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, ConditionalAreaAccumulatorVertexCount(target));
     std::cout << std::fixed << std::setprecision(1) << sum << '\n';
   }
   else
@@ -169,15 +226,21 @@ void guseynov::commands::handleMaxCommand(const std::vector<Polygon>& polygons, 
 
   if (param == "AREA")
   {
-    ExtremeArea finder(true);
-    std::for_each(polygons.begin(), polygons.end(), std::ref(finder));
-    std::cout << std::fixed << std::setprecision(1) << finder.extremeValue << '\n';
+    MaxAreaFinder finder;
+    for (const auto& poly : polygons)
+    {
+      finder(poly);
+    }
+    std::cout << std::fixed << std::setprecision(1) << finder.maxArea << '\n';
   }
   else if (param == "VERTEXES")
   {
-    ExtremeVertices finder(true);
-    std::for_each(polygons.begin(), polygons.end(), std::ref(finder));
-    std::cout << finder.extremeValue << '\n';
+    MaxVerticesFinder finder;
+    for (const auto& poly : polygons)
+    {
+      finder(poly);
+    }
+    std::cout << finder.maxVertices << '\n';
   }
   else
   {
@@ -195,15 +258,21 @@ void guseynov::commands::handleMinCommand(const std::vector<Polygon>& polygons, 
 
   if (param == "AREA")
   {
-    ExtremeArea finder(false);
-    std::for_each(polygons.begin(), polygons.end(), std::ref(finder));
-    std::cout << std::fixed << std::setprecision(1) << finder.extremeValue << '\n';
+    MinAreaFinder finder;
+    for (const auto& poly : polygons)
+    {
+      finder(poly);
+    }
+    std::cout << std::fixed << std::setprecision(1) << finder.minArea << '\n';
   }
   else if (param == "VERTEXES")
   {
-    ExtremeVertices finder(false);
-    std::for_each(polygons.begin(), polygons.end(), std::ref(finder));
-    std::cout << finder.extremeValue << '\n';
+    MinVerticesFinder finder;
+    for (const auto& poly : polygons)
+    {
+      finder(poly);
+    }
+    std::cout << finder.minVertices << '\n';
   }
   else
   {
@@ -255,14 +324,14 @@ void guseynov::commands::handleInFrameCommand(const std::vector<Polygon>& polygo
     return;
   }
 
-  FrameBounds bounds;
-  std::for_each(polygons.begin(), polygons.end(), std::ref(bounds));
+  FrameBoundsAccumulator bounds;
+  for (const auto& poly : polygons)
+  {
+    bounds(poly);
+  }
 
-  auto isOutside = [&bounds](const Point& point) {
-    return point.x < bounds.minX || point.x > bounds.maxX || point.y < bounds.minY || point.y > bounds.maxY;
-  };
-
-  bool allPointsInside = std::none_of(targetPoly.points.begin(), targetPoly.points.end(), isOutside);
+  bool allPointsInside = std::none_of(targetPoly.points.begin(), targetPoly.points.end(),
+    PointOutsideFrame(bounds.minX, bounds.maxX, bounds.minY, bounds.maxY));
   std::cout << (allPointsInside ? "<TRUE>" : "<FALSE>") << '\n';
 }
 

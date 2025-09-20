@@ -11,9 +11,27 @@
 
 namespace
 {
+  struct IsSpace
+  {
+    bool operator()(char c) const
+    {
+      return std::isspace(static_cast<unsigned char>(c));
+    }
+  };
+
+  struct TrimSpaces
+  {
+    void operator()(std::string& str) const
+    {
+      IsSpace isSpace;
+      str.erase(str.begin(), std::find_if_not(str.begin(), str.end(), isSpace));
+      str.erase(std::find_if_not(str.rbegin(), str.rend(), isSpace).base(), str.end());
+    }
+  };
+
   std::string extractFirstWord(const std::string& str)
   {
-    auto isSpace = [](char c) { return std::isspace(static_cast<unsigned char>(c)); };
+    IsSpace isSpace;
     auto start = std::find_if_not(str.begin(), str.end(), isSpace);
     if (start == str.end())
     {
@@ -25,7 +43,7 @@ namespace
 
   std::string extractRemainingString(const std::string& str)
   {
-    auto isSpace = [](char c) { return std::isspace(static_cast<unsigned char>(c)); };
+    IsSpace isSpace;
     auto firstWordEnd = std::find_if(str.begin(), str.end(), isSpace);
     if (firstWordEnd == str.end())
     {
@@ -67,12 +85,8 @@ int main(int argc, char* argv[])
     std::string command;
     while (std::getline(std::cin, command))
     {
-      auto trim = [](std::string& str) {
-        auto isSpace = [](char c) { return std::isspace(static_cast<unsigned char>(c)); };
-        str.erase(str.begin(), std::find_if_not(str.begin(), str.end(), isSpace));
-        str.erase(std::find_if_not(str.rbegin(), str.rend(), isSpace).base(), str.end());
-      };
-      trim(command);
+      TrimSpaces trimSpaces;
+      trimSpaces(command);
       if (command.empty())
       {
         continue;
