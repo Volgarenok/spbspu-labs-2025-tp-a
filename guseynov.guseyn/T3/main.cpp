@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
 {
   if (argc != 2)
   {
-    std::cerr << "Usage: " << argv[0] << " filename" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " filename\n";
     return 1;
   }
 
@@ -22,7 +22,10 @@ int main(int argc, char* argv[])
     {
       command.erase(0, command.find_first_not_of(" \t"));
       command.erase(command.find_last_not_of(" \t") + 1);
-      if (command.empty()) continue;
+      if (command.empty())
+      {
+        continue;
+      }
       std::istringstream iss(command);
       std::string cmd, param;
       iss >> cmd;
@@ -60,13 +63,13 @@ int main(int argc, char* argv[])
       }
       else
       {
-        std::cout << "<INVALID COMMAND>" << std::endl;
+        std::cout << "<INVALID COMMAND>\n";
       }
     }
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Error: " << e.what() << std::endl;
+    std::cerr << "Error: " << e.what() << '\n';
     return 1;
   }
 
