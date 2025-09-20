@@ -217,6 +217,31 @@ bool asafov::doPolygonsIntersect(const Polygon& a, const Polygon& b)
 
 bool asafov::isPointInPolygon(const Point& point, const Polygon& poly)
 {
+  struct PolygonFunctor
+  {
+    int operator()(const Point& p1)
+    {
+      const Point& p2 = poly.points[j];
+      j = &p1 - &poly.points[0];
+
+      if (isPointOnSegment(point, p1, p2))
+      {
+        throw std::runtime_error("Boundary");
+      }
+      bool halfCondition = (point.x < (p2.x - p1.x) * (point.y - p1.y) / static_cast<double>(p2.y - p1.y) + p1.x);
+      if (((p1.y > point.y) != (p2.y > point.y)) && halfCondition)
+      {
+        inside = !inside;
+      }
+      return 0;
+    }
+
+    const Point& point;
+    const Polygon& poly;
+    bool& inside;
+    size_t& j;
+  };
+
   if (poly.points.size() < 3)
   {
     return false;
@@ -226,22 +251,6 @@ bool asafov::isPointInPolygon(const Point& point, const Polygon& poly)
   size_t j = poly.points.size() - 1;
 
   std::vector< int > dummy(poly.points.size());
-  std::transform(poly.points.begin(), poly.points.end(), dummy.begin(),
-                [&](const Point& p1)
-                {
-                  const Point& p2 = poly.points[j];
-                  j = &p1 - &poly.points[0];
-
-                  if (isPointOnSegment(point, p1, p2))
-                  {
-                    throw std::runtime_error("Boundary");
-                  }
-                  if (((p1.y > point.y) != (p2.y > point.y)) &&
-                    (point.x < (p2.x - p1.x) * (point.y - p1.y) / static_cast<double>(p2.y - p1.y) + p1.x))
-                  {
-                    inside = !inside;
-                  }
-                  return 0;
-                });
+  std::transform(poly.points.begin(), poly.points.end(), dummy.begin(), PolygonFunctor{ point, poly, inside, j });
   return inside;
 }
