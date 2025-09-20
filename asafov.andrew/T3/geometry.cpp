@@ -135,49 +135,57 @@ bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
 
 bool asafov::edgesIntersect(const Point& a1, const Point& a2, const Point& b1, const Point& b2)
 {
-  auto orientation = [](const Point& p, const Point& q, const Point& r) -> int
+  struct OrientationFunctor
   {
-    int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-    if (val == 0)
+    int operator()(const Point& p, const Point& q, const Point& r) const\
     {
-      return 0;
+      int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+      if (val == 0)
+      {
+        return 0;
+      }
+      return (val > 0) ? 1 : 2;
     }
-    return (val > 0) ? 1 : 2;
   };
 
-  auto onSegment = [](const Point& p, const Point& q, const Point& r) -> bool
+  struct SegmentFunctor
   {
-    using std::min;
-    if (q.x <= min(p.x, r.x) && q.x >= min(p.x, r.x) && q.y <= min(p.y, r.y) && q.y >= min(p.y, r.y))
+    bool operator()(const Point& p, const Point& q, const Point& r) const
     {
-      return true;
+      using std::min;
+      using std::max;
+        
+      if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) && q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y))
+      {
+        return true;
+      }
+      return false;
     }
-    return false;
   };
 
-  int o1 = orientation(a1, a2, b1);
-  int o2 = orientation(a1, a2, b2);
-  int o3 = orientation(b1, b2, a1);
-  int o4 = orientation(b1, b2, a2);
+  int o1 = OrientationFunctor(a1, a2, b1);
+  int o2 = OrientationFunctor(a1, a2, b2);
+  int o3 = OrientationFunctor(b1, b2, a1);
+  int o4 = OrientationFunctor(b1, b2, a2);
 
   if (o1 != o2 && o3 != o4)
   {
     return true;
   }
 
-  if (o1 == 0 && onSegment(a1, b1, a2))
+  if (o1 == 0 && SegmentFunctor(a1, b1, a2))
   {
     return true;
   }
-  if (o2 == 0 && onSegment(a1, b2, a2))
+  if (o2 == 0 && SegmentFunctor(a1, b2, a2))
   {
     return true;
   }
-  if (o3 == 0 && onSegment(b1, a1, b2))
+  if (o3 == 0 && SegmentFunctor(b1, a1, b2))
   {
     return true;
   }
-  if (o4 == 0 && onSegment(b1, a2, b2))
+  if (o4 == 0 && SegmentFunctor(b1, a2, b2))
   {
     return true;
   }
@@ -208,8 +216,8 @@ bool asafov::doPolygonsIntersect(const Polygon& a, const Polygon& b)
   {
     bool operator()(size_t i) const
     {
-      EdgeFunctor edgeChecker{a, b, i};
-      std::vector<size_t> indicesB(b.points.size());
+      EdgeFunctor edgeChecker{ a, b, i };
+      std::vector< size_t > indicesB(b.points.size());
       std::iota(indicesB.begin(), indicesB.end(), 0);
 
       return std::any_of(indicesB.begin(), indicesB.end(), std::ref(edgeChecker));
@@ -220,7 +228,7 @@ bool asafov::doPolygonsIntersect(const Polygon& a, const Polygon& b)
   };
 
   PolygonFunctor allEdgesChecker{a, b};
-  std::vector<size_t> indicesA(a.points.size());
+  std::vector< size_t > indicesA(a.points.size());
   std::iota(indicesA.begin(), indicesA.end(), 0);
 
   bool edgesIntersect = std::any_of(indicesA.begin(), indicesA.end(), std::ref(allEdgesChecker));
@@ -251,7 +259,7 @@ bool asafov::isPointInPolygon(const Point& point, const Polygon& poly)
       {
         throw std::runtime_error("Boundary");
       }
-      bool halfCondition = (point.x < (p2.x - p1.x) * (point.y - p1.y) / static_cast<double>(p2.y - p1.y) + p1.x);
+      bool halfCondition = (point.x < (p2.x - p1.x) * (point.y - p1.y) / static_cast< double >(p2.y - p1.y) + p1.x);
       if (((p1.y > point.y) != (p2.y > point.y)) && halfCondition)
       {
         inside = !inside;
