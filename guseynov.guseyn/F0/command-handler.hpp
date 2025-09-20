@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COMMAND_HANDLER_HPP
+#define COMMAND_HANDLER_HPP
 #include <string>
 #include <vector>
 #include <map>
@@ -16,3 +17,4 @@ namespace guseynov {
     static std::string extractQuotedText(const std::string& input, size_t& pos);
   };
 }
+#endif
