@@ -1,6 +1,6 @@
 #include "data-struct.hpp"
 #include <iostream>
-#include "stream-guard.hpp"
+#include <stream-guard.hpp>
 
 namespace
 {
