@@ -5,8 +5,6 @@
 #include "polygon.hpp"
 #include "utils.hpp"
 #include "commands.hpp"
-#include "lessarea.hpp"
-#include "inframe.hpp"
 
 int main(int argc, char* argv[])
 {
