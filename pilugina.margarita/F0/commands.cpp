@@ -1,6 +1,5 @@
 #include "commands.hpp"
 #include <fstream>
-#include <functional>
 #include <iterator>
 #include <string>
 
@@ -182,7 +181,7 @@ namespace pilugina
       out << "<INVALID COMMAND>";
       return;
     }
-    const auto dIt = dicts.find(dictName);
+    auto dIt = dicts.find(dictName);
     if (dIt == dicts.end())
     {
       out << "<DICT NOT FOUND>";
@@ -221,9 +220,8 @@ namespace pilugina
       return;
     }
     std::vector< std::string > &ts = wIt->second;
-    auto equals = std::bind(std::equal_to<std::string>{}, translation, std::placeholders::_1);
-    const bool has = std::find_if(ts.begin(), ts.end(), equals) != ts.end();
-    if (has)
+    auto it = std::find(ts.begin(), ts.end(), translation);
+    if (it != ts.end())
     {
       out << "<TRANSLATION ALREADY EXISTS>";
       return;
@@ -273,8 +271,7 @@ namespace pilugina
       return;
     }
     std::vector< std::string > &ts = wIt->second;
-    auto equals = std::bind(std::equal_to<std::string>{}, translation, std::placeholders::_1);
-    auto it = std::find_if(ts.begin(), ts.end(), equals);
+    auto it = std::find(ts.begin(), ts.end(), translation);
     if (it == ts.end())
     {
       out << "<TRANSLATION NOT FOUND>";
@@ -341,17 +338,17 @@ namespace pilugina
       return;
     }
 
-    const dictionary &d = dIt->second;
+    const auto dict = dIt->second;
     out << "<DICT CONTENT: ";
 
-    if (!d.empty())
+    if (!dict.empty())
     {
-      const auto &firstDict = *d.begin();
-      out << firstDict.first << ": " << joinedTranslations(firstDict.second);
+      const auto firstWord = *dict.begin();
+      out << firstWord.first << ": " << joinedTranslations(firstWord.second);
 
       std::vector< std::string > formatted;
-      formatted.reserve(d.size() - 1);
-      std::transform(std::next(d.begin()), d.end(), std::back_inserter(formatted), WordLineFormatter());
+      formatted.reserve(dict.size() - 1);
+      std::transform(std::next(dict.begin()), dict.end(), std::back_inserter(formatted), WordLineFormatter());
 
       struct PrefixAndAppendToOstream
       {
