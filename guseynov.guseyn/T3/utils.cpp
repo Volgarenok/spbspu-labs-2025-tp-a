@@ -6,6 +6,7 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <regex>
 
 bool guseynov::utils::isNumber(const std::string& s)
 {
@@ -41,61 +42,56 @@ guseynov::Polygon guseynov::utils::parsePolygon(const std::string& line)
     return poly;
   }
 
-  size_t pointsRead = 0;
-  for (size_t i = 0; i < numVertices; ++i)
+  std::regex pointRegex(R"(\((-?\d+);(-?\d+)\))");
+  std::smatch match;
+  std::string remaining;
+  std::getline(iss, remaining);
+  size_t pointsFound = 0;
+  size_t pos = 0;
+  while (pointsFound < numVertices)
   {
-    std::string pointStr;
-    if (!(iss >> pointStr))
+    if (pos >= remaining.size()) break;
+    std::string substr = remaining.substr(pos);
+    if (std::regex_search(substr, match, pointRegex))
     {
-      poly.points.clear();
-      return poly;
-    }
-    if (pointStr.size() < 5 || pointStr[0] != '(' || pointStr.back() != ')')
-    {
-      poly.points.clear();
-      return poly;
-    }
-    size_t semicolon = pointStr.find(';');
-    if (semicolon == std::string::npos || semicolon < 2 || semicolon > pointStr.size() - 2)
-    {
-      poly.points.clear();
-      return poly;
-    }
-    try
-    {
-      std::string xStr = pointStr.substr(1, semicolon - 1);
-      std::string yStr = pointStr.substr(semicolon + 1, pointStr.size() - semicolon - 2);
-      if (xStr.empty() || yStr.empty())
+      if (match.position() != 0)
       {
         poly.points.clear();
         return poly;
       }
-      for (char c : xStr) {
-        if (!std::isdigit(c) && c != '-') {
-          poly.points.clear();
-          return poly;
-        }
+      try
+      {
+        int x = std::stoi(match[1].str());
+        int y = std::stoi(match[2].str());
+        poly.points.push_back({x, y});
+        pointsFound++;
+        pos += match[0].length();
       }
-      for (char c : yStr) {
-        if (!std::isdigit(c) && c != '-') {
-          poly.points.clear();
-          return poly;
-        }
+      catch (const std::exception&)
+      {
+        poly.points.clear();
+        return poly;
       }
-      int x = std::stoi(xStr);
-      int y = std::stoi(yStr);
-      poly.points.push_back({x, y});
-      pointsRead++;
     }
-    catch (const std::exception&)
+    else
     {
       poly.points.clear();
       return poly;
     }
+    while (pos < remaining.size() && remaining[pos] == ' ')
+    {
+      pos++;
+    }
   }
-  if (pointsRead != numVertices)
+  if (pointsFound != numVertices)
   {
     poly.points.clear();
+    return poly;
+  }
+  if (pos < remaining.size())
+  {
+    poly.points.clear();
+    return poly;
   }
   return poly;
 }
@@ -109,16 +105,14 @@ std::vector< guseynov::Polygon > guseynov::utils::readPolygonsFromFile(const std
     throw std::runtime_error("Cannot open file: " + filename);
   }
   std::string line;
-  size_t lineNumber = 0;
   while (std::getline(file, line))
   {
-    lineNumber++;
     if (line.empty()) continue;
     line.erase(0, line.find_first_not_of(" \t"));
     line.erase(line.find_last_not_of(" \t") + 1);
     if (line.empty()) continue;
     Polygon poly = parsePolygon(line);
-    if (poly.points.size() >= 3 && poly.points.size() == std::stoul(line.substr(0, line.find(' '))))
+    if (poly.points.size() >= 3)
     {
       polygons.push_back(poly);
     }
