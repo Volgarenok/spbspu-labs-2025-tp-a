@@ -6,7 +6,6 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
-#include <regex>
 
 bool guseynov::utils::isNumber(const std::string& s)
 {
@@ -42,53 +41,48 @@ guseynov::Polygon guseynov::utils::parsePolygon(const std::string& line)
     return poly;
   }
 
-  std::regex pointRegex(R"(\((-?\d+);(-?\d+)\))");
-  std::smatch match;
-  std::string remaining;
-  std::getline(iss, remaining);
-  size_t pointsFound = 0;
-  size_t pos = 0;
-  while (pointsFound < numVertices)
+  for (size_t i = 0; i < numVertices; ++i)
   {
-    if (pos >= remaining.size()) break;
-    std::string substr = remaining.substr(pos);
-    if (std::regex_search(substr, match, pointRegex))
-    {
-      if (match.position() != 0)
-      {
-        poly.points.clear();
-        return poly;
-      }
-      try
-      {
-        int x = std::stoi(match[1].str());
-        int y = std::stoi(match[2].str());
-        poly.points.push_back({x, y});
-        pointsFound++;
-        pos += match[0].length();
-      }
-      catch (const std::exception&)
-      {
-        poly.points.clear();
-        return poly;
-      }
-    }
-    else
+    std::string pointStr;
+    if (!(iss >> pointStr))
     {
       poly.points.clear();
       return poly;
     }
-    while (pos < remaining.size() && remaining[pos] == ' ')
+    if (pointStr.size() < 5 || pointStr[0] != '(' || pointStr.back() != ')')
     {
-      pos++;
+      poly.points.clear();
+      return poly;
+    }
+    size_t semicolon = pointStr.find(';');
+    if (semicolon == std::string::npos || semicolon < 2 || semicolon > pointStr.size() - 2)
+    {
+      poly.points.clear();
+      return poly;
+    }
+    try
+    {
+      std::string xStr = pointStr.substr(1, semicolon - 1);
+      std::string yStr = pointStr.substr(semicolon + 1, pointStr.size() - semicolon - 2);
+      if (xStr.empty() || yStr.empty() ||
+          xStr.find_first_not_of("0123456789-") != std::string::npos ||
+          yStr.find_first_not_of("0123456789-") != std::string::npos)
+      {
+        poly.points.clear();
+        return poly;
+      }
+      int x = std::stoi(xStr);
+      int y = std::stoi(yStr);
+      poly.points.push_back({x, y});
+    }
+    catch (const std::exception&)
+    {
+      poly.points.clear();
+      return poly;
     }
   }
-  if (pointsFound != numVertices)
-  {
-    poly.points.clear();
-    return poly;
-  }
-  if (pos < remaining.size())
+  std::string remaining;
+  if (iss >> remaining)
   {
     poly.points.clear();
     return poly;
