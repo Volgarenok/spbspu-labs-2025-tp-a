@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <functional>
+#include <map>
 #include "io.h"
 #include "geometry.h"
 
