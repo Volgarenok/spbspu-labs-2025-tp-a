@@ -187,9 +187,6 @@ bool asafov::edgesIntersect(const Point& a1, const Point& a2, const Point& b1, c
 
 bool asafov::doPolygonsIntersect(const Polygon& a, const Polygon& b)
 {
-  const size_t n = a.points.size();
-  const size_t m = b.points.size();
-
   struct EdgeFunctor
   {
     bool operator()(size_t j) const
