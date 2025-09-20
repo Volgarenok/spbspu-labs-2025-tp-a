@@ -1,6 +1,6 @@
 #include "commands.hpp"
 
-#include <ostream>
+#include <iostream>
 
 void zholobov::printHelp(std::ostream& out)
 {
@@ -24,4 +24,30 @@ void zholobov::printHelp(std::ostream& out)
   out << "union <new_dict> <dict-1> [<dict-N> ...]\n";
   out << "intersect <new_dict> <dict-1> [<dict-N> ...]\n";
   out << "rare <N> <new_dict> <dict-1> [<dict-K> ...]\n";
+}
+
+void zholobov::cmdDictCreate(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() != 2) {
+    throw InvalidParams();
+  }
+  const std::string& name = args[1];
+  if (dictionaries.count(name)) {
+    std::cout << "<DICTIONARY ALREADY EXISTS>\n";
+  } else {
+    dictionaries[name] = Dictionary();
+  }
+}
+
+void zholobov::cmdDictRemove(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() != 2) {
+    throw InvalidParams();
+  }
+  const std::string& name = args[1];
+  if (!dictionaries.count(name)) {
+    std::cout << "<INVALID DICTIONARY>\n";
+  } else {
+    dictionaries.erase(name);
+  }
 }

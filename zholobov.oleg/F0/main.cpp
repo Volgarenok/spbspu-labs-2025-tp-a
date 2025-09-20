@@ -1,7 +1,9 @@
 #include <cstring>
+#include <functional>
 #include <iostream>
 
 #include "commands.hpp"
+#include "utils.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -15,6 +17,30 @@ int main(int argc, char* argv[])
       printHelp(std::cout);
       std::cout << '\n';
       return 0;
+    }
+  }
+
+  zholobov::Dictionaries dictionaries;
+
+  std::map< Word, std::function< void(zholobov::Dictionaries&, const std::vector< Word >&) > > keywords;
+
+  keywords["dict-create"] = cmdDictCreate;
+  keywords["dict-remove"] = cmdDictRemove;
+
+  std::string line;
+  while (std::getline(std::cin, line)) {
+    std::vector< std::string > tokens = splitTokens(line);
+    if (tokens.empty()) {
+      continue;
+    }
+
+    const std::string& cmd = tokens[0];
+    try {
+      keywords.at(cmd)(dictionaries, tokens);
+    } catch (const InvalidParams&) {
+      std::cout << "<ERROR IN PARAMETERS>\n";
+    } catch (const std::out_of_range&) {
+      std::cout << "<INVALID COMMAND>\n";
     }
   }
 
