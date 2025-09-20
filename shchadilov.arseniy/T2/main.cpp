@@ -3,7 +3,7 @@
 #include <vector>
 #include <limits>
 #include <algorithm>
-#include "data.hpp"
+#include <data.hpp>
 
 int main()
 {

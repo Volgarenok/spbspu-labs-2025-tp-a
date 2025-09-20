@@ -1,7 +1,8 @@
-#ifndef SCOPE_GUARD_HPP
-#define SCOPE_GUARD_HPP
+#ifndef STREAM_GUARD_HPP
+#define STREAM_GUARD_HPP
 
 #include <iostream>
+
 
 namespace shchadilov
 {

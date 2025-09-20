@@ -14,11 +14,6 @@ namespace shchadilov
     std::string key3;
   };
 
-  struct DelimiterIO
-  {
-    char exp;
-  };
-
   struct DoubleI
   {
     double& ref;
