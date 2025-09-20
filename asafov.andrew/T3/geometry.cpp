@@ -405,7 +405,7 @@ namespace
 
         return std::count(insideFlags.begin(), insideFlags.end(), true) % 2 == 1;
       }
-    }; 
+    };
   }
 }
 
