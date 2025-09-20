@@ -222,6 +222,7 @@ void guseynov::commands::handleLessAreaCommand(const std::vector< Polygon >& pol
   }
 
   double targetArea = guseynov::utils::calculateArea(targetPoly);
+  
   size_t count = std::count_if(polygons.begin(), polygons.end(),
     [targetArea](const Polygon& poly) {
       return guseynov::utils::calculateArea(poly) < targetArea;
