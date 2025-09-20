@@ -15,6 +15,46 @@ namespace
     using std::min;
     return crossProduct(a, b, p) == 0 && min(a.x, b.x) <= p.x && p.x <= min(a.x, b.x) && min(a.y, b.y) <= p.y && p.y <= min(a.y, b.y);
   }
+
+  class PolygonEdgeChecker
+  {
+  private:
+    const Point& point;
+    const Polygon& poly;
+    mutable bool foundOnBorder;
+    
+  public:
+    PolygonEdgeChecker(const Point& p, const Polygon& poly):
+      point(p),
+      poly(poly),
+      foundOnBorder(false)
+    {}
+    
+    std::pair<bool, Point> operator()(std::pair<bool, Point> accumulator, const Point& current) const
+    {
+      if (foundOnBorder)
+      {
+        return std::make_pair(true, current);
+      }
+
+      bool currentInside = accumulator.first;
+      const Point& prev = accumulator.second;
+
+      if (isPointOnSegment(point, prev, current))
+      {
+        foundOnBorder = true;
+        return std::make_pair(true, current);
+      }
+
+      bool halfCondition = (point.x < (current.x - prev.x) * (point.y - prev.y) / static_cast<double>(current.y - prev.y) + prev.x)
+      if (((prev.y > point.y) != (current.y > point.y)) && halfCondition)
+      {
+        currentInside = !currentInside;
+      }
+
+      return std::make_pair(currentInside, current);
+    }
+  };
 }
 
 bool asafov::Point::operator==(const Point& other) const
@@ -222,24 +262,8 @@ bool asafov::isPointInPolygon(const Point& point, const Polygon& poly)
     return false;
   }
 
-  bool inside = false;
-  const size_t n = poly.points.size();
+  PolygonEdgeChecker checker(point, poly);
+  std::pair<bool, Point> initial = std::make_pair(false, poly.points.back());
 
-  for (size_t i = 0, j = n - 1; i < n; j = i++)
-  {
-    const Point& p1 = poly.points[i];
-    const Point& p2 = poly.points[j];
-
-    if (isPointOnSegment(point, p1, p2))
-    {
-      return true;
-    }
-
-    if (((p1.y > point.y) != (p2.y > point.y)) && (point.x < (p2.x - p1.x) * (point.y - p1.y) / static_cast<double>(p2.y - p1.y) + p1.x))
-    {
-      inside = !inside;
-    }
-  }
-
-  return inside;
+  return std::accumulate(poly.points.begin(), poly.points.end(), initial, checker).first;
 }
