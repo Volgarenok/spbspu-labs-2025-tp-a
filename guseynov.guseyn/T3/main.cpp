@@ -1,10 +1,56 @@
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
+#include <map>
+#include <algorithm>
+#include <cctype>
+#include <functional>
 #include "polygon.hpp"
 #include "utils.hpp"
 #include "commands.hpp"
+
+namespace
+{
+  std::string extractFirstWord(const std::string& str)
+  {
+    auto isSpace = [](char c) { return std::isspace(static_cast<unsigned char>(c)); };
+    auto start = std::find_if_not(str.begin(), str.end(), isSpace);
+    if (start == str.end())
+    {
+      return "";
+    }
+    auto end = std::find_if(start, str.end(), isSpace);
+    return std::string(start, end);
+  }
+
+  std::string extractRemainingString(const std::string& str)
+  {
+    auto isSpace = [](char c) { return std::isspace(static_cast<unsigned char>(c)); };
+    auto firstWordEnd = std::find_if(str.begin(), str.end(), isSpace);
+    if (firstWordEnd == str.end())
+    {
+      return "";
+    }
+    auto remainingStart = std::find_if_not(firstWordEnd, str.end(), isSpace);
+    if (remainingStart == str.end())
+    {
+      return "";
+    }
+    return std::string(remainingStart, str.end());
+  }
+
+  std::map< std::string, guseynov::commands::CommandHandler > createCommandMap()
+  {
+    std::map< std::string, guseynov::commands::CommandHandler > commands;
+    commands["AREA"] = guseynov::commands::handleAreaCommand;
+    commands["MAX"] = guseynov::commands::handleMaxCommand;
+    commands["MIN"] = guseynov::commands::handleMinCommand;
+    commands["COUNT"] = guseynov::commands::handleCountCommand;
+    commands["LESSAREA"] = guseynov::commands::handleLessAreaCommand;
+    commands["INFRAME"] = guseynov::commands::handleInFrameCommand;
+    return commands;
+  }
+}
 
 int main(int argc, char* argv[])
 {
@@ -17,49 +63,28 @@ int main(int argc, char* argv[])
   try
   {
     std::vector< guseynov::Polygon > polygons = guseynov::utils::readPolygonsFromFile(argv[1]);
+    auto commandMap = createCommandMap();
     std::string command;
     while (std::getline(std::cin, command))
     {
-      command.erase(0, command.find_first_not_of(" \t"));
-      command.erase(command.find_last_not_of(" \t") + 1);
+      auto trim = [](std::string& str) {
+        auto isSpace = [](char c) { return std::isspace(static_cast<unsigned char>(c)); };
+        str.erase(str.begin(), std::find_if_not(str.begin(), str.end(), isSpace));
+        str.erase(std::find_if_not(str.rbegin(), str.rend(), isSpace).base(), str.end());
+      };
+      trim(command);
       if (command.empty())
       {
         continue;
       }
-      std::istringstream iss(command);
-      std::string cmd, param;
-      iss >> cmd;
-      if (cmd == "AREA")
+
+      std::string cmd = extractFirstWord(command);
+      std::string param = extractRemainingString(command);
+
+      auto it = commandMap.find(cmd);
+      if (it != commandMap.end())
       {
-        iss >> param;
-        guseynov::commands::handleAreaCommand(polygons, param);
-      }
-      else if (cmd == "MAX")
-      {
-        iss >> param;
-        guseynov::commands::handleMaxCommand(polygons, param);
-      }
-      else if (cmd == "MIN")
-      {
-        iss >> param;
-        guseynov::commands::handleMinCommand(polygons, param);
-      }
-      else if (cmd == "COUNT")
-      {
-        iss >> param;
-        guseynov::commands::handleCountCommand(polygons, param);
-      }
-      else if (cmd == "LESSAREA")
-      {
-        std::getline(iss, param);
-        param.erase(0, param.find_first_not_of(" \t"));
-        guseynov::commands::handleLessAreaCommand(polygons, param);
-      }
-      else if (cmd == "INFRAME")
-      {
-        std::getline(iss, param);
-        param.erase(0, param.find_first_not_of(" \t"));
-        guseynov::commands::handleInFrameCommand(polygons, param);
+        it->second(polygons, param);
       }
       else
       {
