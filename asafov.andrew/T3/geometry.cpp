@@ -190,21 +190,47 @@ bool asafov::doPolygonsIntersect(const Polygon& a, const Polygon& b)
   const size_t n = a.points.size();
   const size_t m = b.points.size();
 
-  for (size_t i = 0; i < n; ++i)
+  struct EdgeFunctor
   {
-    const Point& a1 = a.points[i];
-    const Point& a2 = a.points[(i + 1) % n];
-
-    for (size_t j = 0; j < m; ++j)
+    bool operator()(size_t j) const
     {
+      const Point& a1 = a.points[i];
+      const Point& a2 = a.points[(i + 1) % a.points.size()];
       const Point& b1 = b.points[j];
-      const Point& b2 = b.points[(j + 1) % m];
+      const Point& b2 = b.points[(j + 1) % b.points.size()];
 
-      if (edgesIntersect(a1, a2, b1, b2))
-      {
-        return true;
-      }
+      return edgesIntersect(a1, a2, b1, b2);
     }
+
+    const Polygon& a;
+    const Polygon& b;
+    size_t i;
+  };
+
+  struct PolygonFunctor
+  {
+    bool operator()(size_t i) const
+    {
+      EdgeFunctor edgeChecker{a, b, i};
+      std::vector<size_t> indicesB(b.points.size());
+      std::iota(indicesB.begin(), indicesB.end(), 0);
+
+      return std::any_of(indicesB.begin(), indicesB.end(), std::ref(edgeChecker));
+    }
+
+    const Polygon& a;
+    const Polygon& b;
+  };
+
+  PolygonFunctor allEdgesChecker{a, b};
+  std::vector<size_t> indicesA(a.points.size());
+  std::iota(indicesA.begin(), indicesA.end(), 0);
+
+  bool edgesIntersect = std::any_of(indicesA.begin(), indicesA.end(), std::ref(allEdgesChecker));
+
+  if (edgesIntersect)
+  {
+    return true;
   }
 
   if (isPointInPolygon(a.points[0], b) || isPointInPolygon(b.points[0], a))
