@@ -80,60 +80,81 @@ bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
     return false;
   }
 
-  auto getEdgeLengths = [&](const Polygon& poly)
+  struct EdgeCalculator
   {
-    std::vector<double> lengths;
-    for (size_t i = 0; i < n; ++i)
+    double operator()(size_t i) const
     {
-      size_t j = (i + 1) % n;
+      size_t j = (i + 1) % poly.points.size();
       double dx = poly.points[j].x - poly.points[i].x;
       double dy = poly.points[j].y - poly.points[i].y;
-      lengths.push_back(std::sqrt(dx*dx + dy*dy));
+      return std::sqrt(dx * dx + dy * dy);
     }
-    return lengths;
+
+    const Polygon& poly;
   };
 
-  auto A = getEdgeLengths(a);
-  auto B = getEdgeLengths(b);
+  struct ScaleTransformer
+  {
+    double operator()(double length) const
+    {
+      return length * scale;
+    }
+
+    double scale;
+  };
+
+  struct ShiftChecker
+  {
+    bool operator()() const
+    {
+      for (size_t i = 0; i < n; ++i)
+      {
+        size_t index = reverse ? (shift + n - i) % n : (i + shift) % n;
+        if (std::abs(A[i] - B[index]) > 1e-6) return false;
+      }
+      return true;
+    }
+
+    const std::vector<double>& A;
+    const std::vector<double>& B;
+    size_t n;
+    size_t shift;
+    bool reverse;
+  };
+
+  EdgeCalculator calcA{ a }, calcB{ b };
+  std::vector< size_t > indices(n);
+  std::iota(indices.begin(), indices.end(), 0);
+
+  std::vector< double > A(n), B(n);
+  std::transform(indices.begin(), indices.end(), A.begin(), std::ref(calcA));
+  std::transform(indices.begin(), indices.end(), B.begin(), std::ref(calcB));
 
   double scale = A[0] / B[0];
-  for (double &l : B)
+  ScaleTransformer scaler{ scale };
+  std::transform(B.begin(), B.end(), B.begin(), std::ref(scaler));
+
+  std::vector< size_t > shifts(n);
+  std::iota(shifts.begin(), shifts.end(), 0);
+
+  struct AnyShiftChecker
   {
-    l *= scale;
-  }
+    bool operator()(size_t shift) const
+    {
+      ShiftChecker forward{ A, B, n, shift, false };
+      if (forward()) return true;
 
-  for (size_t shift = 0; shift < n; ++shift)
-  {
-    bool ok = true;
-    for (size_t i = 0; i < n; ++i)
-    {
-      if (std::abs(A[i] - B[(i+shift)%n]) > 1e-6)
-      {
-        ok = false;
-        break;
-      }
-    }
-    if (ok)
-    {
-      return true;
+      ShiftChecker reverse{ A, B, n, shift, true };
+      return reverse();
     }
 
-    ok = true;
-    for (size_t i = 0; i < n; ++i)
-    {
-      if (std::abs(A[i] - B[(shift+n-i)%n]) > 1e-6)
-      {
-        ok = false;
-        break;
-      }
-    }
-    if (ok)
-    {
-      return true;
-    }
-  }
+    const std::vector<double>& A;
+    const std::vector<double>& B;
+    size_t n;
+  };
 
-  return false;
+  AnyShiftChecker shiftChecker{ A, B, n };
+  return std::any_of(shifts.begin(), shifts.end(), std::ref(shiftChecker));
 }
 
 bool asafov::edgesIntersect(const Point& a1, const Point& a2, const Point& b1, const Point& b2)
