@@ -6,9 +6,6 @@
 
 namespace pilugina
 {
-  using namespace std::placeholders;
-  static auto equals = std::bind(std::equal_to< std::string > {}, _1, _2);
-
   struct Prefixer
   {
     explicit Prefixer(const std::string &prefix):
@@ -224,7 +221,8 @@ namespace pilugina
       return;
     }
     std::vector< std::string > &ts = wIt->second;
-    const bool has = std::find_if(ts.begin(), ts.end(), std::bind(equals, translation)) != ts.end();
+    auto equals = std::bind(std::equal_to<std::string>{}, translation, std::placeholders::_1);
+    const bool has = std::find_if(ts.begin(), ts.end(), equals) != ts.end();
     if (has)
     {
       out << "<TRANSLATION ALREADY EXISTS>";
@@ -275,7 +273,8 @@ namespace pilugina
       return;
     }
     std::vector< std::string > &ts = wIt->second;
-    std::vector< std::string >::iterator it = std::find_if(ts.begin(), ts.end(), std::bind(equals, translation));
+    auto equals = std::bind(std::equal_to<std::string>{}, translation, std::placeholders::_1);
+    auto it = std::find_if(ts.begin(), ts.end(), equals);
     if (it == ts.end())
     {
       out << "<TRANSLATION NOT FOUND>";
