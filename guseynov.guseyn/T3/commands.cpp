@@ -13,18 +13,18 @@
 namespace {
 struct IsEvenPolygon { bool operator()(const guseynov::Polygon& poly) const { return poly.points.size() % 2 == 0; } };
 struct IsOddPolygon { bool operator()(const guseynov::Polygon& poly) const { return poly.points.size() % 2 != 0; } };
-struct HasVertexCount { 
-  explicit HasVertexCount(size_t targetCount) : target(targetCount) {} 
-  bool operator()(const guseynov::Polygon& poly) const { return poly.points.size() == target; } 
-  size_t target; 
+struct HasVertexCount {
+  explicit HasVertexCount(size_t targetCount) : target(targetCount) {}
+  bool operator()(const guseynov::Polygon& poly) const { return poly.points.size() == target; }
+  size_t target;
 };
-struct HasLessArea { 
-  explicit HasLessArea(double areaThreshold) : threshold(areaThreshold) {} 
-  bool operator()(const guseynov::Polygon& poly) const { return guseynov::utils::calculateArea(poly) < threshold; } 
-  double threshold; 
+struct HasLessArea {
+  explicit HasLessArea(double areaThreshold) : threshold(areaThreshold) {}
+  bool operator()(const guseynov::Polygon& poly) const { return guseynov::utils::calculateArea(poly) < threshold; }
+  double threshold;
 };
-struct AreaAccumulator { 
-  double operator()(double sum, const guseynov::Polygon& poly) const { return sum + guseynov::utils::calculateArea(poly); } 
+struct AreaAccumulator {
+  double operator()(double sum, const guseynov::Polygon& poly) const { return sum + guseynov::utils::calculateArea(poly); }
 };
 struct ConditionalAreaAccumulatorEven {
   double operator()(double sum, const guseynov::Polygon& poly) const { return IsEvenPolygon()(poly) ? sum + guseynov::utils::calculateArea(poly) : sum; }
@@ -39,30 +39,30 @@ struct ConditionalAreaAccumulatorVertexCount {
 };
 struct MaxAreaFinder {
   double maxArea = 0.0;
-  void operator()(const guseynov::Polygon& poly) { 
-    double area = guseynov::utils::calculateArea(poly); 
-    if (area > maxArea) maxArea = area; 
+  void operator()(const guseynov::Polygon& poly) {
+    double area = guseynov::utils::calculateArea(poly);
+    if (area > maxArea) maxArea = area;
   }
 };
 struct MinAreaFinder {
   double minArea = std::numeric_limits<double>::max();
-  void operator()(const guseynov::Polygon& poly) { 
-    double area = guseynov::utils::calculateArea(poly); 
-    if (area < minArea) minArea = area; 
+  void operator()(const guseynov::Polygon& poly) {
+    double area = guseynov::utils::calculateArea(poly);
+    if (area < minArea) minArea = area;
   }
 };
 struct MaxVerticesFinder {
   size_t maxVertices = 0;
-  void operator()(const guseynov::Polygon& poly) { 
-    size_t vertices = poly.points.size(); 
-    if (vertices > maxVertices) maxVertices = vertices; 
+  void operator()(const guseynov::Polygon& poly) {
+    size_t vertices = poly.points.size();
+    if (vertices > maxVertices) maxVertices = vertices;
   }
 };
 struct MinVerticesFinder {
   size_t minVertices = std::numeric_limits<size_t>::max();
-  void operator()(const guseynov::Polygon& poly) { 
-    size_t vertices = poly.points.size(); 
-    if (vertices < minVertices) minVertices = vertices; 
+  void operator()(const guseynov::Polygon& poly) {
+    size_t vertices = poly.points.size();
+    if (vertices < minVertices) minVertices = vertices;
   }
 };
 struct FrameBoundsAccumulator {

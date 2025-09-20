@@ -60,8 +60,8 @@ guseynov::Polygon guseynov::utils::parsePolygon(const std::string& line) {
     if (semicolon == std::string::npos || semicolon < 2 || semicolon > pointStr.size() - 2) { poly.points.clear(); return poly; }
     std::string xStr(pointStr.begin() + 1, pointStr.begin() + semicolon);
     std::string yStr(pointStr.begin() + semicolon + 1, pointStr.end() - 1);
-    if (xStr.empty() || yStr.empty() || 
-        std::any_of(xStr.begin(), xStr.end(), IsInvalidChar()) || 
+    if (xStr.empty() || yStr.empty() ||
+        std::any_of(xStr.begin(), xStr.end(), IsInvalidChar()) ||
         std::any_of(yStr.begin(), yStr.end(), IsInvalidChar())) { poly.points.clear(); return poly; }
     try {
       int x = std::stoi(xStr);
