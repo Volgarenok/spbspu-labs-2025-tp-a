@@ -81,7 +81,6 @@ int main(int argc, char* argv[])
   {
     std::vector<guseynov::Polygon> polygons = guseynov::commands::readPolygonsFromFile(argv[1]);
     auto commandMap = createCommandMap();
-    
     std::string command;
     while (std::getline(std::cin, command))
     {

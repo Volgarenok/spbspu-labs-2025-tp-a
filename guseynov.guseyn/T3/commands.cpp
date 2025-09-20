@@ -291,7 +291,6 @@ std::vector<guseynov::Polygon> guseynov::commands::readPolygonsFromFile(const st
       polygons.push_back(poly);
     }
   }
-  
   return polygons;
 }
 
