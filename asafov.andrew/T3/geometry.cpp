@@ -34,15 +34,7 @@ bool asafov::Polygon::operator==(const Polygon& other) const
     return false;
   }
 
-  for (size_t i = 0; i < points.size(); ++i)
-  {
-    if (points[i] != other.points[i])
-    {
-      return false;
-    }
-  }
-
-  return true;
+  return std::equal(points.begin(), points.end(), other.points.begin());
 }
 
 double asafov::computeArea(const Polygon& poly)
@@ -154,7 +146,7 @@ bool asafov::edgesIntersect(const Point& a1, const Point& a2, const Point& b1, c
     {
       using std::min;
       using std::max;
-        
+
       if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) && q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y))
       {
         return true;
