@@ -11,12 +11,6 @@
 
 void guseynov::commands::handleAreaCommand(const std::vector< Polygon >& polygons, const std::string& param)
 {
-  if (polygons.empty())
-  {
-    std::cout << "<INVALID COMMAND>" << std::endl;
-    return;
-  }
-
   if (param == "EVEN")
   {
     double sum = 0.0;
@@ -43,6 +37,11 @@ void guseynov::commands::handleAreaCommand(const std::vector< Polygon >& polygon
   }
   else if (param == "MEAN")
   {
+    if (polygons.empty())
+    {
+      std::cout << "<INVALID COMMAND>" << std::endl;
+      return;
+    }
     double total = 0.0;
     for (const auto& poly : polygons)
     {
@@ -53,6 +52,11 @@ void guseynov::commands::handleAreaCommand(const std::vector< Polygon >& polygon
   else if (guseynov::utils::isNumber(param))
   {
     size_t target = std::stoul(param);
+    if (target < 3)
+    {
+      std::cout << "<INVALID COMMAND>" << std::endl;
+      return;
+    }
     double sum = 0.0;
     for (const auto& poly : polygons)
     {
@@ -152,6 +156,11 @@ void guseynov::commands::handleCountCommand(const std::vector< Polygon >& polygo
   else if (guseynov::utils::isNumber(param))
   {
     size_t target = std::stoul(param);
+    if (target < 3)
+    {
+      std::cout << "<INVALID COMMAND>" << std::endl;
+      return;
+    }
     size_t count = std::count_if(polygons.begin(), polygons.end(),
       [target](const Polygon& poly) { return poly.points.size() == target; });
     std::cout << count << std::endl;
@@ -208,12 +217,6 @@ void guseynov::commands::handleInFrameCommand(const std::vector< Polygon >& poly
 
 void guseynov::commands::handleLessAreaCommand(const std::vector< Polygon >& polygons, const std::string& param)
 {
-  if (polygons.empty())
-  {
-    std::cout << "0" << std::endl;
-    return;
-  }
-
   Polygon targetPoly = guseynov::utils::parsePolygon(param);
   if (targetPoly.points.size() < 3)
   {
