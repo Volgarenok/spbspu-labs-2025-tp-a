@@ -64,7 +64,6 @@ int main(int argc, char* argv[])
   {
     std::vector<guseynov::Polygon> polygons = guseynov::utils::readPolygonsFromFile(argv[1]);
     auto commandMap = createCommandMap();
-    
     std::string command;
     while (std::getline(std::cin, command))
     {
@@ -73,7 +72,6 @@ int main(int argc, char* argv[])
         str.erase(str.begin(), std::find_if_not(str.begin(), str.end(), isSpace));
         str.erase(std::find_if_not(str.rbegin(), str.rend(), isSpace).base(), str.end());
       };
-      
       trim(command);
       if (command.empty())
       {
