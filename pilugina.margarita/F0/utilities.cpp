@@ -1,4 +1,3 @@
-// pilugina.cpp
 #include "utilities.hpp"
 #include <istream>
 #include <fstream>
