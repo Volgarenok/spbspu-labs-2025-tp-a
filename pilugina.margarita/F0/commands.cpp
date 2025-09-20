@@ -125,20 +125,20 @@ namespace pilugina
     dictionary *dst_;
   };
 
-  static inline bool read3(std::istream &in, std::string &a, std::string &b, std::string &c)
+  static bool read3(std::istream &in, std::string &a, std::string &b, std::string &c)
   {
     return static_cast< bool >(in >> a >> b >> c);
   }
-  static inline bool read2(std::istream &in, std::string &a, std::string &b)
+  static bool read2(std::istream &in, std::string &a, std::string &b)
   {
     return static_cast< bool >(in >> a >> b);
   }
-  static inline bool read1(std::istream &in, std::string &a)
+  static bool read1(std::istream &in, std::string &a)
   {
     return static_cast< bool >(in >> a);
   }
 
-  static inline bool fileExists(const std::string &name)
+  static bool fileExists(const std::string &name)
   {
     std::ifstream f(name.c_str(), std::ios::in | std::ios::binary);
     return static_cast< bool >(f);
