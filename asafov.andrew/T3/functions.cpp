@@ -117,7 +117,7 @@ void asafov::processCommand(const std::vector<Polygon>& polygons, const std::str
   }
   catch (const std::exception&)
   {
-      std::cout << "<INVALID COMMAND>\n";
+    std::cout << "<INVALID COMMAND>\n";
   }
 }
 

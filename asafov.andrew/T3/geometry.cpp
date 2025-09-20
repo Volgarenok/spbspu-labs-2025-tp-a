@@ -155,29 +155,32 @@ bool asafov::edgesIntersect(const Point& a1, const Point& a2, const Point& b1, c
     }
   };
 
-  int o1 = OrientationFunctor(a1, a2, b1);
-  int o2 = OrientationFunctor(a1, a2, b2);
-  int o3 = OrientationFunctor(b1, b2, a1);
-  int o4 = OrientationFunctor(b1, b2, a2);
+  OrientationFunctor orientation;
+  SegmentFunctor segf;
+
+  int o1 = orientation(a1, a2, b1);
+  int o2 = orientation(a1, a2, b2);
+  int o3 = orientation(b1, b2, a1);
+  int o4 = orientation(b1, b2, a2);
 
   if (o1 != o2 && o3 != o4)
   {
     return true;
   }
 
-  if (o1 == 0 && SegmentFunctor(a1, b1, a2))
+  if (o1 == 0 && segf(a1, b1, a2))
   {
     return true;
   }
-  if (o2 == 0 && SegmentFunctor(a1, b2, a2))
+  if (o2 == 0 && segf(a1, b2, a2))
   {
     return true;
   }
-  if (o3 == 0 && SegmentFunctor(b1, a1, b2))
+  if (o3 == 0 && segf(b1, a1, b2))
   {
     return true;
   }
-  if (o4 == 0 && SegmentFunctor(b1, a2, b2))
+  if (o4 == 0 && segf(b1, a2, b2))
   {
     return true;
   }
