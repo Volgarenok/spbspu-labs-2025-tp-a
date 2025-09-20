@@ -22,14 +22,14 @@ namespace
     const Point& point;
     const Polygon& poly;
     mutable bool foundOnBorder;
-    
+
   public:
     PolygonEdgeChecker(const Point& p, const Polygon& poly):
       point(p),
       poly(poly),
       foundOnBorder(false)
     {}
-    
+
     std::pair<bool, Point> operator()(std::pair<bool, Point> accumulator, const Point& current) const
     {
       if (foundOnBorder)
