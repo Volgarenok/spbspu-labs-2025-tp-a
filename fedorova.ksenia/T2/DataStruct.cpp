@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 #include <limits>
+#include <delimiter.h>
+#include <io-guard.h>
 
 std::ostream& fedorova::operator<<(std::ostream& os, const ULLBinaryO& dest)
 {
@@ -19,26 +21,6 @@ std::ostream& fedorova::operator<<(std::ostream& os, const ULLBinaryO& dest)
     os << dest.ref;
   }
   return os;
-}
-
-std::istream& fedorova::operator>>(std::istream& in, DelimiterIO&& data)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-
-  char c = '0';
-  in >> c;
-  c = std::tolower(c);
-
-  if (in && (c != data.exp))
-  {
-    in.setstate(std::ios::failbit);
-  }
-
-  return in;
 }
 
 std::istream& fedorova::operator>>(std::istream& is, ULLLiteralIO&& dest)
@@ -168,7 +150,7 @@ std::ostream& fedorova::operator<<(std::ostream& out, const fedorova::DataStruct
   return out;
 }
 
-fedorova::IoGuard::IoGuard(std::basic_ios< char >& s):
+/*fedorova::IoGuard::IoGuard(std::basic_ios< char >& s):
   s_(s),
   width_(s.width()),
   fill_(s.fill()),
@@ -182,7 +164,7 @@ fedorova::IoGuard::~IoGuard()
   s_.fill(fill_);
   s_.precision(precision_);
   s_.flags(fmt_);
-}
+}*/
 
 bool fedorova::compareDataStruct(const DataStruct& a, const DataStruct& b)
 {
