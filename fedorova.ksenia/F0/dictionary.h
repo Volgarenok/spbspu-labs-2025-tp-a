@@ -36,4 +36,3 @@ namespace fedorova
   std::ostream& operator<<(std::ostream& os, const DictContent& dict);
 }
 #endif
-

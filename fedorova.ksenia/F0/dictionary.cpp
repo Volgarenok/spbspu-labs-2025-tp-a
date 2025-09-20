@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <iterator>
-#include "Dictionary.h"
+#include "dictionary.h"
 
 namespace
 {

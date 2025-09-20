@@ -1,4 +1,3 @@
-#include "commands.h"
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
@@ -7,7 +6,8 @@
 #include <iostream>
 #include <iterator>
 #include <numeric>
-#include "Dictionary.h"
+#include <commands.h>
+#include "dictionary.h"
 
 namespace
 {
