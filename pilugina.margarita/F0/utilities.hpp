@@ -31,20 +31,11 @@ namespace pilugina
     dictionary *dst_;
   };
 
-  bool read3(std::istream &in, std::string &a, std::string &b, std::string &c);
-  bool read2(std::istream &in, std::string &a, std::string &b);
-  bool read1(std::istream &in, std::string &a);
+  bool read3Words(std::istream &in, std::string &a, std::string &b, std::string &c);
+  bool read2Words(std::istream &in, std::string &a, std::string &b);
+  bool read1Word(std::istream &in, std::string &a);
 
   bool fileExists(const std::string &name);
-
-  struct Prefixer
-  {
-    explicit Prefixer(const std::string &prefix);
-    std::string operator()(const std::string &s) const;
-
-  private:
-    std::string prefix_;
-  };
 
   struct MissingIn
   {

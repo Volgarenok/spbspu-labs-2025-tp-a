@@ -9,7 +9,7 @@ namespace pilugina
   void createDict(std::istream &in, std::ostream &out, dictionaries &dicts)
   {
     std::string dictName;
-    if (!read1(in, dictName))
+    if (!read1Word(in, dictName))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -27,7 +27,7 @@ namespace pilugina
   void deleteDict(std::istream &in, std::ostream &out, dictionaries &dicts)
   {
     std::string dictName;
-    if (!read1(in, dictName))
+    if (!read1Word(in, dictName))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -39,7 +39,7 @@ namespace pilugina
   void insertWord(std::istream &in, std::ostream &out, dictionaries &dicts)
   {
     std::string dictName, word;
-    if (!read2(in, dictName, word))
+    if (!read2Words(in, dictName, word))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -64,7 +64,7 @@ namespace pilugina
   void insertTranslation(std::istream &in, std::ostream &out, dictionaries &dicts)
   {
     std::string dictName, word, translation;
-    if (!read3(in, dictName, word, translation))
+    if (!read3Words(in, dictName, word, translation))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -96,7 +96,7 @@ namespace pilugina
   void removeWord(std::istream &in, std::ostream &out, dictionaries &dicts)
   {
     std::string dictName, word;
-    if (!read2(in, dictName, word))
+    if (!read2Words(in, dictName, word))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -115,7 +115,7 @@ namespace pilugina
   void removeTranslation(std::istream &in, std::ostream &out, dictionaries &dicts)
   {
     std::string dictName, word, translation;
-    if (!read3(in, dictName, word, translation))
+    if (!read3Words(in, dictName, word, translation))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -147,7 +147,7 @@ namespace pilugina
   void searchTranslation(std::istream &in, std::ostream &out, const dictionaries &dicts)
   {
     std::string dictName, word;
-    if (!read2(in, dictName, word))
+    if (!read2Words(in, dictName, word))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -172,7 +172,7 @@ namespace pilugina
   void printSizeDict(std::istream &in, std::ostream &out, const dictionaries &dicts)
   {
     std::string dictName;
-    if (!read1(in, dictName))
+    if (!read1Word(in, dictName))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -189,7 +189,7 @@ namespace pilugina
   void printDict(std::istream &in, std::ostream &out, const dictionaries &dicts)
   {
     std::string dictName;
-    if (!read1(in, dictName))
+    if (!read1Word(in, dictName))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -222,7 +222,7 @@ namespace pilugina
   void saveDict(std::istream &in, std::ostream &out, const dictionaries &dicts)
   {
     std::string dictName, filename;
-    if (!read2(in, dictName, filename))
+    if (!read2Words(in, dictName, filename))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -260,7 +260,7 @@ namespace pilugina
   void mergeDicts(std::istream &in, std::ostream &out, dictionaries &dicts)
   {
     std::string a, b, dest;
-    if (!read3(in, a, b, dest))
+    if (!read3Words(in, a, b, dest))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -287,7 +287,7 @@ namespace pilugina
   void joinDicts(std::istream &in, std::ostream &out, dictionaries &dicts)
   {
     std::string a, b;
-    if (!read2(in, a, b))
+    if (!read2Words(in, a, b))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -311,7 +311,7 @@ namespace pilugina
   void innerMerge(std::istream &in, std::ostream &out, dictionaries &dicts)
   {
     std::string a, b, dest;
-    if (!read3(in, a, b, dest))
+    if (!read3Words(in, a, b, dest))
     {
       out << "<INVALID COMMAND>";
       return;
@@ -337,7 +337,7 @@ namespace pilugina
   void mergeTranslations(std::istream &in, std::ostream &out, dictionaries &dicts)
   {
     std::string a, b;
-    if (!read2(in, a, b))
+    if (!read2Words(in, a, b))
     {
       out << "<INVALID COMMAND>";
       return;
