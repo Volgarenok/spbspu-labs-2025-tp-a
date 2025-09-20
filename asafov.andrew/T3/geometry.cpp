@@ -13,9 +13,8 @@ namespace
 
   bool isPointOnSegment(const asafov::Point& p, const asafov::Point& a, const asafov::Point& b)
   {
-    return crossProduct(a, b, p) == 0 &&
-      std::min(a.x, b.x) <= p.x && p.x <= std::max(a.x, b.x) &&
-      std::min(a.y, b.y) <= p.y && p.y <= std::max(a.y, b.y);
+    using sm = std::min;
+    return crossProduct(a, b, p) == 0 && sm(a.x, b.x) <= p.x && p.x <= sm(a.x, b.x) && sm(a.y, b.y) <= p.y && p.y <= sm(a.y, b.y);
   }
 }
 
@@ -149,8 +148,8 @@ bool asafov::edgesIntersect(const Point& a1, const Point& a2, const Point& b1, c
 
   auto onSegment = [](const Point& p, const Point& q, const Point& r) -> bool
   {
-    if (q.x <= std::max(p.x, r.x) && q.x >= std::min(p.x, r.x) &&
-        q.y <= std::max(p.y, r.y) && q.y >= std::min(p.y, r.y))
+    using sm = std::min;
+    if (q.x <= sm(p.x, r.x) && q.x >= sm(p.x, r.x) && q.y <= sm(p.y, r.y) && q.y >= sm(p.y, r.y))
     {
       return true;
     }
@@ -237,8 +236,7 @@ bool asafov::isPointInPolygon(const Point& point, const Polygon& poly)
       return true;
     }
 
-    if (((p1.y > point.y) != (p2.y > point.y)) &&
-        (point.x < (p2.x - p1.x) * (point.y - p1.y) / static_cast<double>(p2.y - p1.y) + p1.x))
+    if (((p1.y > point.y) != (p2.y > point.y)) && (point.x < (p2.x - p1.x) * (point.y - p1.y) / static_cast<double>(p2.y - p1.y) + p1.x))
     {
       inside = !inside;
     }

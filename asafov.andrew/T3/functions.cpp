@@ -87,35 +87,27 @@ void asafov::processCommand(const std::vector<Polygon>& polygons, const std::str
     return;
   }
 
+  const std::map<std::string, std::function<void(const std::vector<Polygon>&, const std::string&)>> COMMAND_MAP =
+  {
+    {"AREA", handleAreaCommands},
+    {"MAX", handleMaxCommands},
+    {"MIN", handleMinCommands},
+    {"COUNT", handleCountCommands},
+    {"INTERSECTIONS", handleIntersectionsCommand},
+    {"SAME", handleSameCommand}
+  };
+
+
   std::string command;
   std::string arg;
   asafov::parseCommand(cmd, command, arg);
 
   try
   {
-    if (command == "AREA")
+    auto it = COMMAND_MAP.find(command);
+    if (it != COMMAND_MAP.end())
     {
-      asafov::handleAreaCommands(polygons, arg);
-    }
-    else if (command == "MAX")
-    {
-      asafov::handleMaxCommands(polygons, arg);
-    }
-    else if (command == "MIN")
-    {
-      asafov::handleMinCommands(polygons, arg);
-    }
-    else if (command == "COUNT")
-    {
-      asafov::handleCountCommands(polygons, arg);
-    }
-    else if (command == "INTERSECTIONS")
-    {
-      asafov::handleIntersectionsCommand(polygons, arg);
-    }
-    else if (command == "SAME")
-    {
-      asafov::handleSameCommand(polygons, arg);
+      it->second(polygons, arg);
     }
     else
     {
@@ -124,7 +116,7 @@ void asafov::processCommand(const std::vector<Polygon>& polygons, const std::str
   }
   catch (const std::exception&)
   {
-    std::cout << "<INVALID COMMAND>\n";
+      std::cout << "<INVALID COMMAND>\n";
   }
 }
 
@@ -295,40 +287,26 @@ void asafov::handleCountCommands(const std::vector<Polygon>& polygons, const std
 
 void asafov::handleIntersectionsCommand(const std::vector<Polygon>& polygons, const std::string& arg)
 {
-  try
-  {
-    Polygon target = asafov::parsePolygonFromString(arg);
+  Polygon target = asafov::parsePolygonFromString(arg);
 
-    size_t count = std::count_if(polygons.begin(), polygons.end(),
-      [&target](const Polygon& poly)
-      {
-        return asafov::doPolygonsIntersect(poly, target);
-      });
+  size_t count = std::count_if(polygons.begin(), polygons.end(),
+    [&target](const Polygon& poly)
+    {
+      return asafov::doPolygonsIntersect(poly, target);
+    });
 
-    printCount(count);
-  }
-  catch (const std::exception&)
-  {
-    throw std::invalid_argument("Invalid INTERSECTIONS argument");
-  }
+  printCount(count);
 }
 
 void asafov::handleSameCommand(const std::vector<Polygon>& polygons, const std::string& arg)
 {
-  try
-  {
-    Polygon target = asafov::parsePolygonFromString(arg);
+  Polygon target = asafov::parsePolygonFromString(arg);
 
-    size_t count = std::count_if(polygons.begin(), polygons.end(),
-      [&target](const Polygon& poly)
-      {
-        return asafov::arePolygonsSame(poly, target);
-      });
+  size_t count = std::count_if(polygons.begin(), polygons.end(),
+    [&target](const Polygon& poly)
+    {
+      return asafov::arePolygonsSame(poly, target);
+    });
 
-    printCount(count);
-  }
-  catch (const std::exception&)
-  {
-    throw std::invalid_argument("Invalid SAME argument");
-  }
+  printCount(count);
 }
