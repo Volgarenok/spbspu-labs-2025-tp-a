@@ -149,7 +149,7 @@ void guseynov::commands::handleAreaCommand(const std::vector<Polygon>& polygons,
       std::cout << "<INVALID COMMAND>\n";
       return;
     }
-    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, 
+    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
                                 ConditionalAreaAccumulator(HasVertexCount(target)));
     std::cout << std::fixed << std::setprecision(1) << sum << '\n';
   }
