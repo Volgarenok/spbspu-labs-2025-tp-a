@@ -13,8 +13,8 @@ namespace
 
   bool isPointOnSegment(const asafov::Point& p, const asafov::Point& a, const asafov::Point& b)
   {
-    using sm = std::min;
-    return crossProduct(a, b, p) == 0 && sm(a.x, b.x) <= p.x && p.x <= sm(a.x, b.x) && sm(a.y, b.y) <= p.y && p.y <= sm(a.y, b.y);
+    using std::min;
+    return crossProduct(a, b, p) == 0 && min(a.x, b.x) <= p.x && p.x <= min(a.x, b.x) && min(a.y, b.y) <= p.y && p.y <= min(a.y, b.y);
   }
 }
 
@@ -148,8 +148,8 @@ bool asafov::edgesIntersect(const Point& a1, const Point& a2, const Point& b1, c
 
   auto onSegment = [](const Point& p, const Point& q, const Point& r) -> bool
   {
-    using sm = std::min;
-    if (q.x <= sm(p.x, r.x) && q.x >= sm(p.x, r.x) && q.y <= sm(p.y, r.y) && q.y >= sm(p.y, r.y))
+    using std::min;
+    if (q.x <= min(p.x, r.x) && q.x >= min(p.x, r.x) && q.y <= min(p.y, r.y) && q.y >= min(p.y, r.y))
     {
       return true;
     }
