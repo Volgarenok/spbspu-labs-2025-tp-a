@@ -12,6 +12,10 @@ namespace guseynov
   {
     using CommandHandler = std::function<void(const std::vector<Polygon>&, const std::string&)>;
 
+    double calculateArea(const Polygon& poly);
+    Polygon parsePolygon(const std::string& line);
+    std::vector<Polygon> readPolygonsFromFile(const std::string& filename);
+
     void handleAreaCommand(const std::vector<Polygon>& polygons, const std::string& param);
     void handleMaxCommand(const std::vector<Polygon>& polygons, const std::string& param);
     void handleMinCommand(const std::vector<Polygon>& polygons, const std::string& param);

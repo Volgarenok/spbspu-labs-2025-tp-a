@@ -6,7 +6,6 @@
 #include <cctype>
 #include <functional>
 #include "polygon.hpp"
-#include "utils.hpp"
 #include "commands.hpp"
 
 namespace
@@ -80,8 +79,9 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::vector<guseynov::Polygon> polygons = guseynov::utils::readPolygonsFromFile(argv[1]);
+    std::vector<guseynov::Polygon> polygons = guseynov::commands::readPolygonsFromFile(argv[1]);
     auto commandMap = createCommandMap();
+    
     std::string command;
     while (std::getline(std::cin, command))
     {
