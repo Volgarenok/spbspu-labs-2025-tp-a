@@ -13,6 +13,8 @@ namespace guseynov
     void handleMaxCommand(const std::vector< Polygon >& polygons, const std::string& param);
     void handleMinCommand(const std::vector< Polygon >& polygons, const std::string& param);
     void handleCountCommand(const std::vector< Polygon >& polygons, const std::string& param);
+    void handleInFrameCommand(const std::vector< Polygon >& polygons, const std::string& param);
+    void handleLessAreaCommand(const std::vector< Polygon >& polygons, const std::string& param);
   }
 }
 

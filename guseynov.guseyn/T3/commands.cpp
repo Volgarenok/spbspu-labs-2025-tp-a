@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include <string>
+#include <functional>
 
 void guseynov::commands::handleAreaCommand(const std::vector< Polygon >& polygons, const std::string& param)
 {
@@ -170,7 +171,7 @@ void guseynov::commands::handleInFrameCommand(const std::vector< Polygon >& poly
   }
 
   Polygon targetPoly = guseynov::utils::parsePolygon(param);
-  if (targetPoly.points.empty())
+  if (targetPoly.points.size() < 3)
   {
     std::cout << "<INVALID COMMAND>" << std::endl;
     return;
@@ -192,21 +193,27 @@ void guseynov::commands::handleInFrameCommand(const std::vector< Polygon >& poly
     }
   }
 
-  bool inside = true;
+  bool allPointsInside = true;
   for (const auto& point : targetPoly.points)
   {
     if (point.x < minX || point.x > maxX || point.y < minY || point.y > maxY)
     {
-      inside = false;
+      allPointsInside = false;
       break;
     }
   }
 
-  std::cout << (inside ? "<TRUE>" : "<FALSE>") << std::endl;
+  std::cout << (allPointsInside ? "<TRUE>" : "<FALSE>") << std::endl;
 }
 
 void guseynov::commands::handleLessAreaCommand(const std::vector< Polygon >& polygons, const std::string& param)
 {
+  if (polygons.empty())
+  {
+    std::cout << "0" << std::endl;
+    return;
+  }
+
   Polygon targetPoly = guseynov::utils::parsePolygon(param);
   if (targetPoly.points.size() < 3)
   {

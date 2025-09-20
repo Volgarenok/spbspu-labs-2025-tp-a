@@ -20,6 +20,9 @@ int main(int argc, char* argv[])
     std::string command;
     while (std::getline(std::cin, command))
     {
+      command.erase(0, command.find_first_not_of(" \t"));
+      command.erase(command.find_last_not_of(" \t") + 1);
+      if (command.empty()) continue;
       std::istringstream iss(command);
       std::string cmd, param;
       iss >> cmd;
@@ -46,13 +49,13 @@ int main(int argc, char* argv[])
       else if (cmd == "LESSAREA")
       {
         std::getline(iss, param);
-        param.erase(0, param.find_first_not_of(" "));
+        param.erase(0, param.find_first_not_of(" \t"));
         guseynov::commands::handleLessAreaCommand(polygons, param);
       }
       else if (cmd == "INFRAME")
       {
         std::getline(iss, param);
-        param.erase(0, param.find_first_not_of(" "));
+        param.erase(0, param.find_first_not_of(" \t"));
         guseynov::commands::handleInFrameCommand(polygons, param);
       }
       else
