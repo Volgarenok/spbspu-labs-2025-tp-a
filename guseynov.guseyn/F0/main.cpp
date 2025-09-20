@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "command_handler.hpp"
+#include "command-handler.hpp"
 
 int main() {
   guseynov::CommandHandler handler;
@@ -22,7 +22,7 @@ int main() {
     size_t pos = 0;
     while (pos < input.length()) {
       if (input[pos] == '"') {
-        std::string quoted = handler.extractQuotedText(input, pos);
+        std::string quoted = guseynov::CommandHandler::extractQuotedText(input, pos);
         args.push_back(quoted);
       } else if (input[pos] != ' ') {
         size_t start = pos;

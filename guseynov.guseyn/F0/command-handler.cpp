@@ -1,4 +1,4 @@
-#include "command_handler.hpp"
+#include "command-handler.hpp"
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -34,7 +34,7 @@ namespace guseynov {
     }
     return tokens;
   }
-  std::string CommandHandler::extractQuotedText(const std::string& input, size_t& pos) const {
+  std::string CommandHandler::extractQuotedText(const std::string& input, size_t& pos) {
     if (pos >= input.length() || input[pos] != '"') return "";
     size_t start = pos + 1;
     size_t end = input.find('"', start);
@@ -308,7 +308,6 @@ namespace guseynov {
       }
       return;
     }
-    
     if (command == "deletebytags") {
       if (args.size() < 4) {
         std::cout << "Error: Not enough arguments\n";
