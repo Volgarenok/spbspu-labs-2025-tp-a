@@ -44,17 +44,28 @@ double asafov::computeArea(const Polygon& poly)
     return 0.0;
   }
 
-  double area = 0.0;
-  const size_t n = poly.points.size();
-
-  for (size_t i = 0; i < n; ++i)
+  struct PolygonAreaCalculator
   {
-    const Point& p1 = poly.points[i];
-    const Point& p2 = poly.points[(i + 1) % n];
-    area += (p1.x * p2.y) - (p2.x * p1.y);
-  }
+    double operator()(size_t i)
+    {
+      const Point& p1 = poly.points[i];
+      const Point& p2 = poly.points[(i + 1) % poly.points.size()];
+      area += crossProduct(Point{ 0, 0 }, p1, p2);
+      return area;
+    }
 
-  return std::abs(area) / 2.0;
+    const Polygon& poly;
+    double area = 0.0;
+  };
+
+  PolygonAreaCalculator calculator{ poly };
+  std::vector< size_t > indices(poly.points.size());
+  std::iota(indices.begin(), indices.end(), 0);
+
+  std::vector<double> dummy(poly.points.size());
+  std::transform(indices.begin(), indices.end(), dummy.begin(), std::ref(calculator));
+
+  return std::abs(calculator.area) / 2.0;
 }
 
 bool asafov::arePolygonsSame(const Polygon& a, const Polygon& b)
