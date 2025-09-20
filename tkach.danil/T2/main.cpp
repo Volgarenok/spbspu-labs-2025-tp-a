@@ -3,6 +3,7 @@
 #include <iterator>
 #include <algorithm>
 #include <limits>
+#include <common_io_actions.hpp>
 #include "data_struct.hpp"
 #include "io_actions.hpp"
 

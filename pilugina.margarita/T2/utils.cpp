@@ -1,5 +1,4 @@
 #include "utils.hpp"
-#include <iostream>
 
 bool pilugina::isBinaryDigit(char c)
 {

@@ -1,23 +1,8 @@
 #include "data.h"
 #include <array>
 #include <cctype>
-#include "guard.h"
-
-std::istream& mezentsev::operator>>(std::istream& input, DelimiterIO&& dest)
-{
-  std::istream::sentry sentry(input);
-  if (!sentry)
-  {
-    return input;
-  }
-  char c = '0';
-  input >> c;
-  if (input && (std::tolower(c) != dest.exp))
-  {
-    input.setstate(std::ios::failbit);
-  }
-  return input;
-}
+#include <Guard.h>
+#include <Delimiter.h>
 
 std::istream& mezentsev::operator>>(std::istream& input, DelimitersIO&& dest)
 {

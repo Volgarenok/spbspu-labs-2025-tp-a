@@ -4,6 +4,7 @@
 #include <string>
 #include <iomanip>
 
+
 namespace voronina
 {
   struct DataStruct
@@ -11,11 +12,6 @@ namespace voronina
     double key1;
     unsigned long long int key2;
     std::string key3;
-  };
-
-  struct DelimiterIO
-  {
-    char exp;
   };
 
   struct DelimiterDIO {};
@@ -35,20 +31,6 @@ namespace voronina
     std::string &ref;
   };
 
-  class StreamGuard
-  {
-  public:
-    explicit StreamGuard(std::basic_ios< char > &s);
-    ~StreamGuard();
-  private:
-    std::basic_ios< char > &s_;
-    std::streamsize width_;
-    char fill_;
-    std::streamsize precision_;
-    std::basic_ios< char >::fmtflags fmt_;
-  };
-
-  std::istream &operator>>(std::istream &in, DelimiterIO &&dest);
   std::istream &operator>>(std::istream &in, DoubleIO &&dest);
   std::istream &operator>>(std::istream &in, StringIO &&dest);
   std::istream &operator>>(std::istream &in, UnsignedLongLongIO &&dest);

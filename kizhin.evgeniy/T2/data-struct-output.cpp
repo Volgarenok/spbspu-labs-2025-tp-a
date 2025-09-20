@@ -1,7 +1,7 @@
 #include "data-struct.hpp"
 #include <iomanip>
 #include <iostream>
-#include "stream-guard.hpp"
+#include <stream-guard.hpp>
 
 namespace kizhin {
   struct Label;

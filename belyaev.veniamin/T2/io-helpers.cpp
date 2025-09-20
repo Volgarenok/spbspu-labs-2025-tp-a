@@ -1,23 +1,7 @@
 #include "io-helpers.hpp"
 #include <iomanip>
-#include "stream-guard.hpp"
-
-std::istream& belyaev::operator>>(std::istream& in, const DelimeterIO&& dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-
-  char c = '0';
-  in >> c;
-  if (in && (c != dest.expected))
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
-}
+#include <delimiter.hpp>
+#include <stream-guard.hpp>
 
 std::ostream& belyaev::operator<<(std::ostream& out, const DoubleEIOOut&& dest)
 {
@@ -127,7 +111,7 @@ std::istream& belyaev::operator>>(std::istream& in, const PairLLIOIn&& dest)
     return in;
   }
 
-  using sep = DelimeterIO;
+  using sep = DelimiterIO;
   in >> sep{'('};
   in >> sep{':'};
   in >> sep{'N'};
@@ -147,5 +131,5 @@ std::istream& belyaev::operator>>(std::istream& in, const StringIO& dest)
   {
     return in;
   }
-  return std::getline(in >> DelimeterIO{'"'}, dest.value, '"');
+  return std::getline(in >> DelimiterIO{'"'}, dest.value, '"');
 }
