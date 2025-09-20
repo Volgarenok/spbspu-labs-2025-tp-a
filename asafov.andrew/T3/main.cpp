@@ -18,7 +18,10 @@ int main(int argc, char* argv[])
 
     while (std::getline(std::cin, command))
     {
-      if (command.empty()) continue;
+      if (command.empty())
+      {
+        continue;
+      }
       asafov::processCommand(polygons, command);
     }
   }

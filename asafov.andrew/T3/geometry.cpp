@@ -219,7 +219,10 @@ bool asafov::doPolygonsIntersect(const Polygon& a, const Polygon& b)
 
 bool asafov::isPointInPolygon(const Point& point, const Polygon& poly)
 {
-  if (poly.points.size() < 3) return false;
+  if (poly.points.size() < 3)
+  {
+    return false;
+  }
 
   bool inside = false;
   const size_t n = poly.points.size();
