@@ -149,7 +149,7 @@ void guseynov::commands::handleInFrameCommand(const std::vector<Polygon>& polygo
   if (targetPoly.points.size() < 3) { std::cout << "<INVALID COMMAND>\n"; return; }
   FrameBoundsAccumulator bounds;
   for (const auto& poly : polygons) bounds(poly);
-  bool allPointsInside = std::none_of(targetPoly.points.begin(), targetPoly.points.end(), 
+  bool allPointsInside = std::none_of(targetPoly.points.begin(), targetPoly.points.end(),
                                     PointOutsideFrame(bounds.minX, bounds.maxX, bounds.minY, bounds.maxY));
   std::cout << (allPointsInside ? "<TRUE>" : "<FALSE>") << '\n';
 }
