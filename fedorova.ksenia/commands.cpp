@@ -480,3 +480,38 @@ void fedorova::export_no_range(std::istream& is, std::ostream& os, const DictSet
   os << result;
 }
 
+void fedorova::print_help(std::ostream& os)
+{
+  os << std::setw(65) << std::left << "create <dict> " << "create new empty dictionary\n";
+  os << std::setw(65) << std::left << "list_dict" << "print list of current dictionaries\n";
+  os << std::setw(65) << std::left << "size_of_dict <name> " << "print dictionary size\n";
+  os << std::setw(65) << std::left << "delete_dict <name> " << "remove existing dictionary\n";
+  os << std::setw(65) << std::left << "add_word <word> <translate> <dict>";
+  os << "add the word and its translation to the dictionary\n";
+  os << std::setw(65) << std::left << "change_translation <rus_translation< <new_rus_translation> <dict> ";
+  os << "replace word is dictionary by new_word\n";
+  os << std::setw(65) << std::left << "translate <word> <dict>";
+  os << "print the translation of a word from the dictionary\n";
+  os << std::setw(65) << std::left << "contains <letters> <dict>";
+  os << "print words that contain subword is dictionary\n";
+  os << std::setw(65) << std::left << "delete_word <word> <dict>";
+  os << "delete an existing word from an existing dictionary\n";
+  os << std::setw(65) << std::left << "add_translate <word> <translate> <dict> ";
+  os << "add new translate to existing word is dictionary\n";
+  os << std::setw(65) << std::left << "start_with <prefix> <dict> ";
+  os << "finds all English words that start with prefix\n";
+  os << std::setw(65) << std::left << "delete_translate <word> <translate> <dict> ";
+  os << "remove existing translate of existing word is existing dictionary\n";
+  os << std::setw(65) << std::left << "see_dict <dict> ";
+  os << "print out the contents of the dictionary by letter\n";
+  os << std::setw(65) << std::left << "translate_in_dicts <dict_count> <dict_1> ... <dict_n> <word> ";
+  os << "print word translates from dictionaries\n";
+  os << std::setw(65) << std::left << "merge <dict1> <dict2> <union_dict> ";
+  os << "create new dictionary as union of dictionary1, dictionary2\n";
+  os << std::setw(65) << std::left << "export_range <start> <end> <dict> ";
+  os << "displays all words from the dictionary in alphabetical order from start to end\n";
+  os << std::setw(65) << std::left << "export_no_range <start> <end> <dict> ";
+  os << "displays all words from the dictionary in alphabetical order NOT from start to end\n";
+  os << "\nIf dictionaries were load from file, result of programm will be saved is this file.\n";
+  os << "is the opposite case result of programm will be saved in file \"dictionaries\".";
+}
