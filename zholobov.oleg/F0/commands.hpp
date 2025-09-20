@@ -20,6 +20,8 @@ namespace zholobov {
 
   void cmdDictCreate(Dictionaries& dictionaries, const std::vector< std::string >& args);
   void cmdDictRemove(Dictionaries& dictionaries, const std::vector< std::string >& args);
+  void cmdDictImport(Dictionaries& dictionaries, const std::vector< std::string >& args);
+  void cmdDictExport(Dictionaries& dictionaries, const std::vector< std::string >& args);
 
 }
 

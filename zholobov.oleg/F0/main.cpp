@@ -26,6 +26,8 @@ int main(int argc, char* argv[])
 
   keywords["dict-create"] = cmdDictCreate;
   keywords["dict-remove"] = cmdDictRemove;
+  keywords["dict-import"] = cmdDictImport;
+  keywords["dict-export"] = cmdDictExport;
 
   std::string line;
   while (std::getline(std::cin, line)) {

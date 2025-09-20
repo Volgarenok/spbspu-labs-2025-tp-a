@@ -1,6 +1,10 @@
 #include "commands.hpp"
 
+#include <algorithm>
+#include <fstream>
 #include <iostream>
+
+#include "utils.hpp"
 
 void zholobov::printHelp(std::ostream& out)
 {
@@ -50,4 +54,79 @@ void zholobov::cmdDictRemove(Dictionaries& dictionaries, const std::vector< std:
   } else {
     dictionaries.erase(name);
   }
+}
+
+void zholobov::cmdDictImport(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() != 3) {
+    throw InvalidParams();
+  }
+  const std::string& dictName = args[1];
+  const std::string& fileName = args[2];
+
+  Dictionary& dict = dictionaries[dictName];
+
+  std::ifstream fin(fileName);
+  if (!fin) {
+    std::cout << "<0 TRANSLATIONS IMPORTED>.\n";
+    return;
+  }
+
+  int imported = 0;
+  int dropped = 0;
+  Words tokens;
+  while (fin >> tokens) {
+    if (tokens.empty()) {
+      continue;
+    }
+
+    Word eng = tokens.front();
+    tokens.pop_front();
+    if (tokens.empty()) {
+      ++dropped;
+      continue;
+    }
+
+    Words& entry = dict[eng];
+    for (auto it = tokens.cbegin(); it != tokens.cend(); ++it) {
+      if (std::find(entry.cbegin(), entry.cend(), *it) == entry.cend()) {
+        entry.push_back(*it);
+      }
+    }
+    ++imported;
+  }
+
+  std::cout << "<" << imported << " TRANSLATIONS IMPORTED>.";
+  if (dropped != 0) {
+    std::cout << " [" << dropped << " - DROPPED]";
+  }
+  std::cout << '\n';
+}
+
+void zholobov::cmdDictExport(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (!(args.size() == 3 || args.size() == 4)) {
+    throw InvalidParams();
+  }
+  const std::string& dictName = args[1];
+  const std::string& fileName = args[2];
+  bool overwrite = ((args.size() == 4) && (args[3] == "overwrite"));
+
+  auto it = dictionaries.find(dictName);
+  if (it == dictionaries.end()) {
+    std::cout << "<INVALID DICTIONARY>\n";
+    return;
+  }
+
+  std::ifstream check(fileName);
+  if (check && !overwrite) {
+    std::cout << "FILE EXISTS\n";
+    return;
+  }
+
+  std::ofstream fout(fileName, std::ios::trunc);
+  if (!fout) {
+    return;
+  }
+  fout << it->second;
 }
