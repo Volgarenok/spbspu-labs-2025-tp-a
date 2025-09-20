@@ -5,7 +5,8 @@ namespace guseynov
 {
   struct Point
   {
-    int x, y;
+    int x;
+    int y;
     bool operator==(const Point& other) const;
   };
 }
