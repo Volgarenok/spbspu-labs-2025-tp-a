@@ -178,7 +178,7 @@ void asafov::handleAreaCommands(const std::vector<Polygon>& polygons, const std:
   }
 }
 
-void asafov::handleMaxCommands(const std::vector<Polygon>& polygons, const std::string& arg)
+void asafov::handleMaxCommands(const std::vector< Polygon >& polygons, const std::string& arg)
 {
   if (polygons.empty())
   {
@@ -187,22 +187,28 @@ void asafov::handleMaxCommands(const std::vector<Polygon>& polygons, const std::
 
   if (arg == "AREA")
   {
-    auto it = std::max_element(polygons.begin(), polygons.end(),
-      [](const Polygon& a, const Polygon& b)
+    struct AreaComparator
+    {
+      bool operator()(const Polygon& a, const Polygon& b) const
       {
         return asafov::computeArea(a) < asafov::computeArea(b);
-      });
+      }
+    };
 
+    auto it = std::max_element(polygons.begin(), polygons.end(), AreaComparator{});
     printArea(asafov::computeArea(*it));
   }
   else if (arg == "VERTEXES")
   {
-    auto it = std::max_element(polygons.begin(), polygons.end(),
-      [](const Polygon& a, const Polygon& b)
+    struct VertexCountComparator
+    {
+      bool operator()(const Polygon& a, const Polygon& b) const
       {
         return a.points.size() < b.points.size();
-      });
+      }
+    };
 
+    auto it = std::max_element(polygons.begin(), polygons.end(), VertexCountComparator{});
     printCount(it->points.size());
   }
   else
@@ -211,7 +217,7 @@ void asafov::handleMaxCommands(const std::vector<Polygon>& polygons, const std::
   }
 }
 
-void asafov::handleMinCommands(const std::vector<Polygon>& polygons, const std::string& arg)
+void asafov::handleMinCommands(const std::vector< Polygon >& polygons, const std::string& arg)
 {
   if (polygons.empty())
   {
@@ -220,22 +226,28 @@ void asafov::handleMinCommands(const std::vector<Polygon>& polygons, const std::
 
   if (arg == "AREA")
   {
-    auto it = std::min_element(polygons.begin(), polygons.end(),
-      [](const Polygon& a, const Polygon& b)
+    struct AreaComparator
+    {
+      bool operator()(const Polygon& a, const Polygon& b) const
       {
         return asafov::computeArea(a) < asafov::computeArea(b);
-      });
+      }
+    };
 
+    auto it = std::min_element(polygons.begin(), polygons.end(), AreaComparator{});
     printArea(asafov::computeArea(*it));
   }
   else if (arg == "VERTEXES")
   {
-    auto it = std::min_element(polygons.begin(), polygons.end(),
-      [](const Polygon& a, const Polygon& b)
+    struct VertexCountComparator
+    {
+      bool operator()(const Polygon& a, const Polygon& b) const
       {
         return a.points.size() < b.points.size();
-      });
+      }
+    };
 
+    auto it = std::min_element(polygons.begin(), polygons.end(), VertexCountComparator{});
     printCount(it->points.size());
   }
   else
