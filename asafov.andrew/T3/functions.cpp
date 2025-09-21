@@ -244,26 +244,32 @@ void asafov::handleMinCommands(const std::vector<Polygon>& polygons, const std::
   }
 }
 
-void asafov::handleCountCommands(const std::vector<Polygon>& polygons, const std::string& arg)
+void asafov::handleCountCommands(const std::vector< Polygon >& polygons, const std::string& arg)
 {
   if (arg == "EVEN")
   {
-    size_t count = std::count_if(polygons.begin(), polygons.end(),
-      [](const Polygon& poly)
+    struct EvenChecker
+    {
+      bool operator()(const Polygon& poly) const
       {
-        return poly.points.size() % 2 == 0;
-      });
+        return poly.points.size() & 1 == 0;
+      }
+    };
 
+    size_t count = std::count_if(polygons.begin(), polygons.end(), EvenChecker{});
     printCount(count);
   }
   else if (arg == "ODD")
   {
-    size_t count = std::count_if(polygons.begin(), polygons.end(),
-      [](const Polygon& poly)
+    struct OddChecker
+    {
+      bool operator()(const Polygon& poly) const
       {
-        return poly.points.size() % 2 != 0;
-      });
+        return poly.points.size() & 1 != 0;
+      }
+    };
 
+    size_t count = std::count_if(polygons.begin(), polygons.end(), OddChecker{});
     printCount(count);
   }
   else
@@ -276,30 +282,40 @@ void asafov::handleCountCommands(const std::vector<Polygon>& polygons, const std
       throw std::invalid_argument("Invalid COUNT argument");
     }
 
-    size_t count = std::count_if(polygons.begin(), polygons.end(),
-      [vertexCount](const Polygon& poly)
+    struct VertexCountChecker
+    {
+      bool operator()(const Polygon& poly) const
       {
         return poly.points.size() == vertexCount;
-      });
+      }
 
+      size_t vertexCount;
+    };
+
+    size_t count = std::count_if(polygons.begin(), polygons.end(), VertexCountChecker{ vertexCount });
     printCount(count);
   }
 }
 
-void asafov::handleIntersectionsCommand(const std::vector<Polygon>& polygons, const std::string& arg)
+void asafov::handleIntersectionsCommand(const std::vector< Polygon >& polygons, const std::string& arg)
 {
   Polygon target = asafov::parsePolygonFromString(arg);
 
-  size_t count = std::count_if(polygons.begin(), polygons.end(),
-    [&target](const Polygon& poly)
+  struct IntersectionChecker
+  {
+    bool operator()(const Polygon& poly) const
     {
       return asafov::doPolygonsIntersect(poly, target);
-    });
+    }
 
+    const Polygon& target;
+  };
+
+  size_t count = std::count_if(polygons.begin(), polygons.end(), IntersectionChecker{ target });
   printCount(count);
 }
 
-void asafov::handleSameCommand(const std::vector<Polygon>& polygons, const std::string& arg)
+void asafov::handleSameCommand(const std::vector< Polygon >& polygons, const std::string& arg)
 {
   Polygon target = asafov::parsePolygonFromString(arg);
 
