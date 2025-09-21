@@ -132,17 +132,19 @@ void asafov::handleAreaCommands(const std::vector< Polygon >& polygons, const st
 
     struct AreaSummer
     {
-      void operator()(const Polygon& poly)
+      double operator()(const Polygon& poly)
       {
-        sum += asafov::computeArea(poly);
+        double area = asafov::computeArea(poly);
+        sum += area;
+        return area;
       }
 
       double sum = 0.0;
     };
 
     AreaSummer summer;
-    std::vector< int > dummy(polygons.size());
-    std::transform(polygons.begin(), polygons.end(), dummy.begin(), std::ref(summer));
+    std::vector< double > areas(polygons.size());
+    std::transform(polygons.begin(), polygons.end(), areas.begin(), std::ref(summer));
 
     printArea(summer.sum / polygons.size());
   }
@@ -150,20 +152,22 @@ void asafov::handleAreaCommands(const std::vector< Polygon >& polygons, const st
   {
     struct EvenAreaSummer
     {
-      void operator()(const Polygon& poly)
+      double operator()(const Polygon& poly)
       {
+        double area = asafov::computeArea(poly);
         if (poly.points.size() % 2 == 0)
         {
-          sum += asafov::computeArea(poly);
+          sum += area;
         }
+        return area;
       }
 
       double sum = 0.0;
     };
 
     EvenAreaSummer summer;
-    std::vector< int > dummy(polygons.size());
-    std::transform(polygons.begin(), polygons.end(), dummy.begin(), std::ref(summer));
+    std::vector< double > areas(polygons.size());
+    std::transform(polygons.begin(), polygons.end(), areas.begin(), std::ref(summer));
 
     printArea(summer.sum);
   }
@@ -171,20 +175,22 @@ void asafov::handleAreaCommands(const std::vector< Polygon >& polygons, const st
   {
     struct OddAreaSummer
     {
-      void operator()(const Polygon& poly)
+      double operator()(const Polygon& poly)
       {
+        double area = asafov::computeArea(poly);
         if (poly.points.size() % 2 != 0)
         {
-          sum += asafov::computeArea(poly);
+          sum += area;
         }
+        return area;
       }
 
       double sum = 0.0;
     };
 
     OddAreaSummer summer;
-    std::vector< int > dummy(polygons.size());
-    std::transform(polygons.begin(), polygons.end(), dummy.begin(), std::ref(summer));
+    std::vector< double > areas(polygons.size());
+    std::transform(polygons.begin(), polygons.end(), areas.begin(), std::ref(summer));
 
     printArea(summer.sum);
   }
@@ -200,12 +206,14 @@ void asafov::handleAreaCommands(const std::vector< Polygon >& polygons, const st
 
     struct VertexAreaSummer
     {
-      void operator()(const Polygon& poly)
+      double operator()(const Polygon& poly)
       {
+        double area = asafov::computeArea(poly);
         if (poly.points.size() == vertexCount)
         {
-          sum += asafov::computeArea(poly);
+          sum += area;
         }
+        return area;
       }
 
       size_t vertexCount;
@@ -213,8 +221,8 @@ void asafov::handleAreaCommands(const std::vector< Polygon >& polygons, const st
     };
 
     VertexAreaSummer summer{ vertexCount };
-    std::vector< int > dummy(polygons.size());
-    std::transform(polygons.begin(), polygons.end(), dummy.begin(), std::ref(summer));
+    std::vector< double > areas(polygons.size());
+    std::transform(polygons.begin(), polygons.end(), areas.begin(), std::ref(summer));
 
     printArea(summer.sum);
   }
