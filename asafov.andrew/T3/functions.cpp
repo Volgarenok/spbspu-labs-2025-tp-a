@@ -303,11 +303,17 @@ void asafov::handleSameCommand(const std::vector<Polygon>& polygons, const std::
 {
   Polygon target = asafov::parsePolygonFromString(arg);
 
-  size_t count = std::count_if(polygons.begin(), polygons.end(),
-    [&target](const Polygon& poly)
+  struct Checker
+  {
+    bool operator()(const Polygon& p) const
     {
-      return asafov::arePolygonsSame(poly, target);
-    });
+      return arePolygonsSame(p, target);
+    }
+
+    const Polygon& target;
+  };
+
+  size_t count = std::count_if(polygons.begin(), polygons.end(), Checker{ target });
 
   printCount(count);
 }
