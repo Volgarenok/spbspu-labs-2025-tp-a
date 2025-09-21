@@ -252,7 +252,7 @@ void asafov::handleCountCommands(const std::vector< Polygon >& polygons, const s
     {
       bool operator()(const Polygon& poly) const
       {
-        return poly.points.size() & 1 == 0;
+        return poly.points.size() % 2 == 0;
       }
     };
 
@@ -265,7 +265,7 @@ void asafov::handleCountCommands(const std::vector< Polygon >& polygons, const s
     {
       bool operator()(const Polygon& poly) const
       {
-        return poly.points.size() & 1 != 0;
+        return poly.points.size() % 2 != 0;
       }
     };
 
