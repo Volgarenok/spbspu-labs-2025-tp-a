@@ -80,7 +80,7 @@ size_t asafov::parseVertexCount(const std::string& str, size_t& pos)
   return vertexCount;
 }
 
-void asafov::processCommand(const std::vector<Polygon>& polygons, const std::string& cmd)
+void asafov::processCommand(const std::vector< Polygon >& polygons, const std::string& cmd)
 {
   if (cmd.empty())
   {
@@ -121,7 +121,7 @@ void asafov::processCommand(const std::vector<Polygon>& polygons, const std::str
   }
 }
 
-void asafov::handleAreaCommands(const std::vector<Polygon>& polygons, const std::string& arg)
+void asafov::handleAreaCommands(const std::vector< Polygon >& polygons, const std::string& arg)
 {
   if (arg == "MEAN")
   {
@@ -130,33 +130,63 @@ void asafov::handleAreaCommands(const std::vector<Polygon>& polygons, const std:
       throw std::invalid_argument("No polygons");
     }
 
-    double total = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-      [](double sum, const Polygon& poly)
+    struct AreaSummer
+    {
+      void operator()(const Polygon& poly)
       {
-        return sum + asafov::computeArea(poly);
-      });
+        sum += asafov::computeArea(poly);
+      }
 
-    printArea(total / polygons.size());
+      double sum = 0.0;
+    };
+
+    AreaSummer summer;
+    std::vector< int > dummy(polygons.size());
+    std::transform(polygons.begin(), polygons.end(), dummy.begin(), std::ref(summer));
+
+    printArea(summer.sum / polygons.size());
   }
   else if (arg == "EVEN")
   {
-    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-      [](double sum, const Polygon& poly)
+    struct EvenAreaSummer
+    {
+      void operator()(const Polygon& poly)
       {
-        return poly.points.size() % 2 == 0 ? sum + asafov::computeArea(poly) : sum;
-      });
+        if (poly.points.size() % 2 == 0)
+        {
+          sum += asafov::computeArea(poly);
+        }
+      }
 
-    printArea(sum);
+      double sum = 0.0;
+    };
+
+    EvenAreaSummer summer;
+    std::vector< int > dummy(polygons.size());
+    std::transform(polygons.begin(), polygons.end(), dummy.begin(), std::ref(summer));
+
+    printArea(summer.sum);
   }
   else if (arg == "ODD")
   {
-    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-      [](double sum, const Polygon& poly)
+    struct OddAreaSummer
+    {
+      void operator()(const Polygon& poly)
       {
-        return poly.points.size() % 2 != 0 ? sum + asafov::computeArea(poly) : sum;
-      });
+        if (poly.points.size() % 2 != 0)
+        {
+          sum += asafov::computeArea(poly);
+        }
+      }
 
-    printArea(sum);
+      double sum = 0.0;
+    };
+
+    OddAreaSummer summer;
+    std::vector< int > dummy(polygons.size());
+    std::transform(polygons.begin(), polygons.end(), dummy.begin(), std::ref(summer));
+
+    printArea(summer.sum);
   }
   else
   {
@@ -168,13 +198,25 @@ void asafov::handleAreaCommands(const std::vector<Polygon>& polygons, const std:
       throw std::invalid_argument("Invalid AREA argument");
     }
 
-    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-      [vertexCount](double sum, const Polygon& poly)
+    struct VertexAreaSummer
+    {
+      void operator()(const Polygon& poly)
       {
-        return poly.points.size() == vertexCount ? sum + asafov::computeArea(poly) : sum;
-      });
+        if (poly.points.size() == vertexCount)
+        {
+          sum += asafov::computeArea(poly);
+        }
+      }
 
-    printArea(sum);
+      size_t vertexCount;
+      double sum = 0.0;
+    };
+
+    VertexAreaSummer summer{ vertexCount };
+    std::vector< int > dummy(polygons.size());
+    std::transform(polygons.begin(), polygons.end(), dummy.begin(), std::ref(summer));
+
+    printArea(summer.sum);
   }
 }
 
