@@ -5,15 +5,11 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
-#include "scopeGuard.hpp"
+#include <scopeGuard.hpp>
+#include <delimiter.hpp>
 
-namespace
+namespace sharifullina
 {
-  struct DelimiterIO
-  {
-    char exp;
-  };
-
   struct LongLongIO
   {
     long long & ref;
@@ -28,22 +24,6 @@ namespace
   {
     std::string & ref;
   };
-
-  std::istream & operator>>(std::istream & in, DelimiterIO && dest)
-  {
-    std::istream::sentry sentry(in);
-    if (!sentry)
-    {
-      return in;
-    }
-    char c = '0';
-    in >> c;
-    if (in && c != dest.exp)
-    {
-      in.setstate(std::ios::failbit);
-    }
-    return in;
-  }
 
   std::istream & operator>>(std::istream & in, LongLongIO && dest)
   {

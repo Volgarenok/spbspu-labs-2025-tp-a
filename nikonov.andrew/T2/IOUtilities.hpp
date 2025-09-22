@@ -5,10 +5,6 @@
 #include "DataStruct.hpp"
 namespace nikonov
 {
-  struct DelimiterIO
-  {
-    char exp;
-  };
   struct DoubleI
   {
     double& ref;
@@ -39,7 +35,6 @@ namespace nikonov
     const std::string& ref;
   };
 
-  std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
   std::istream& operator>>(std::istream& in, DoubleI&& dest);
   std::istream& operator>>(std::istream& in, UnsignedLongLongI&& dest);
   std::istream& operator>>(std::istream& in, StringI&& dest);

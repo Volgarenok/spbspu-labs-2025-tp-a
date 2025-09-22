@@ -1,0 +1,2 @@
+(:key1 12.0d:key2 0b101:key3 "test":)
+(:key1 5.5d:key2 0b10:key3 "abc":)

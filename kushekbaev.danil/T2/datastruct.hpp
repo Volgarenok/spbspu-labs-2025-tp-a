@@ -14,11 +14,6 @@ namespace kushekbaev
     bool operator<(const DataStruct& rhs) const;
   };
 
-  struct DelimiterIO
-  {
-    char exp;
-  };
-
   struct ULLBinaryI
   {
     unsigned long long& ref;
@@ -39,7 +34,6 @@ namespace kushekbaev
     std::string& ref;
   };
 
-  std::istream& operator>>(std::istream& in, DelimiterIO&& obj);
   std::istream& operator>>(std::istream& in, ULLBinaryI&& obj);
   std::istream& operator>>(std::istream& in, ChrLitIO&& obj);
   std::istream& operator>>(std::istream& in, StringIO&& obj);

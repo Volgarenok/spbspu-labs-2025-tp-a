@@ -3,22 +3,6 @@
 #include <iostream>
 #include <guard.hpp>
 
-std::istream & smirnov::operator>>(std::istream & in, DelimiterIO && dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-  char c = 0;
-  in >> c;
-  if (!in || std::tolower(c) != std::tolower(dest.exp))
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
-}
-
 std::istream & smirnov::operator>>(std::istream & in, ULLIO && dest)
 {
   std::istream::sentry sentry(in);
@@ -63,7 +47,7 @@ std::istream & smirnov::operator>>(std::istream & in, QuotedStringIO && dest)
   {
     return in;
   }
-  in >> DelimiterIO{'"'};
+  in >> DelimiterI{'"'};
   std::getline(in, dest.ref, '"');
   if (!in)
   {
@@ -84,7 +68,7 @@ std::istream & smirnov::operator>>(std::istream & in, DataStruct & data)
   bool hasKey1 = false;
   bool hasKey2 = false;
   bool hasKey3 = false;
-  in >> DelimiterIO{'('};
+  in >> DelimiterI{'('};
   if (!in)
   {
     in.setstate(std::ios::failbit);
@@ -92,7 +76,7 @@ std::istream & smirnov::operator>>(std::istream & in, DataStruct & data)
   }
   for (int i = 0; i < 3; ++i)
   {
-    in >> DelimiterIO{':'} >> DelimiterIO{'k'} >> DelimiterIO{'e'} >> DelimiterIO{'y'};
+    in >> DelimiterI{':'} >> DelimiterI{'k'} >> DelimiterI{'e'} >> DelimiterI{'y'};
     if (!in)
     {
       in.setstate(std::ios::failbit);
@@ -156,7 +140,7 @@ std::istream & smirnov::operator>>(std::istream & in, DataStruct & data)
       return in;
     }
   }
-  in >> DelimiterIO{':'} >> DelimiterIO{')'};
+  in >> DelimiterI{':'} >> DelimiterI{')'};
   if (!in)
   {
     in.setstate(std::ios::failbit);
