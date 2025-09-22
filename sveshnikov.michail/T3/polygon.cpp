@@ -111,8 +111,9 @@ double sveshnikov::getPolygonArea(const Polygon &poly)
   std::rotate(next.begin(), std::next(next.begin()), next.end());
 
   using namespace std::placeholders;
-  auto make_shoelace =
-      std::bind(std::multiplies< int >(), std::bind(get_x, _1), std::bind(get_y, _2));
+  auto x = std::bind(get_x, _1);
+  auto y = std::bind(get_y, _2);
+  auto make_shoelace = std::bind(std::multiplies< int >(), x, y);
 
   std::vector< double > left_shoelace_set(pts.size());
   auto l_begin_it = left_shoelace_set.begin();
