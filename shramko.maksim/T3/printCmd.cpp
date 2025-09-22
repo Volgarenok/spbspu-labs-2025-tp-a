@@ -53,7 +53,7 @@ namespace shramko
       size_t n = points.size();
       size_t prevIdx = (index + n - 1) % n;
       size_t nextIdx = (index + 1) % n;
-      return {points[prevIdx], points[index], points[nextIdx]};
+      return { points[prevIdx], points[index], points[nextIdx] };
     }
 
     bool isRightAngle(const LocalTriangle& tri)
@@ -82,6 +82,69 @@ namespace shramko
       }
       return false;
     }
+
+    struct SumEvenArea
+    {
+      double operator()(double acc, const Polygon& p) const
+      {
+        return acc + (isEven(p) ? getPolygonArea(p) : 0.0);
+      }
+    };
+
+    struct SumOddArea
+    {
+      double operator()(double acc, const Polygon& p) const
+      {
+        return acc + (isOdd(p) ? getPolygonArea(p) : 0.0);
+      }
+    };
+
+    struct SumTotalArea
+    {
+      double operator()(double acc, const Polygon& p) const
+      {
+        return acc + getPolygonArea(p);
+      }
+    };
+
+    struct SumVertexCountArea
+    {
+      size_t vertexCount;
+      SumVertexCountArea(size_t count):
+        vertexCount(count)
+      {}
+
+      double operator()(double acc, const Polygon& p) const
+      {
+        return acc + (hasVertexCount(p, vertexCount) ? getPolygonArea(p) : 0.0);
+      }
+    };
+
+    struct CountVertex
+    {
+      size_t vertexCount;
+      CountVertex(size_t count):
+        vertexCount(count)
+      {}
+
+      bool operator()(const Polygon& p) const
+      {
+        return hasVertexCount(p, vertexCount);
+      }
+    };
+
+    struct CountLessArea
+    {
+      const Polygon& ref;
+      CountLessArea(const Polygon& r):
+        ref(r)
+      {}
+
+      bool operator()(const Polygon& p) const
+      {
+        return hasAreaLessThan(p, ref);
+      }
+    };
   }
 
   void printArea(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
@@ -97,38 +160,14 @@ namespace shramko
       {
         if (subcmd == "EVEN")
         {
-          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-            [](double acc, const Polygon& p)
-            {
-              return acc + (details::isEven(p) ? getPolygonArea(p) : 0.0);
-            }
-          );
+          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, details::SumEvenArea());
         }
         else if (subcmd == "ODD")
         {
-          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-            [](double acc, const Polygon& p)
-            {
-              return acc + (details::isOdd(p) ? getPolygonArea(p) : 0.0);
-            }
-          );
+          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, details::SumOddArea());
         }
       }
       out << sum;
-    }
-    else if (subcmd == "MEAN")
-    {
-      if (polygons.empty())
-      {
-        throw std::invalid_argument("No polygons available");
-      }
-      double total = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-        [](double acc, const Polygon& p)
-        {
-          return acc + getPolygonArea(p);
-        }
-      );
-      out << total / polygons.size();
     }
     else if (std::all_of(subcmd.begin(), subcmd.end(), ::isdigit))
     {
@@ -140,14 +179,18 @@ namespace shramko
       double sum = 0.0;
       if (!polygons.empty())
       {
-        sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-          [vertexCount](double acc, const Polygon& p)
-          {
-            return acc + (details::hasVertexCount(p, vertexCount) ? getPolygonArea(p) : 0.0);
-          }
-        );
+        sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, details::SumVertexCountArea(vertexCount));
       }
       out << sum;
+    }
+    else if (subcmd == "MEAN")
+    {
+      if (polygons.empty())
+      {
+        throw std::invalid_argument("No polygons available");
+      }
+      double total = std::accumulate(polygons.begin(), polygons.end(), 0.0, details::SumTotalArea());
+      out << total / polygons.size();
     }
     else
     {
@@ -224,12 +267,7 @@ namespace shramko
       {
         throw std::invalid_argument("Invalid vertex count");
       }
-      out << std::count_if(polygons.begin(), polygons.end(),
-        [vertexCount](const Polygon& p)
-        {
-          return details::hasVertexCount(p, vertexCount);
-        }
-      );
+      out << std::count_if(polygons.begin(), polygons.end(), details::CountVertex(vertexCount));
     }
   }
 
@@ -245,12 +283,7 @@ namespace shramko
     {
       throw std::invalid_argument("Invalid reference polygon");
     }
-    out << std::count_if(polygons.begin(), polygons.end(),
-      [&ref](const Polygon& p)
-      {
-        return details::hasAreaLessThan(p, ref);
-      }
-    );
+    out << std::count_if(polygons.begin(), polygons.end(), details::CountLessArea(ref));
   }
 
   void printRightShapes(const std::vector< Polygon >& polygons, std::ostream& out)
