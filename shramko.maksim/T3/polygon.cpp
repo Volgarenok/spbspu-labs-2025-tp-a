@@ -17,13 +17,12 @@ namespace
 
   Triangle makeTriangle(const shramko::Point& first, const std::vector< shramko::Point >& points, size_t index)
   {
-    return {first, points[index], points[index + 1]};
+    return { first, points[index], points[index + 1] };
   }
 
   double calculateTriangleArea(const Triangle& tri)
   {
-    return 0.5 * std::abs(tri.a.x * (tri.b.y - tri.c.y) + tri.b.x *
-      (tri.c.y - tri.a.y) + tri.c.x * (tri.a.y - tri.b.y));
+    return 0.5 * std::abs(tri.a.x * (tri.b.y - tri.c.y) + tri.b.x * (tri.c.y - tri.a.y) + tri.c.x * (tri.a.y - tri.b.y));
   }
 }
 
@@ -34,7 +33,6 @@ std::istream& shramko::operator>>(std::istream& in, Point& point)
   {
     return in;
   }
-  StreamGuard guard(in);
 
   char ch;
   in >> ch;
@@ -74,19 +72,18 @@ std::istream& shramko::operator>>(std::istream& in, Polygon& polygon)
     in.setstate(std::ios::failbit);
     return in;
   }
-  std::vector< Point > temp(numPoints);
-  for (size_t i = 0; i < numPoints; ++i)
+  polygon.points.resize(numPoints);
+  auto endIter = std::copy_n(std::istream_iterator< Point >(in), numPoints, polygon.points.begin());
+  if (endIter != polygon.points.end())
   {
-    if (!(in >> temp[i]))
-  {
-      in.setstate(std::ios::failbit);
-      return in;
-    }
+    in.setstate(std::ios::failbit);
+    return in;
   }
   if (in)
   {
-    polygon.points = std::move(temp);
+    return in;
   }
+  in.setstate(std::ios::failbit);
   return in;
 }
 
