@@ -58,13 +58,24 @@ namespace shramko
 
     bool isRightAngle(const LocalTriangle& tri)
     {
-      double vec1x = tri.prev.x - tri.curr.x;
-      double vec1y = tri.prev.y - tri.curr.y;
-      double vec2x = tri.next.x - tri.curr.x;
-      double vec2y = tri.next.y - tri.curr.y;
-      double dotProduct = vec1x * vec2x + vec1y * vec2y;
-      return std::abs(dotProduct) < 1e-6;
+      Point vec1 = tri.prev - tri.curr;
+      Point vec2 = tri.next - tri.curr;
+      return dot(vec1, vec2) == 0;
     }
+
+    struct CheckRightAngle
+    {
+      const std::vector< Point >& points;
+      CheckRightAngle(const std::vector< Point >& p):
+        points(p)
+      {}
+
+      bool operator()(size_t index) const
+      {
+        LocalTriangle tri = makeLocalTriangle(points, index);
+        return isRightAngle(tri);
+      }
+    };
 
     bool hasRightAngle(const Polygon& poly)
     {
@@ -72,15 +83,9 @@ namespace shramko
       {
         return false;
       }
-      for (size_t i = 0; i < poly.points.size(); ++i)
-      {
-        LocalTriangle tri = makeLocalTriangle(poly.points, i);
-        if (isRightAngle(tri))
-        {
-          return true;
-        }
-      }
-      return false;
+      std::vector< size_t > indices(poly.points.size());
+      std::iota(indices.begin(), indices.end(), 0UL);
+      return std::any_of(indices.begin(), indices.end(), CheckRightAngle(poly.points));
     }
 
     struct SumEvenArea

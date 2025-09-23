@@ -6,26 +6,6 @@
 #include <cmath>
 #include <streamGuard.hpp>
 
-namespace
-{
-  struct Triangle
-  {
-    shramko::Point a;
-    shramko::Point b;
-    shramko::Point c;
-  };
-
-  Triangle makeTriangle(const shramko::Point& first, const std::vector< shramko::Point >& points, size_t index)
-  {
-    return { first, points[index], points[index + 1] };
-  }
-
-  double calculateTriangleArea(const Triangle& tri)
-  {
-    return 0.5 * std::abs(tri.a.x * (tri.b.y - tri.c.y) + tri.b.x * (tri.c.y - tri.a.y) + tri.c.x * (tri.a.y - tri.b.y));
-  }
-}
-
 std::istream& shramko::operator>>(std::istream& in, Point& point)
 {
   std::istream::sentry sentry(in);
@@ -87,19 +67,46 @@ std::istream& shramko::operator>>(std::istream& in, Polygon& polygon)
   return in;
 }
 
+shramko::Point shramko::operator-(const Point& a, const Point& b)
+{
+  return {a.x - b.x, a.y - b.y};
+}
+
+int shramko::dot(const Point& a, const Point& b)
+{
+  return a.x * b.x + a.y * b.y;
+}
+
 double shramko::getPolygonArea(const Polygon& polygon)
 {
-  if (polygon.points.size() < 3)
+  const auto& points = polygon.points;
+  size_t n = points.size();
+  if (n < 3)
   {
     return 0.0;
   }
-  const Point& first = polygon.points[0];
-  size_t numTriangles = polygon.points.size() - 2;
-  std::vector< double > areas(numTriangles);
-  for (size_t i = 0; i < numTriangles; ++i)
+
+  struct XProduct
   {
-    Triangle tri = makeTriangle(first, polygon.points, i + 1);
-    areas[i] = calculateTriangleArea(tri);
-  }
-  return std::accumulate(areas.begin(), areas.end(), 0.0);
+    double operator()(const Point& p1, const Point& p2) const
+    {
+      return static_cast<double>(p1.x) * p2.y;
+    }
+  };
+
+  struct YProduct
+  {
+    double operator()(const Point& p1, const Point& p2) const
+    {
+      return static_cast<double>(p1.y) * p2.x;
+    }
+  };
+
+  double sum1 = std::inner_product(points.begin(), points.end() - 1, points.begin() + 1, 0.0, std::plus<double>{}, XProduct{});
+  sum1 += XProduct{}(points.back(), points.front());
+
+  double sum2 = std::inner_product(points.begin(), points.end() - 1, points.begin() + 1, 0.0, std::plus<double>{}, YProduct{});
+  sum2 += YProduct{}(points.back(), points.front());
+
+  return 0.5 * std::abs(sum1 - sum2);
 }

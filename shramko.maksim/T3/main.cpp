@@ -10,87 +10,6 @@
 #include "polygon.hpp"
 #include "printCmd.hpp"
 
-namespace shramko
-{
-  struct PrintAreaCommand
-  {
-    const std::vector< Polygon >& polygons;
-    PrintAreaCommand(const std::vector< Polygon >& p):
-      polygons(p)
-    {}
-
-    void operator()()
-    {
-      printArea(polygons, std::cin, std::cout);
-    }
-  };
-
-  struct PrintMaxCommand
-  {
-    const std::vector< Polygon >& polygons;
-    PrintMaxCommand(const std::vector< Polygon >& p):
-      polygons(p)
-    {}
-
-    void operator()()
-    {
-      printMax(polygons, std::cin, std::cout);
-    }
-  };
-
-  struct PrintMinCommand
-  {
-    const std::vector< Polygon >& polygons;
-    PrintMinCommand(const std::vector< Polygon >& p):
-      polygons(p)
-    {}
-
-    void operator()()
-    {
-      printMin(polygons, std::cin, std::cout);
-    }
-  };
-
-  struct PrintCountCommand
-  {
-    const std::vector< Polygon >& polygons;
-    PrintCountCommand(const std::vector< Polygon >& p):
-      polygons(p)
-    {}
-
-    void operator()()
-    {
-      printCount(polygons, std::cin, std::cout);
-    }
-  };
-
-  struct PrintLessAreaCommand
-  {
-    const std::vector< Polygon >& polygons;
-    PrintLessAreaCommand(const std::vector< Polygon >& p):
-      polygons(p)
-    {}
-
-    void operator()()
-    {
-      printLessArea(polygons, std::cin, std::cout);
-    }
-  };
-
-  struct PrintRightShapesCommand
-  {
-    const std::vector< Polygon >& polygons;
-    PrintRightShapesCommand(const std::vector< Polygon >& p):
-      polygons(p)
-    {}
-
-    void operator()()
-    {
-      printRightShapes(polygons, std::cout);
-    }
-  };
-}
-
 int main(int argc, char* argv[])
 {
   if (argc != 2)
@@ -120,12 +39,12 @@ int main(int argc, char* argv[])
   using cmd_func = std::function< void() >;
   std::map< std::string, cmd_func > commands;
 
-  commands["AREA"] = shramko::PrintAreaCommand(polygons);
-  commands["MAX"] = shramko::PrintMaxCommand(polygons);
-  commands["MIN"] = shramko::PrintMinCommand(polygons);
-  commands["COUNT"] = shramko::PrintCountCommand(polygons);
-  commands["LESSAREA"] = shramko::PrintLessAreaCommand(polygons);
-  commands["RIGHTSHAPES"] = shramko::PrintRightShapesCommand(polygons);
+  commands["AREA"] = std::bind(&shramko::printArea, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
+  commands["MAX"] = std::bind(&shramko::printMax, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
+  commands["MIN"] = std::bind(&shramko::printMin, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
+  commands["COUNT"] = std::bind(&shramko::printCount, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
+  commands["LESSAREA"] = std::bind(&shramko::printLessArea, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
+  commands["RIGHTSHAPES"] = std::bind(&shramko::printRightShapes, std::cref(polygons), std::ref(std::cout));
 
   std::string cmd;
   while (std::cin >> cmd)

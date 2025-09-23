@@ -12,6 +12,9 @@ namespace shramko
     int y;
   };
 
+  Point operator-(const Point& a, const Point& b);
+  int dot(const Point& a, const Point& b);
+
   struct Polygon
   {
     std::vector< Point > points;
