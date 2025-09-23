@@ -1,7 +1,6 @@
 #include "data-struct.hpp"
 #include <iostream>
-#include <stream-guard.hpp>
-#include <delimeter-io.hpp>
+#include "stream-guard.hpp"
 
 namespace
 {

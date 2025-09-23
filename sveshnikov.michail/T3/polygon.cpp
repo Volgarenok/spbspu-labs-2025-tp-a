@@ -1,10 +1,12 @@
 #include "polygon.hpp"
 #include <limits>
+#include <iostream>
 #include <numeric>
 #include <iterator>
 #include <algorithm>
 #include <functional>
-#include <delimeter-io.hpp>
+#include <stream-guard.hpp>
+#include "delimeter-io.hpp"
 
 int sveshnikov::get_x(const sveshnikov::Point &p)
 {
@@ -25,14 +27,11 @@ std::istream &sveshnikov::operator>>(std::istream &in, Point &pos)
   }
   using sep = DelimiterIO;
   Point p;
-
-  in >> std::noskipws;
-  in >> sep{'('} >> p.x >> sep{';'} >> p.y >> sep{')'};
-  in >> std::skipws;
+  in >> sep{' '} >> sep{'('} >> p.x >> sep{';'} >> p.y >> sep{')'};
 
   if (in)
   {
-    pos = std::move(p);
+    pos = p;
   }
   return in;
 }
@@ -44,22 +43,24 @@ std::istream &sveshnikov::operator>>(std::istream &in, Polygon &shape)
   {
     return in;
   }
-  using in_iter = std::istream_iterator< Point >;
-  Polygon poly;
 
+  const StreamGuard guard(in);
+  in >> std::noskipws;
   size_t num_points = 0;
-  if (in >> num_points)
-  {
-    std::copy_n(in_iter(in), num_points, std::back_inserter(poly.points));
-  }
-  if (num_points < 3 || poly.points.size() != num_points)
+  in >> num_points;
+  if (!in || num_points < 3)
   {
     in.setstate(std::ios::failbit);
+    return in;
   }
 
-  if (in)
+  using in_iter = std::istream_iterator< Point >;
+  std::vector< Point > points(num_points);
+  points.assign(in_iter{in}, in_iter{});
+  if (points.size() == num_points)
   {
-    shape = std::move(poly);
+    shape.points = std::move(points);
+    in.clear();
   }
   return in;
 }
@@ -86,8 +87,9 @@ double sveshnikov::getPolygonArea(const Polygon &poly)
   std::rotate(next.begin(), std::next(next.begin()), next.end());
 
   using namespace std::placeholders;
-  auto make_shoelace =
-      std::bind(std::multiplies< int >(), std::bind(get_x, _1), std::bind(get_y, _2));
+  auto x = std::bind(get_x, _1);
+  auto y = std::bind(get_y, _2);
+  auto make_shoelace = std::bind(std::multiplies< int >(), x, y);
 
   std::vector< double > left_shoelace_set(pts.size());
   auto l_begin_it = left_shoelace_set.begin();
