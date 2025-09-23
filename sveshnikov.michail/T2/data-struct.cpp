@@ -1,9 +1,14 @@
 #include "data-struct.hpp"
 #include <iostream>
-#include "stream-guard.hpp"
+#include <stream-guard.hpp>
 
 namespace
 {
+  struct DelimiterIO
+  {
+    char exp;
+  };
+
   struct SllIO
   {
     long long &ref;
@@ -24,6 +29,7 @@ namespace
     std::string &exp;
   };
 
+  std::istream &operator>>(std::istream &in, DelimiterIO &&dest);
   std::istream &operator>>(std::istream &in, StringIO &&dest);
   std::istream &operator>>(std::istream &in, LabelIO &&dest);
 
@@ -48,6 +54,22 @@ namespace
     return in;
   }
 
+  std::istream &operator>>(std::istream &in, DelimiterIO &&dest)
+  {
+    std::istream::sentry sentry(in);
+    if (!sentry)
+    {
+      return in;
+    }
+    char c = '0';
+    in >> c;
+    if (in && (c != dest.exp))
+    {
+      in.setstate(std::ios::failbit);
+    }
+    return in;
+  }
+
   std::istream &operator>>(std::istream &in, StringIO &&dest)
   {
     std::istream::sentry sentry(in);
@@ -55,7 +77,7 @@ namespace
     {
       return in;
     }
-    return std::getline(in >> sveshnikov::DelimiterIO{'"'}, dest.ref, '"');
+    return std::getline(in >> DelimiterIO{'"'}, dest.ref, '"');
   }
 
   std::istream &operator>>(std::istream &in, LabelIO &&dest)
