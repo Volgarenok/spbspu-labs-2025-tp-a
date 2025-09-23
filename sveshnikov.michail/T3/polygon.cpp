@@ -46,31 +46,23 @@ std::istream &sveshnikov::operator>>(std::istream &in, Polygon &shape)
   }
 
   size_t num_points = 0;
-  if (!(in >> num_points) || num_points < 3)
+  in >> num_points;
+  if (!in || num_points < 3)
   {
     in.setstate(std::ios::failbit);
     return in;
   }
 
-  using in_iter = std::istream_iterator< Point >;
   Polygon poly;
   poly.points.reserve(num_points);
-  auto check_istream = std::bind(&std::istream::good, &in);
-  std::copy_if(in_iter{in}, in_iter{}, std::back_inserter(poly.points), check_istream);
-  if (!in && num_points == poly.points.size())
+  using in_iter = std::istream_iterator< Point >;
+  std::vector< Point > points(num_points);
+  std::copy_n(in_iter(in), num_points, points.begin());
+  if (!in)
   {
-    std::string remaining_line;
-    std::getline(in, remaining_line);
-    if (!remaining_line.empty() && remaining_line.find_first_not_of(" ") != std::string::npos)
-    {
-      in.setstate(std::ios::failbit);
-    }
-    else
-    {
-      in.clear();
-      shape = std::move(poly);
-    }
+    return in;
   }
+  shape.points = std::move(points);
   return in;
 }
 

@@ -237,7 +237,7 @@ void sveshnikov::maxseq(is_t &in, os_t &out, const polygon_set_t &shapes)
   using namespace std::placeholders;
   Polygon poly;
   in >> poly;
-  if (!in)
+  if (!in || poly.points.empty())
   {
     throw std::invalid_argument("Error: incorrect polygon!");
   }
@@ -266,9 +266,15 @@ void sveshnikov::rmecho(is_t &in, os_t &out, polygon_set_t &shapes)
   using namespace std::placeholders;
   Polygon poly;
   in >> poly;
-  if (!in)
+  if (!in || poly.points.empty())
   {
     throw std::invalid_argument("Error: incorrect polygon!");
+  }
+  std::string remaining_line;
+  std::getline(in, remaining_line);
+  if (!remaining_line.empty() && remaining_line.find_first_not_of(" ") != std::string::npos)
+  {
+    throw std::invalid_argument("Error: extra characters after command!");
   }
   size_t old_size = shapes.size();
 
