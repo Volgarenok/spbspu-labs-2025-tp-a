@@ -228,7 +228,7 @@ void sveshnikov::count(is_t &in, os_t &out, const polygon_set_t &shapes)
   {
     num_vertexes = params.at(parm)();
   }
-  sveshnikov::StreamGuard guard(out);
+  StreamGuard guard(out);
   out << num_vertexes << '\n';
 }
 
@@ -236,8 +236,7 @@ void sveshnikov::maxseq(is_t &in, os_t &out, const polygon_set_t &shapes)
 {
   using namespace std::placeholders;
   Polygon poly;
-  in >> poly;
-  if (!in || poly.points.empty())
+  if (!(in >> poly))
   {
     throw std::invalid_argument("Error: incorrect polygon!");
   }
@@ -247,7 +246,7 @@ void sveshnikov::maxseq(is_t &in, os_t &out, const polygon_set_t &shapes)
   std::transform(shapes.begin(), shapes.end(), match_vect.begin(), equal_curr);
   if (match_vect.empty())
   {
-    sveshnikov::StreamGuard guard(out);
+    StreamGuard guard(out);
     out << "0\n";
     return;
   }
@@ -257,7 +256,7 @@ void sveshnikov::maxseq(is_t &in, os_t &out, const polygon_set_t &shapes)
   std::partial_sum(match_vect.begin(), match_vect.end(), seqLengths.begin(), bin_op);
   auto max_it = std::max_element(seqLengths.begin(), seqLengths.end());
 
-  sveshnikov::StreamGuard guard(out);
+  StreamGuard guard(out);
   out << *max_it << '\n';
 }
 
@@ -265,16 +264,9 @@ void sveshnikov::rmecho(is_t &in, os_t &out, polygon_set_t &shapes)
 {
   using namespace std::placeholders;
   Polygon poly;
-  in >> poly;
-  if (!in || poly.points.empty())
+  if (!(in >> poly))
   {
     throw std::invalid_argument("Error: incorrect polygon!");
-  }
-  std::string remaining_line;
-  std::getline(in, remaining_line);
-  if (!remaining_line.empty() && remaining_line.find_first_not_of(" ") != std::string::npos)
-  {
-    throw std::invalid_argument("Error: extra characters after command!");
   }
   size_t old_size = shapes.size();
 
@@ -284,6 +276,6 @@ void sveshnikov::rmecho(is_t &in, os_t &out, polygon_set_t &shapes)
   auto last = std::unique(shapes.begin(), shapes.end(), is_dublicate);
   shapes.erase(last, shapes.end());
 
-  sveshnikov::StreamGuard guard(out);
+  StreamGuard guard(out);
   out << old_size - shapes.size() << '\n';
 }

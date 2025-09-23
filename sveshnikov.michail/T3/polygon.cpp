@@ -5,6 +5,7 @@
 #include <iterator>
 #include <algorithm>
 #include <functional>
+#include <stream-guard.hpp>
 #include <delimeter-io.hpp>
 
 int sveshnikov::get_x(const sveshnikov::Point &p)
@@ -26,13 +27,11 @@ std::istream &sveshnikov::operator>>(std::istream &in, Point &pos)
   }
   using sep = DelimiterIO;
   Point p;
-
-  in >> sep{'('} >> std::noskipws >> p.x >> sep{';'} >> p.y >> sep{')'};
-  in >> std::skipws;
+  in >> sep{' '} >> sep{'('} >> p.x >> sep{';'} >> p.y >> sep{')'};
 
   if (in)
   {
-    pos = std::move(p);
+    pos = p;
   }
   return in;
 }
@@ -45,6 +44,8 @@ std::istream &sveshnikov::operator>>(std::istream &in, Polygon &shape)
     return in;
   }
 
+  const StreamGuard guard(in);
+  in >> std::noskipws;
   size_t num_points = 0;
   in >> num_points;
   if (!in || num_points < 3)
@@ -53,16 +54,14 @@ std::istream &sveshnikov::operator>>(std::istream &in, Polygon &shape)
     return in;
   }
 
-  Polygon poly;
-  poly.points.reserve(num_points);
   using in_iter = std::istream_iterator< Point >;
   std::vector< Point > points(num_points);
-  std::copy_n(in_iter(in), num_points, points.begin());
-  if (!in)
+  points.assign(in_iter{in}, in_iter{});
+  if (points.size() == num_points)
   {
-    return in;
+    shape.points = std::move(points);
+    in.clear();
   }
-  shape.points = std::move(points);
   return in;
 }
 
