@@ -242,9 +242,7 @@ void sveshnikov::maxseq(is_t &in, os_t &out, const polygon_set_t &shapes)
     throw std::invalid_argument("Error: incorrect polygon!");
   }
   in >> std::ws;
-  std::string remaining_line;
-  std::getline(in, remaining_line);
-  if (!remaining_line.empty() && remaining_line.find_first_not_of(" ") != std::string::npos)
+  if (in.peek() != '\n')
   {
     throw std::invalid_argument("Error: extra characters after command!");
   }
@@ -278,9 +276,7 @@ void sveshnikov::rmecho(is_t &in, os_t &out, polygon_set_t &shapes)
     throw std::invalid_argument("Error: incorrect polygon!");
   }
   in >> std::ws;
-  std::string remaining_line;
-  std::getline(in, remaining_line);
-  if (!remaining_line.empty() && remaining_line.find_first_not_of(" ") != std::string::npos)
+  if (in.peek() != '\n')
   {
     throw std::invalid_argument("Error: extra characters after command!");
   }
