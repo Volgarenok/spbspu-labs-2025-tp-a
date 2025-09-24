@@ -193,7 +193,7 @@ namespace shramko
   {
     std::string subcmd;
     in >> subcmd;
-    
+
     if (subcmd == "EVEN")
     {
       out << std::count_if(polygons.begin(), polygons.end(), details::isEven);
