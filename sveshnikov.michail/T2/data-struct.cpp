@@ -1,6 +1,6 @@
 #include "data-struct.hpp"
 #include <iostream>
-#include <delimeter-io.hpp>
+#include <delimeter.hpp>
 #include <stream-guard.hpp>
 
 namespace
@@ -56,7 +56,7 @@ namespace
     {
       return in;
     }
-    return std::getline(in >> sveshnikov::DelimiterIO{'"'}, dest.ref, '"');
+    return std::getline(in >> sveshnikov::Delimiter{'"'}, dest.ref, '"');
   }
 
   std::istream &operator>>(std::istream &in, LabelIO &&dest)
@@ -92,7 +92,7 @@ std::istream &sveshnikov::operator>>(std::istream &in, DataStruct &dest)
     return in;
   }
   DataStruct input;
-  using sep = DelimiterIO;
+  using sep = Delimiter;
   using label = LabelIO;
   using sll = SllIO;
   using ull = UllIO;

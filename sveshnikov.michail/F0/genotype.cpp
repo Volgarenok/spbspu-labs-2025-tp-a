@@ -4,8 +4,8 @@
 #include <iterator>
 #include <algorithm>
 #include <functional>
+#include <delimeter.hpp>
 #include <stream-guard.hpp>
-#include <delimeter-io.hpp>
 
 namespace
 {
@@ -106,13 +106,13 @@ std::istream &sveshnikov::operator>>(std::istream &in, Genotype &genotype)
   std::vector< Gene > genes;
   genes.reserve(4);
   Gene g;
-  in >> DelimiterIO{'<'};
+  in >> Delimiter{'<'};
   in >> std::noskipws >> g;
   genes.push_back(g);
   in >> std::skipws;
   using in_iter = std::istream_iterator< Gene >;
   std::copy_n(in_iter(in), 3, std::back_inserter(genes));
-  in >> std::noskipws >> DelimiterIO{'>'} >> std::skipws;
+  in >> std::noskipws >> Delimiter{'>'} >> std::skipws;
 
   if (in)
   {

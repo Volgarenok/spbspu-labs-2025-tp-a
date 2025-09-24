@@ -1,6 +1,6 @@
-#include "delimeter-io.hpp"
+#include "delimeter.hpp"
 
-std::istream &sveshnikov::operator>>(std::istream &in, DelimiterIO &&dest)
+std::istream &sveshnikov::operator>>(std::istream &in, Delimiter &&dest)
 {
   std::istream::sentry sentry(in);
   if (!sentry)
