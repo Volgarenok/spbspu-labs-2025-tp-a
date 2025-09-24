@@ -4,6 +4,7 @@
 #include <iterator>
 #include <vector>
 #include <cmath>
+#include <functional>
 #include <streamGuard.hpp>
 
 std::istream& shramko::operator>>(std::istream& in, shramko::Point& point)
@@ -52,19 +53,31 @@ std::istream& shramko::operator>>(std::istream& in, shramko::Polygon& polygon)
     in.setstate(std::ios::failbit);
     return in;
   }
+  polygon.points.clear();
   polygon.points.resize(numPoints);
   auto endIter = std::copy_n(std::istream_iterator< shramko::Point >(in), numPoints, polygon.points.begin());
-  if (endIter != polygon.points.end())
+  if (endIter != polygon.points.end() || !in)
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  if (in)
+  auto adjacentEqual = std::bind(std::equal_to< shramko::Point >{}, std::placeholders::_1, std::placeholders::_2);
+  if (std::adjacent_find(polygon.points.begin(), polygon.points.end(), adjacentEqual) != polygon.points.end())
   {
+    in.setstate(std::ios::failbit);
     return in;
   }
-  in.setstate(std::ios::failbit);
+  if (polygon.points.front() == polygon.points.back())
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
   return in;
+}
+
+bool shramko::operator==(const shramko::Point& a, const shramko::Point& b)
+{
+  return a.x == b.x && a.y == b.y;
 }
 
 shramko::Point shramko::operator-(const shramko::Point& a, const shramko::Point& b)
