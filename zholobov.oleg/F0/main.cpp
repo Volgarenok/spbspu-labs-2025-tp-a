@@ -32,6 +32,10 @@ int main(int argc, char* argv[])
   keywords["dict-list"] = cmdDictList;
   keywords["dict-print-words"] = cmdDictPrintWords;
   keywords["dict-print-translations"] = cmdDictPrintTranslations;
+  keywords["dict-clear"] = cmdDictClear;
+  keywords["add-word"] = cmdAddWord;
+  keywords["remove-word"] = cmdRemoveWord;
+  keywords["count-words"] = cmdCountWords;
 
   std::string line;
   while (std::getline(std::cin, line)) {

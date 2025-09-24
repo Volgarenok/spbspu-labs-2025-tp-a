@@ -187,3 +187,63 @@ void zholobov::cmdDictPrintTranslations(Dictionaries& dictionaries, const std::v
     }
   }
 }
+
+void zholobov::cmdDictClear(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (!(args.size() == 1 || args.size() == 2)) {
+    throw InvalidParams();
+  }
+  if (args.size() == 2) {
+    auto it = dictionaries.find(args[1]);
+    if (it == dictionaries.end()) {
+      std::cout << "<INVALID DICTIONARY>\n";
+      return;
+    }
+    it->second.clear();
+  } else {
+    for (auto& dict: dictionaries) {
+      dict.second.clear();
+    }
+  }
+}
+
+void zholobov::cmdAddWord(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() != 4) {
+    throw InvalidParams();
+  }
+  auto it = dictionaries.find(args[1]);
+  if (it == dictionaries.end()) {
+    std::cout << "<INVALID DICTIONARY>\n";
+    return;
+  }
+  it->second[args[2]].push_back(args[3]);
+}
+
+void zholobov::cmdRemoveWord(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() != 3) {
+    throw InvalidParams();
+  }
+  auto it = dictionaries.find(args[1]);
+  if (it == dictionaries.end()) {
+    std::cout << "<INVALID DICTIONARY>\n";
+    return;
+  }
+  if (!it->second.erase(args[2])) {
+    std::cout << "<INVALID WORD>\n";
+  }
+}
+
+void zholobov::cmdCountWords(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() != 2) {
+    throw InvalidParams();
+  }
+  auto it = dictionaries.find(args[1]);
+  if (it == dictionaries.end()) {
+    std::cout << "<INVALID DICTIONARY>\n";
+    return;
+  }
+  std::cout << it->second.size() << '\n';
+}
