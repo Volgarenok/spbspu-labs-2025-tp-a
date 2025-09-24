@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <set>
 
 #include "utils.hpp"
 
@@ -246,4 +247,107 @@ void zholobov::cmdCountWords(Dictionaries& dictionaries, const std::vector< std:
     return;
   }
   std::cout << it->second.size() << '\n';
+}
+
+void zholobov::cmdAddTranslation(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() != 4) {
+    throw InvalidParams();
+  }
+  auto dit = dictionaries.find(args[1]);
+  if (dit == dictionaries.end()) {
+    std::cout << "<INVALID DICTIONARY>\n";
+    return;
+  }
+  auto wit = dit->second.find(args[2]);
+  if (wit == dit->second.end()) {
+    std::cout << "<INVALID WORD>\n";
+    return;
+  }
+
+  for (const auto& t: wit->second) {
+    if (t == args[3]) {
+      std::cout << "<TRANSLATION EXISTS>\n";
+      return;
+    }
+  }
+  wit->second.push_back(args[3]);
+}
+
+void zholobov::cmdRemoveTranslation(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() != 4) {
+    throw InvalidParams();
+  }
+  auto dit = dictionaries.find(args[1]);
+  if (dit == dictionaries.end()) {
+    std::cout << "<INVALID DICTIONARY>\n";
+    return;
+  }
+  auto wit = dit->second.find(args[2]);
+  if (wit == dit->second.end()) {
+    std::cout << "<INVALID WORD>\n";
+    return;
+  }
+  auto& lst = wit->second;
+  auto lit = std::find(lst.begin(), lst.end(), args[3]);
+  if (lit == lst.end()) {
+    std::cout << "<INVALID TRANSLATION>\n";
+    return;
+  }
+  lst.erase(lit);
+  if (lst.empty()) {
+    dit->second.erase(wit);
+    std::cout << "<REMOVED LAST TRANSLATION. WORD REMOVED>\n";
+  }
+}
+
+void zholobov::cmdChangeWord(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() != 4) {
+    throw InvalidParams();
+  }
+  auto dit = dictionaries.find(args[1]);
+  if (dit == dictionaries.end()) {
+    std::cout << "<INVALID DICTIONARY>\n";
+    return;
+  }
+  auto wit = dit->second.find(args[2]);
+  if (wit == dit->second.end()) {
+    std::cout << "<INVALID WORD>\n";
+    return;
+  }
+  if (dit->second.count(args[3])) {
+    std::cout << "<NEW WORD EXISTS>\n";
+    return;
+  }
+  dit->second[args[3]] = wit->second;
+  dit->second.erase(wit);
+}
+
+void zholobov::cmdTranslateWord(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() != 2) {
+    throw InvalidParams();
+  }
+  std::set< Word > uniq;
+  for (const auto& dict: dictionaries) {
+    auto wit = dict.second.find(args[1]);
+    if (wit != dict.second.end()) {
+      for (const auto& t: wit->second) {
+        uniq.insert(t);
+      }
+    }
+  }
+  if (uniq.empty()) {
+    std::cout << "<INVALID WORD>\n";
+    return;
+  }
+
+  auto it = uniq.cbegin();
+  std::cout << *it;
+  for (++it; it != uniq.cend(); ++it) {
+    std::cout << " " << *it;
+  }
+  std::cout << '\n';
 }

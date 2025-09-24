@@ -36,6 +36,10 @@ int main(int argc, char* argv[])
   keywords["add-word"] = cmdAddWord;
   keywords["remove-word"] = cmdRemoveWord;
   keywords["count-words"] = cmdCountWords;
+  keywords["add-translation"] = cmdAddTranslation;
+  keywords["remove-translation"] = cmdRemoveTranslation;
+  keywords["change-word"] = cmdChangeWord;
+  keywords["translate-word"] = cmdTranslateWord;
 
   std::string line;
   while (std::getline(std::cin, line)) {

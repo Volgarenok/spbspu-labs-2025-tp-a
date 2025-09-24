@@ -30,6 +30,10 @@ namespace zholobov {
   void cmdAddWord(Dictionaries& dictionaries, const std::vector< std::string >& args);
   void cmdRemoveWord(Dictionaries& dictionaries, const std::vector< std::string >& args);
   void cmdCountWords(Dictionaries& dictionaries, const std::vector< std::string >& args);
+  void cmdAddTranslation(Dictionaries& dictionaries, const std::vector< std::string >& args);
+  void cmdRemoveTranslation(Dictionaries& dictionaries, const std::vector< std::string >& args);
+  void cmdChangeWord(Dictionaries& dictionaries, const std::vector< std::string >& args);
+  void cmdTranslateWord(Dictionaries& dictionaries, const std::vector< std::string >& args);
 
 }
 
