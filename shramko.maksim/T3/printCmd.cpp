@@ -117,11 +117,13 @@ namespace shramko
       {
         if (subcmd == "EVEN")
         {
-          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, std::bind(details::sumAreaIf, std::placeholders::_1, std::placeholders::_2, &details::isEven));
+          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+            std::bind(details::sumAreaIf, std::placeholders::_1, std::placeholders::_2, &details::isEven));
         }
         else if (subcmd == "ODD")
         {
-          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, std::bind(details::sumAreaIf, std::placeholders::_1, std::placeholders::_2, &details::isOdd));
+          sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+            std::bind(details::sumAreaIf, std::placeholders::_1, std::placeholders::_2, &details::isOdd));
         }
       }
       out << sum;
@@ -136,7 +138,8 @@ namespace shramko
       double sum = 0.0;
       if (!polygons.empty())
       {
-        sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, std::bind(details::sumVertexCountArea, std::placeholders::_1, std::placeholders::_2, vertexCount));
+        sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+          std::bind(details::sumVertexCountArea, std::placeholders::_1, std::placeholders::_2, vertexCount));
       }
       out << sum;
     }
@@ -165,7 +168,8 @@ namespace shramko
     in >> subcmd;
     if (subcmd == "AREA")
     {
-      auto maxIt = std::max_element(polygons.begin(), polygons.end(), std::bind(&details::areaLess, std::placeholders::_1, std::placeholders::_2));
+      auto maxIt = std::max_element(polygons.begin(), polygons.end(),
+        std::bind(&details::areaLess, std::placeholders::_1, std::placeholders::_2));
       StreamGuard guard(out);
       out << std::fixed << std::setprecision(1) << getPolygonArea(*maxIt);
     }
@@ -191,13 +195,15 @@ namespace shramko
     in >> subcmd;
     if (subcmd == "AREA")
     {
-      auto minIt = std::min_element(polygons.begin(), polygons.end(), std::bind(&details::areaLess, std::placeholders::_1, std::placeholders::_2));
+      auto minIt = std::min_element(polygons.begin(), polygons.end(),
+        std::bind(&details::areaLess, std::placeholders::_1, std::placeholders::_2));
       StreamGuard guard(out);
       out << std::fixed << std::setprecision(1) << getPolygonArea(*minIt);
     }
     else if (subcmd == "VERTEXES")
     {
-      auto minIt = std::min_element(polygons.begin(), polygons.end(), std::bind(&details::vertexLess, std::placeholders::_1, std::placeholders::_2));
+      auto minIt = std::min_element(polygons.begin(), polygons.end(),
+        std::bind(&details::vertexLess, std::placeholders::_1, std::placeholders::_2));
       out << minIt->points.size();
     }
     else
@@ -212,11 +218,13 @@ namespace shramko
     in >> subcmd;
     if (subcmd == "EVEN")
     {
-      out << std::count_if(polygons.begin(), polygons.end(), std::bind(&details::isEven, std::placeholders::_1));
+      out << std::count_if(polygons.begin(), polygons.end(),
+        std::bind(&details::isEven, std::placeholders::_1));
     }
     else if (subcmd == "ODD")
     {
-      out << std::count_if(polygons.begin(), polygons.end(), std::bind(&details::isOdd, std::placeholders::_1));
+      out << std::count_if(polygons.begin(), polygons.end(),
+        std::bind(&details::isOdd, std::placeholders::_1));
     }
     else
     {
@@ -225,7 +233,8 @@ namespace shramko
       {
         throw std::invalid_argument("Invalid vertex count");
       }
-      out << std::count_if(polygons.begin(), polygons.end(), std::bind(&details::hasVertexCount, std::placeholders::_1, vertexCount));
+      out << std::count_if(polygons.begin(), polygons.end(),
+        std::bind(&details::hasVertexCount, std::placeholders::_1, vertexCount));
     }
   }
 
@@ -241,7 +250,8 @@ namespace shramko
     {
       throw std::invalid_argument("Invalid reference polygon");
     }
-    out << std::count_if(polygons.begin(), polygons.end(), std::bind(&details::hasAreaLessThan, std::placeholders::_1, std::cref(ref)));
+    out << std::count_if(polygons.begin(), polygons.end(),
+      std::bind(&details::hasAreaLessThan, std::placeholders::_1, std::cref(ref)));
   }
 
   void printRightShapes(const std::vector< Polygon >& polygons, std::ostream& out)
