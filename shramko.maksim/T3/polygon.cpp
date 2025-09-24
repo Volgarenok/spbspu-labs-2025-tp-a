@@ -48,29 +48,20 @@ std::istream& shramko::operator>>(std::istream& in, shramko::Polygon& polygon)
   }
   size_t numPoints = 0;
   in >> numPoints;
-  if (numPoints < 3)
+  if (numPoints < 3 || in.fail())
   {
     in.setstate(std::ios::failbit);
     return in;
   }
   polygon.points.clear();
   polygon.points.resize(numPoints);
-  auto endIter = std::copy_n(std::istream_iterator< shramko::Point >(in), numPoints, polygon.points.begin());
-  if (endIter != polygon.points.end() || !in)
+  for (size_t i = 0; i < numPoints; ++i)
   {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  auto adjacentEqual = std::bind(std::equal_to< shramko::Point >{}, std::placeholders::_1, std::placeholders::_2);
-  if (std::adjacent_find(polygon.points.begin(), polygon.points.end(), adjacentEqual) != polygon.points.end())
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  if (polygon.points.front() == polygon.points.back())
-  {
-    in.setstate(std::ios::failbit);
-    return in;
+    if (!(in >> polygon.points[i]))
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
   }
   return in;
 }
@@ -85,19 +76,9 @@ shramko::Point shramko::operator-(const shramko::Point& a, const shramko::Point&
   return {a.x - b.x, a.y - b.y};
 }
 
-int shramko::dot(const shramko::Point& a, const shramko::Point& b)
+long long shramko::dot(const shramko::Point& a, const shramko::Point& b)
 {
-  return a.x * b.x + a.y * b.y;
-}
-
-double xProduct(const shramko::Point& p1, const shramko::Point& p2)
-{
-  return static_cast< double >(p1.x) * p2.y;
-}
-
-double yProduct(const shramko::Point& p1, const shramko::Point& p2)
-{
-  return static_cast< double >(p1.y) * p2.x;
+  return static_cast<long long>(a.x) * b.x + static_cast<long long>(a.y) * b.y;
 }
 
 double shramko::getPolygonArea(const shramko::Polygon& polygon)
@@ -109,11 +90,12 @@ double shramko::getPolygonArea(const shramko::Polygon& polygon)
     return 0.0;
   }
 
-  double sum1 = std::inner_product(points.begin(), points.end() - 1, points.begin() + 1, 0.0, std::plus< double >{}, xProduct);
-  sum1 += xProduct(points.back(), points.front());
-
-  double sum2 = std::inner_product(points.begin(), points.end() - 1, points.begin() + 1, 0.0, std::plus< double >{}, yProduct);
-  sum2 += yProduct(points.back(), points.front());
-
-  return 0.5 * std::abs(sum1 - sum2);
+  double area = 0.0;
+  for (size_t i = 0; i < n; ++i)
+  {
+    const auto& current = points[i];
+    const auto& next = points[(i + 1) % n];
+    area += (current.x * next.y) - (next.x * current.y);
+  }
+  return std::abs(area) / 2.0;
 }

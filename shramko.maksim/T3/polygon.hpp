@@ -14,7 +14,7 @@ namespace shramko
 
   bool operator==(const Point& a, const Point& b);
   Point operator-(const Point& a, const Point& b);
-  int dot(const Point& a, const Point& b);
+  long long dot(const Point& a, const Point& b);
 
   struct Polygon
   {

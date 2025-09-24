@@ -26,14 +26,12 @@ int main(int argc, char* argv[])
   }
 
   std::vector< shramko::Polygon > polygons;
-  while (!inputFile.eof())
+  shramko::Polygon temp;
+  while (inputFile >> temp)
   {
-    std::copy(std::istream_iterator< shramko::Polygon >(inputFile), std::istream_iterator< shramko::Polygon >(), std::back_inserter(polygons));
-    if (inputFile.fail())
-    {
-      inputFile.clear();
-      inputFile.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
-    }
+    polygons.push_back(temp);
+    inputFile.clear();
+    inputFile.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
   }
 
   using cmd_func = std::function< void() >;
@@ -51,15 +49,20 @@ int main(int argc, char* argv[])
   {
     try
     {
-      commands.at(cmd)();
-      std::cout << '\n';
-    }
-    catch (const std::exception&)
-    {
-      if (std::cin.fail())
+      auto it = commands.find(cmd);
+      if (it != commands.end())
       {
-        std::cin.clear(std::cin.rdstate() ^ std::ios::failbit);
+        it->second();
+        std::cout << '\n';
       }
+      else
+      {
+        throw std::invalid_argument("Invalid command");
+      }
+    }
+    catch (const std::exception& e)
+    {
+      std::cin.clear();
       std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
       std::cout << "<INVALID COMMAND>\n";
     }
