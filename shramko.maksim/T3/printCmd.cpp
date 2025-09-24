@@ -50,12 +50,12 @@ namespace shramko
       shramko::Point next;
     };
 
-    LocalTriangle makeLocalTriangle(const std::vector< Point >& points, size_t index)
+    LocalTriangle makeLocalTriangle(const std::vector<Point>& points, size_t index)
     {
       size_t n = points.size();
       size_t prevIdx = (index + n - 1) % n;
       size_t nextIdx = (index + 1) % n;
-      return { points[prevIdx], points[index], points[nextIdx] };
+      return {points[prevIdx], points[index], points[nextIdx]};
     }
 
     bool isRightAngle(const LocalTriangle& tri)
@@ -67,10 +67,8 @@ namespace shramko
 
     struct CheckRightAngle
     {
-      const std::vector< Point >& points;
-      CheckRightAngle(const std::vector< Point >& p):
-        points(p)
-      {}
+      const std::vector<Point>& points;
+      CheckRightAngle(const std::vector<Point>& p) : points(p) {}
 
       bool operator()(size_t index) const
       {
@@ -85,7 +83,7 @@ namespace shramko
       {
         return false;
       }
-      std::vector< size_t > indices(poly.points.size());
+      std::vector<size_t> indices(poly.points.size());
       std::iota(indices.begin(), indices.end(), 0UL);
       return std::any_of(indices.begin(), indices.end(), CheckRightAngle(poly.points));
     }
@@ -106,7 +104,7 @@ namespace shramko
     }
   }
 
-  void printArea(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
+  void printArea(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out)
   {
     std::string subcmd;
     in >> subcmd;
@@ -160,7 +158,7 @@ namespace shramko
     }
   }
 
-  void printMax(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
+  void printMax(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out)
   {
     if (polygons.empty())
     {
@@ -187,7 +185,7 @@ namespace shramko
     }
   }
 
-  void printMin(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
+  void printMin(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out)
   {
     if (polygons.empty())
     {
@@ -214,7 +212,7 @@ namespace shramko
     }
   }
 
-  void printCount(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
+  void printCount(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out)
   {
     std::string subcmd;
     in >> subcmd;
@@ -240,31 +238,33 @@ namespace shramko
     }
   }
 
-  void printLessArea(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
+  void printLessArea(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out)
   {
     std::istream::sentry sentry(in);
     if (!sentry)
     {
       throw std::invalid_argument("Invalid input stream");
     }
-    std::string line;
-    std::getline(in, line);
-    std::istringstream iss(line);
     Polygon ref;
-    if (!(iss >> ref))
+    if (!(in >> ref))
     {
       throw std::invalid_argument("Invalid reference polygon");
     }
-    std::string extra;
-    if (iss >> extra)
+    in >> std::ws;
+    if (!in.eof())
     {
-      throw std::invalid_argument("Invalid reference polygon");
+      char c;
+      in >> c;
+      if (!in.eof())
+      {
+        throw std::invalid_argument("Invalid reference polygon");
+      }
     }
     out << std::count_if(polygons.begin(), polygons.end(),
       std::bind(&details::hasAreaLessThan, std::placeholders::_1, std::cref(ref)));
   }
 
-  void printRightShapes(const std::vector< Polygon >& polygons, std::ostream& out)
+  void printRightShapes(const std::vector<Polygon>& polygons, std::ostream& out)
   {
     out << std::count_if(polygons.begin(), polygons.end(), details::hasRightAngle);
   }
