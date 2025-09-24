@@ -26,10 +26,17 @@ int main(int argc, char* argv[])
   }
 
   std::vector< shramko::Polygon > polygons;
+  shramko::Polygon temp;
 
-  std::copy(std::istream_iterator< shramko::Polygon >(inputFile),
-    std::istream_iterator< shramko::Polygon >(),
-    std::back_inserter(polygons));
+  while (inputFile >> temp)
+  {
+    polygons.push_back(temp);
+    if (inputFile.fail())
+    {
+      inputFile.clear();
+    }
+    inputFile.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+  }
 
   using cmd_func = std::function< void() >;
   std::map< std::string, cmd_func > commands;

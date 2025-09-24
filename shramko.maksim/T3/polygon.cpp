@@ -6,6 +6,7 @@
 #include <cmath>
 #include <functional>
 #include <streamGuard.hpp>
+#include <set>
 
 std::istream& shramko::operator>>(std::istream& in, shramko::Point& point)
 {
@@ -39,6 +40,11 @@ std::istream& shramko::operator>>(std::istream& in, shramko::Point& point)
   return in;
 }
 
+bool shramko::operator<(const shramko::Point& a, const shramko::Point& b)
+{
+  return a.x < b.x || (a.x == b.x && a.y < b.y);
+}
+
 std::istream& shramko::operator>>(std::istream& in, shramko::Polygon& polygon)
 {
   std::istream::sentry sentry(in);
@@ -59,6 +65,13 @@ std::istream& shramko::operator>>(std::istream& in, shramko::Polygon& polygon)
   std::copy_n(std::istream_iterator< shramko::Point >(in), numPoints, polygon.points.begin());
 
   if (!in)
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+
+  std::set<shramko::Point> uniquePoints(polygon.points.begin(), polygon.points.end());
+  if (uniquePoints.size() != polygon.points.size())
   {
     in.setstate(std::ios::failbit);
     return in;
