@@ -57,10 +57,10 @@ namespace shramko
         const auto& prev = points[(i + n - 1) % n];
         const auto& curr = points[i];
         const auto& next = points[(i + 1) % n];
-        
+
         shramko::Point vec1 = prev - curr;
         shramko::Point vec2 = next - curr;
-        
+
         if (dot(vec1, vec2) == 0)
         {
           return true;
@@ -91,7 +91,7 @@ namespace shramko
     in >> subcmd;
     StreamGuard guard(out);
     out << std::fixed << std::setprecision(1);
-    
+
     if (subcmd == "EVEN")
     {
       double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
@@ -139,10 +139,10 @@ namespace shramko
     {
       throw std::invalid_argument("No polygons available");
     }
-    
+
     std::string subcmd;
     in >> subcmd;
-    
+
     if (subcmd == "AREA")
     {
       auto maxIt = std::max_element(polygons.begin(), polygons.end(),
@@ -168,10 +168,8 @@ namespace shramko
     {
       throw std::invalid_argument("No polygons available");
     }
-    
     std::string subcmd;
     in >> subcmd;
-    
     if (subcmd == "AREA")
     {
       auto minIt = std::min_element(polygons.begin(), polygons.end(),
@@ -230,7 +228,6 @@ namespace shramko
     {
       throw std::invalid_argument("Invalid reference polygon");
     }
-    
     out << std::count_if(polygons.begin(), polygons.end(),
       std::bind(details::hasAreaLessThan, std::placeholders::_1, std::cref(ref)));
   }
