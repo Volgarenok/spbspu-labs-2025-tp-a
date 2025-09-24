@@ -55,14 +55,15 @@ std::istream& shramko::operator>>(std::istream& in, shramko::Polygon& polygon)
   }
   polygon.points.clear();
   polygon.points.resize(numPoints);
-  for (size_t i = 0; i < numPoints; ++i)
+
+  std::copy_n(std::istream_iterator< shramko::Point >(in), numPoints, polygon.points.begin());
+
+  if (!in)
   {
-    if (!(in >> polygon.points[i]))
-    {
-      in.setstate(std::ios::failbit);
-      return in;
-    }
+    in.setstate(std::ios::failbit);
+    return in;
   }
+
   return in;
 }
 
@@ -78,7 +79,7 @@ shramko::Point shramko::operator-(const shramko::Point& a, const shramko::Point&
 
 long long shramko::dot(const shramko::Point& a, const shramko::Point& b)
 {
-  return static_cast<long long>(a.x) * b.x + static_cast<long long>(a.y) * b.y;
+  return static_cast< long long >(a.x) * b.x + static_cast< long long >(a.y) * b.y;
 }
 
 double shramko::getPolygonArea(const shramko::Polygon& polygon)
@@ -90,12 +91,12 @@ double shramko::getPolygonArea(const shramko::Polygon& polygon)
     return 0.0;
   }
 
-  double area = 0.0;
+  double sum = 0.0;
   for (size_t i = 0; i < n; ++i)
   {
     const auto& current = points[i];
     const auto& next = points[(i + 1) % n];
-    area += (current.x * next.y) - (next.x * current.y);
+    sum += static_cast< double >(current.x) * next.y - static_cast< double >(next.x) * current.y;
   }
-  return std::abs(area) / 2.0;
+  return std::abs(sum) / 2.0;
 }

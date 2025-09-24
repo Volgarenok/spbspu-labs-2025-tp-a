@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <streamGuard.hpp>
+#include <cctype>
 
 namespace shramko
 {
@@ -43,30 +44,47 @@ namespace shramko
       return lhs.points.size() < rhs.points.size();
     }
 
+    struct IsNotSpace
+    {
+      bool operator()(char c) const
+      {
+        return !std::isspace(c);
+      }
+    };
+
+    struct RightAngleChecker
+    {
+      const Polygon& poly;
+      RightAngleChecker(const Polygon& p) : poly(p) {}
+
+      bool operator()(size_t index) const
+      {
+        size_t n = poly.points.size();
+        size_t prevIdx = (index + n - 1) % n;
+        size_t nextIdx = (index + 1) % n;
+
+        const auto& prev = poly.points[prevIdx];
+        const auto& curr = poly.points[index];
+        const auto& next = poly.points[nextIdx];
+
+        shramko::Point vec1 = {prev.x - curr.x, prev.y - curr.y};
+        shramko::Point vec2 = {next.x - curr.x, next.y - curr.y};
+
+        return dot(vec1, vec2) == 0;
+      }
+    };
+
     bool hasRightAngle(const Polygon& poly)
     {
-      const auto& points = poly.points;
-      size_t n = points.size();
-      if (n < 3)
+      if (poly.points.size() < 3)
       {
         return false;
       }
 
-      for (size_t i = 0; i < n; ++i)
-      {
-        const auto& prev = points[(i + n - 1) % n];
-        const auto& curr = points[i];
-        const auto& next = points[(i + 1) % n];
+      std::vector< size_t > indices(poly.points.size());
+      std::iota(indices.begin(), indices.end(), 0);
 
-        shramko::Point vec1 = prev - curr;
-        shramko::Point vec2 = next - curr;
-
-        if (dot(vec1, vec2) == 0)
-        {
-          return true;
-        }
-      }
-      return false;
+      return std::any_of(indices.begin(), indices.end(), RightAngleChecker(poly));
     }
 
     double sumAreaIf(double acc, const Polygon& p, bool (*condition)(const Polygon&))
@@ -85,7 +103,7 @@ namespace shramko
     }
   }
 
-  void printArea(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out)
+  void printArea(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
   {
     std::string subcmd;
     in >> subcmd;
@@ -133,7 +151,7 @@ namespace shramko
     }
   }
 
-  void printMax(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out)
+  void printMax(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
   {
     if (polygons.empty())
     {
@@ -162,7 +180,7 @@ namespace shramko
     }
   }
 
-  void printMin(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out)
+  void printMin(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
   {
     if (polygons.empty())
     {
@@ -189,7 +207,7 @@ namespace shramko
     }
   }
 
-  void printCount(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out)
+  void printCount(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
   {
     std::string subcmd;
     in >> subcmd;
@@ -221,18 +239,29 @@ namespace shramko
     }
   }
 
-  void printLessArea(const std::vector<Polygon>& polygons, std::istream& in, std::ostream& out)
+  void printLessArea(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
   {
     Polygon ref;
     if (!(in >> ref))
     {
       throw std::invalid_argument("Invalid reference polygon");
     }
+
+    std::string remaining;
+    std::getline(in, remaining);
+    if (!remaining.empty())
+    {
+      if (std::find_if(remaining.begin(), remaining.end(), details::IsNotSpace()) != remaining.end())
+      {
+        throw std::invalid_argument("Invalid reference polygon");
+      }
+    }
+
     out << std::count_if(polygons.begin(), polygons.end(),
       std::bind(details::hasAreaLessThan, std::placeholders::_1, std::cref(ref)));
   }
 
-  void printRightShapes(const std::vector<Polygon>& polygons, std::ostream& out)
+  void printRightShapes(const std::vector< Polygon >& polygons, std::ostream& out)
   {
     out << std::count_if(polygons.begin(), polygons.end(), details::hasRightAngle);
   }
