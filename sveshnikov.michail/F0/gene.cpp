@@ -94,8 +94,8 @@ int sveshnikov::Gene::calc_fitness() const
   }
   using namespace std::placeholders;
   std::array< size_t, 3 > vals;
-  std::transform(nucleotides_.begin(), nucleotides_.end(), vals.begin(),
-      std::bind(getNucleotideValue, _1));
+  auto get_nucl_val = std::bind(getNucleotideValue, _1);
+  std::transform(nucleotides_.begin(), nucleotides_.end(), vals.begin(), get_nucl_val);
   return vals[0] * 16 + vals[1] * 4 + vals[2];
 }
 

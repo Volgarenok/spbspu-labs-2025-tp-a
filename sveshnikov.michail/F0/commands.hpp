@@ -23,7 +23,7 @@ namespace sveshnikov
 
   void makeOlder(populations_t &populations, std::istream &in);
   void unite(populations_t &populations, std::istream &in);
-  void listPopulation(const populations_t &populations, std::ostream &out);
+  void listPopulation(const populations_t &populations, std::istream &in, std::ostream &out);
 
   void save(const populations_t &populations, std::istream &in, std::ostream &out);
   void load(populations_t &populations, std::istream &in);

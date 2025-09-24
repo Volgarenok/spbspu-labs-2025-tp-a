@@ -41,13 +41,13 @@ namespace
 
   struct IndividualWithTag
   {
-    const sveshnikov::Individual &individual;
+    const sveshnikov::Individual &individ;
     std::string tag;
   };
 
   std::ostream &operator<<(std::ostream &out, const IndividualWithTag &item)
   {
-    return out << item.individual << " " << item.tag;
+    return out << item.individ << " " << item.tag;
   }
 
   struct AddTag
@@ -57,6 +57,30 @@ namespace
     IndividualWithTag operator()(const std::pair< std::string, sveshnikov::Individual > &p) const
     {
       return {p.second, tag};
+    }
+  };
+
+  struct IndividualWithFitnessAndTag
+  {
+    const sveshnikov::Individual &individ;
+    std::string tag;
+  };
+
+  std::ostream &operator<<(std::ostream &out, const IndividualWithFitnessAndTag &item)
+  {
+    return out << item.individ << " " << item.individ.calc_fitness() << " " << item.tag;
+  }
+
+  struct AddTagAndFitness
+  {
+    std::string tag;
+
+    IndividualWithFitnessAndTag operator()(
+        const std::pair< std::string, sveshnikov::Individual > &p) const
+    {
+      AddTag adder{tag};
+      IndividualWithTag ind_with_tag = adder(p);
+      return {ind_with_tag.individ, tag};
     }
   };
 
@@ -113,7 +137,7 @@ int sveshnikov::Population::calc_fitness(const std::string &name) const
 }
 
 void sveshnikov::Population::printPedigreeLine(const std::string &childName,
-    const sveshnikov::Individual &child, const std::string &parentName, std::ostream &out) const
+    const Individual &child, const std::string &parentName, std::ostream &out) const
 {
   out << childName << ' ' << child.get_genotype() << " -> ";
 
@@ -168,18 +192,22 @@ void sveshnikov::Population::crossover(const std::string &name, const std::strin
 
 void sveshnikov::Population::print_list(std::ostream &out, const std::string &life_specifier) const
 {
-  using out_iter = std::ostream_iterator< IndividualWithTag >;
+  using out_iter = std::ostream_iterator< IndividualWithFitnessAndTag >;
   if (life_specifier != "<ALIVE>" && life_specifier != "<DIED>" && life_specifier != "<ALL>")
   {
     throw std::invalid_argument("ERROR: unknown life specifier!");
   }
   if (life_specifier == "<ALIVE>" || life_specifier == "<ALL>")
   {
-    std::transform(population_.begin(), population_.end(), out_iter(out, "\n"), AddTag{"<ALIVE>"});
+    auto p_begin = population_.begin();
+    auto p_end = population_.end();
+    std::transform(p_begin, p_end, out_iter(out, "\n"), AddTagAndFitness{"<ALIVE>"});
   }
   if (life_specifier == "<DIED>" || life_specifier == "<ALL>")
   {
-    std::transform(cemetery_.begin(), cemetery_.end(), out_iter(out, "\n"), AddTag{"<DIED>"});
+    auto c_begin = cemetery_.begin();
+    auto c_end = cemetery_.end();
+    std::transform(c_begin, c_end, out_iter(out, "\n"), AddTagAndFitness{"<DIED>"});
   }
 }
 
@@ -281,9 +309,12 @@ void sveshnikov::Population::unite(const Population &other)
   auto begin_p = other.population_.begin();
   auto end_p = other.population_.end();
   std::copy_if(begin_p, end_p, std::inserter(population_, population_.end()), pred);
-  auto begin_c = other.cemetery_.begin();
-  auto end_c = other.cemetery_.end();
-  std::copy_if(begin_c, end_c, std::inserter(cemetery_, cemetery_.end()), pred);
+  if (!other.population_.empty())
+  {
+    auto begin_c = other.cemetery_.begin();
+    auto end_c = other.cemetery_.end();
+    std::copy_if(begin_c, end_c, std::inserter(cemetery_, cemetery_.end()), pred);
+  }
 }
 
 std::istream &sveshnikov::operator>>(std::istream &in, Population &p)
@@ -315,6 +346,12 @@ std::istream &sveshnikov::operator>>(std::istream &in, Population &p)
 
 std::ostream &sveshnikov::operator<<(std::ostream &out, const Population &p)
 {
-  p.print_list(out, "<ALL>");
+  using out_iter = std::ostream_iterator< IndividualWithTag >;
+  auto p_begin = p.population_.begin();
+  auto p_end = p.population_.end();
+  std::transform(p_begin, p_end, out_iter(out, "\n"), AddTag{"<ALIVE>"});
+  auto c_begin = p.cemetery_.begin();
+  auto c_end = p.cemetery_.end();
+  std::transform(c_begin, c_end, out_iter(out, "\n"), AddTag{"<DIED>"});
   return out;
 }

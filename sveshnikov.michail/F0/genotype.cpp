@@ -26,8 +26,8 @@ namespace
     std::vector< size_t > counts;
     counts.reserve(4);
     using namespace std::placeholders;
-    std::transform(nucleotides.begin(), nucleotides.end(), counts.begin(),
-        std::bind(countNucleotide, std::cref(genes), _1));
+    auto count_nucl = std::bind(countNucleotide, std::cref(genes), _1);
+    std::transform(nucleotides.begin(), nucleotides.end(), counts.begin(), count_nucl);
     return (counts[0] == counts[1] && counts[2] == counts[3]);
   }
 }

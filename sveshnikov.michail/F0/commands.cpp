@@ -5,6 +5,19 @@
 #include <fstream>
 #include <limits>
 
+namespace
+{
+  void checkExtraData(std::istream &in)
+  {
+    std::string remaining_line;
+    std::getline(in, remaining_line);
+    if (!remaining_line.empty() && remaining_line.find_first_not_of(" ") != std::string::npos)
+    {
+      throw std::invalid_argument("<EXTRA DATA>");
+    }
+  }
+}
+
 void sveshnikov::addPopulation(populations_t &populations, std::istream &in)
 {
   std::string name;
@@ -14,6 +27,7 @@ void sveshnikov::addPopulation(populations_t &populations, std::istream &in)
     std::cout << "<THE POPULATION IS ALREADY EXIST>\n";
     return;
   }
+  checkExtraData(in);
   Population p;
   populations.insert({name, p});
 }
@@ -22,6 +36,7 @@ void sveshnikov::removePopulation(populations_t &populations, std::istream &in)
 {
   std::string name;
   in >> name;
+  checkExtraData(in);
   if (populations.find(name) == populations.end())
   {
     std::cout << "<NO SUCH POPULATION>\n";
@@ -41,11 +56,11 @@ void sveshnikov::add(populations_t &populations, std::istream &in)
     return;
   }
   size_t age = 0;
-  if (in.peek() != std::char_traits< char >::eof())
+  if (in.peek() != '\n')
   {
     in >> age;
   }
-
+  checkExtraData(in);
   try
   {
     Individual individual(name, genotype, age);
@@ -61,6 +76,7 @@ void sveshnikov::removeInds(populations_t &populations, std::istream &in)
 {
   std::string population_name, name;
   in >> population_name >> name;
+  checkExtraData(in);
   if (populations.find(population_name) == populations.end())
   {
     std::cout << "<NO SUCH POPULATION>\n";
@@ -74,6 +90,7 @@ void sveshnikov::mutate(populations_t &populations, std::istream &in)
   std::string population_name, name;
   Genotype genotype;
   in >> population_name >> name >> genotype;
+  checkExtraData(in);
   if (populations.find(population_name) == populations.end())
   {
     std::cout << "<NO SUCH POPULATION>\n";
@@ -84,7 +101,7 @@ void sveshnikov::mutate(populations_t &populations, std::istream &in)
   {
     populations[population_name].mutate(name, genotype);
   }
-  catch (const std::invalid_argument &e)
+  catch (const std::invalid_argument &)
   {
     std::cout << "<NO SUCH INDIVIDUAL>\n";
     return;
@@ -95,6 +112,7 @@ void sveshnikov::calcFitness(const populations_t &populations, std::istream &in,
 {
   std::string population_name, name;
   in >> population_name >> name;
+  checkExtraData(in);
   if (populations.find(population_name) == populations.end())
   {
     out << "<NO SUCH POPULATION>\n";
@@ -105,7 +123,7 @@ void sveshnikov::calcFitness(const populations_t &populations, std::istream &in,
   {
     out << populations.find(population_name)->second.calc_fitness(name) << '\n';
   }
-  catch (const std::invalid_argument &e)
+  catch (const std::invalid_argument &)
   {
     std::cout << "<NO SUCH INDIVIDUAL>\n";
     return;
@@ -117,6 +135,7 @@ void sveshnikov::printPedigree(const populations_t &populations, std::istream &i
 {
   std::string population_name, name;
   in >> population_name >> name;
+  checkExtraData(in);
   if (populations.find(population_name) == populations.end())
   {
     out << "<NO SUCH POPULATION>\n";
@@ -127,7 +146,7 @@ void sveshnikov::printPedigree(const populations_t &populations, std::istream &i
   {
     populations.find(population_name)->second.print_pedigree(name, out);
   }
-  catch (const std::invalid_argument &e)
+  catch (const std::invalid_argument &)
   {
     std::cout << "<NO SUCH INDIVIDUAL>\n";
     return;
@@ -138,6 +157,7 @@ void sveshnikov::crossover(populations_t &populations, std::istream &in)
 {
   std::string population_name, new_name, name1, name2;
   in >> population_name >> new_name >> name1 >> name2;
+  checkExtraData(in);
   if (populations.find(population_name) == populations.end())
   {
     std::cout << "<NO SUCH POPULATION>\n";
@@ -148,7 +168,7 @@ void sveshnikov::crossover(populations_t &populations, std::istream &in)
   {
     populations[population_name].crossover(new_name, name1, name2);
   }
-  catch (const std::invalid_argument &e)
+  catch (const std::invalid_argument &)
   {
     std::cout << "<NO SUCH INDIVIDUAL>\n";
     return;
@@ -163,6 +183,7 @@ void sveshnikov::printList(const populations_t &populations, std::istream &in, s
 {
   std::string population_name, specifier;
   in >> population_name >> specifier;
+  checkExtraData(in);
   if (populations.find(population_name) == populations.end())
   {
     out << "<NO SUCH POPULATION>\n";
@@ -176,6 +197,7 @@ void sveshnikov::printStats(const populations_t &populations, std::istream &in, 
 {
   std::string population_name;
   in >> population_name;
+  checkExtraData(in);
   if (populations.find(population_name) == populations.end())
   {
     out << "<NO SUCH POPULATION>\n";
@@ -197,6 +219,7 @@ void sveshnikov::selectInds(populations_t &populations, std::istream &in)
   std::string population_name;
   int threshold;
   in >> population_name >> threshold;
+  checkExtraData(in);
   if (populations.find(population_name) == populations.end())
   {
     std::cout << "<NO SUCH POPULATION>\n";
@@ -210,6 +233,7 @@ void sveshnikov::makeOlder(populations_t &populations, std::istream &in)
   std::string population_name;
   size_t years;
   in >> population_name >> years;
+  checkExtraData(in);
   if (populations.find(population_name) == populations.end())
   {
     std::cout << "<NO SUCH POPULATION>\n";
@@ -222,6 +246,7 @@ void sveshnikov::unite(populations_t &populations, std::istream &in)
 {
   std::string p_name1, p_name2;
   in >> p_name1 >> p_name2;
+  checkExtraData(in);
   auto end = populations.end();
   if ((populations.find(p_name1) == end) || (populations.find(p_name2) == end))
   {
@@ -232,32 +257,35 @@ void sveshnikov::unite(populations_t &populations, std::istream &in)
   populations.erase(p_name2);
 }
 
-void sveshnikov::listPopulation(const populations_t &populations, std::ostream &out)
+void sveshnikov::listPopulation(const populations_t &populations, std::istream &in,
+    std::ostream &out)
 {
+  checkExtraData(in);
   using namespace std::placeholders;
   using out_iter = std::ostream_iterator< std::string >;
-  std::transform(populations.begin(), --populations.end(), out_iter(out, "\n"),
-      std::bind(&populations_t::value_type::first, _1));
+  auto get_name = std::bind(&populations_t::value_type::first, _1);
+  std::transform(++populations.begin(), populations.end(), out_iter(out, "\n"), get_name);
 }
 
 void sveshnikov::save(const populations_t &populations, std::istream &in, std::ostream &out)
 {
   std::string population_name, filename;
   in >> population_name >> filename;
+  checkExtraData(in);
   auto p = populations.find(population_name);
   if (p == populations.end())
   {
     out << "<NO SUCH POPULATION>\n";
     return;
   }
-  std::ofstream file(filename);
+  std::ofstream file(filename, std::ios::app);
   if (!file)
   {
     throw std::invalid_argument("<NON-EXISTENT FILE>\n");
   }
   file << population_name << ' ';
   file << p->second.get_size() << '\n';
-  p->second.print_list(file, "<ALL>");
+  file << p->second;
 }
 
 void sveshnikov::load(populations_t &populations, std::istream &in)

@@ -31,11 +31,13 @@ namespace sveshnikov
     void select(int survival_threshold);
     void unite(const Population &other);
 
+    friend std::ostream &operator<<(std::ostream &out, const Population &p);
+
   private:
     std::map< std::string, Individual > population_;
     std::map< std::string, Individual > cemetery_;
 
-    void printPedigreeLine(const std::string &childName, const sveshnikov::Individual &child,
+    void printPedigreeLine(const std::string &childName, const Individual &child,
         const std::string &parentName, std::ostream &out) const;
   };
 

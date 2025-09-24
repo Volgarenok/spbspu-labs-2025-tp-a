@@ -78,24 +78,22 @@ std::istream &sveshnikov::operator>>(std::istream &in, Individual &individual)
   std::string parent2 = "";
 
   in >> name >> genotype;
-  if (in.peek() != std::char_traits< char >::eof())
+  if (in && in.peek() != '\n')
   {
     in >> age;
   }
-  if (in.peek() != std::char_traits< char >::eof())
+  in >> std::ws;
+  if (in && in.peek() != '<' && in.peek() != '\n')
   {
-    in >> parent1 >> parent2;
-  }
-  individual = Individual(name, genotype, age, parent1, parent2);
-  if (in.peek() != std::char_traits< char >::eof())
-  {
-    int fitness = 0;
-    in >> fitness;
-    if (!in || fitness != individual.calc_fitness())
+    in >> parent1;
+    if (in)
     {
-      in.setstate(std::ios::failbit);
-      throw std::invalid_argument("ERROR: incorrect fitness!");
+      in >> parent2;
     }
+  }
+  if (in)
+  {
+    individual = Individual(name, genotype, age, parent1, parent2);
   }
   return in;
 }
@@ -117,6 +115,5 @@ std::ostream &sveshnikov::operator<<(std::ostream &out, const Individual &indivi
     out << " " << individual.get_parents().first;
     out << " " << individual.get_parents().second;
   }
-  out << " " << individual.calc_fitness();
   return out;
 }

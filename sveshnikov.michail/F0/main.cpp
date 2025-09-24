@@ -78,7 +78,8 @@ int main(int argc, char *argv[])
   cmds["SELECT"] = std::bind(selectInds, std::ref(populations), std::ref(std::cin));
   cmds["YEARS"] = std::bind(makeOlder, std::ref(populations), std::ref(std::cin));
   cmds["UNITE"] = std::bind(unite, std::ref(populations), std::ref(std::cin));
-  cmds["LIST_POPULATION"] = std::bind(listPopulation, std::cref(populations), std::ref(std::cout));
+  cmds["LIST_POPULATION"] =
+      std::bind(listPopulation, std::cref(populations), std::ref(std::cin), std::ref(std::cout));
 
   std::string command;
   while (std::cin >> command)

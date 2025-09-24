@@ -93,8 +93,9 @@ namespace
         return false;
       }
       using namespace std::placeholders;
-      return std::all_of(s.begin(), s.end(),
-          std::bind(static_cast< int (*)(int) >(std::isdigit), _1));
+      auto begin = s.begin();
+      auto end = s.end();
+      return std::all_of(begin, end, std::bind(static_cast< int (*)(int) >(std::isdigit), _1));
     }
   };
 }
