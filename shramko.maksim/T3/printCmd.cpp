@@ -5,6 +5,8 @@
 #include <numeric>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 #include <streamGuard.hpp>
 
 namespace shramko
@@ -240,13 +242,21 @@ namespace shramko
 
   void printLessArea(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
   {
-    Polygon ref;
     std::istream::sentry sentry(in);
     if (!sentry)
     {
       throw std::invalid_argument("Invalid input stream");
     }
-    if (!(in >> ref))
+    std::string line;
+    std::getline(in, line);
+    std::istringstream iss(line);
+    Polygon ref;
+    if (!(iss >> ref))
+    {
+      throw std::invalid_argument("Invalid reference polygon");
+    }
+    std::string extra;
+    if (iss >> extra)
     {
       throw std::invalid_argument("Invalid reference polygon");
     }
