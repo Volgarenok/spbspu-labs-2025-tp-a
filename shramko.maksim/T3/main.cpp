@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
   }
 
   std::vector< shramko::Polygon > polygons;
-  
+
   std::copy(std::istream_iterator< shramko::Polygon >(inputFile),
     std::istream_iterator< shramko::Polygon >(),
     std::back_inserter(polygons));
