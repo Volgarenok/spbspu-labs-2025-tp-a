@@ -3,43 +3,29 @@
 #include <iterator>
 #include <algorithm>
 
-std::istream & guseynov::operator>>(std::istream & in, Point & point)
+std::istream & guseynov::operator>>(std::istream & in, DelimiterI && dest)
 {
   std::istream::sentry sentry(in);
   if (!sentry)
   {
     return in;
   }
-  char c;
+  char c = 0;
   in >> c;
-  if (!in || c != '(')
+  if (!in || c != dest.exp)
   {
     in.setstate(std::ios::failbit);
-    return in;
   }
-  in >> point.x;
-  if (!in)
+  else
   {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  in >> c;
-  if (!in || c != ';')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  in >> point.y;
-  if (!in)
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  in >> c;
-  if (!in || c != ')')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
+    char next = in.peek();
+    if (next != ' ' && next != '\t' && next != '\n' && next != '\r' && next != std::char_traits<char>::eof())
+    {
+      if (dest.exp != '(' && dest.exp != ')')
+      {
+        in.setstate(std::ios::failbit);
+      }
+    }
   }
   return in;
 }
