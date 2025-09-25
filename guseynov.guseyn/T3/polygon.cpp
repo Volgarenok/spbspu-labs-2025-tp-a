@@ -10,35 +10,7 @@ std::istream & guseynov::operator>>(std::istream & in, Point & point)
   {
     return in;
   }
-  char c;
-  in >> c;
-  if (c != '(')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  in >> point.x;
-  if (!in)
-  {
-    return in;
-  }
-  in >> c;
-  if (c != ';')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  in >> point.y;
-  if (!in)
-  {
-    return in;
-  }
-  in >> c;
-  if (c != ')')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
+  in >> DelimiterI{'('} >> point.x >> DelimiterI{';'} >> point.y >> DelimiterI{')'};
   return in;
 }
 
@@ -71,21 +43,9 @@ std::istream & guseynov::operator>>(std::istream & in, Polygon & polygon)
     in.setstate(std::ios::failbit);
     return in;
   }
-  std::vector<Point> points;
-  points.reserve(num);
-  for (size_t i = 0; i < num; ++i)
-  {
-    Point point;
-    if (in >> point)
-    {
-      points.push_back(point);
-    }
-    else
-    {
-      in.setstate(std::ios::failbit);
-      return in;
-    }
-  }
+  std::vector< Point > points(num);
+  using istream_it = std::istream_iterator< Point >;
+  std::copy_n(istream_it{in}, num, points.begin());
   if (in)
   {
     polygon.points = std::move(points);
