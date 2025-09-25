@@ -29,14 +29,14 @@ std::istream & guseynov::operator>>(std::istream & in, Point & point)
     in.setstate(std::ios::failbit);
     return in;
   }
-  char next = in.peek();
-  if (!std::isdigit(next) && next != '-' && next != '+')
+  in >> point.y;
+  if (!in)
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  in >> point.y;
-  if (!in)
+  char next = in.peek();
+  if (next != ')')
   {
     in.setstate(std::ios::failbit);
     return in;
