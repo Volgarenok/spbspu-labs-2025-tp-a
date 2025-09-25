@@ -1,35 +1,59 @@
 #include "polygon.hpp"
+#include "delimiter.hpp"
+#include <iterator>
 #include <algorithm>
 
-bool guseynov::Polygon::operator==(const Polygon& other) const
+std::istream & guseynov::operator>>(std::istream & in, Point & point)
 {
-  return points.size() == other.points.size() && std::equal(points.begin(), points.end(), other.points.begin());
+  std::istream::sentry sentry(in);
+  if (!sentry)
+  {
+    return in;
+  }
+  in >> DelimiterI{'('} >> point.x >> DelimiterI{';'} >> point.y >> DelimiterI{')'};
+  return in;
 }
 
-std::istream& guseynov::operator>>(std::istream& in, Polygon& poly)
+std::ostream & guseynov::operator<<(std::ostream & out, const Point & point)
 {
-  poly.points.clear();
-  size_t numVertices = 0;
-  if (!(in >> numVertices))
+  std::ostream::sentry sentry(out);
+  if (!sentry)
+  {
+    return out;
+  }
+  out << '(' << point.x << ';' << point.y << ')';
+  return out;
+}
+
+bool guseynov::operator==(const Point & lhs, const Point & rhs)
+{
+  return lhs.x == rhs.x && lhs.y == rhs.y;
+}
+
+std::istream & guseynov::operator>>(std::istream & in, Polygon & polygon)
+{
+  std::istream::sentry sentry(in);
+  if (!sentry)
+  {
+    return in;
+  }
+  size_t num = 0;
+  if (!(in >> num) || num < 3)
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  if (numVertices < 3)
+  std::vector< Point > points(num);
+  using istream_it = std::istream_iterator< Point >;
+  std::copy_n(istream_it{in}, num, points.begin());
+  if (in)
   {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  for (size_t i = 0; i < numVertices; ++i)
-  {
-    Point point;
-    if (!(in >> point))
-    {
-      in.setstate(std::ios::failbit);
-      poly.points.clear();
-      return in;
-    }
-    poly.points.push_back(point);
+    polygon.points = std::move(points);
   }
   return in;
+}
+
+bool guseynov::operator==(const Polygon & lhs, const Polygon & rhs)
+{
+  return lhs.points == rhs.points;
 }

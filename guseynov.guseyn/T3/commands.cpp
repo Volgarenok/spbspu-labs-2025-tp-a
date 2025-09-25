@@ -1,433 +1,383 @@
 #include "commands.hpp"
-#include "inframe.hpp"
-#include "lessarea.hpp"
-#include <iostream>
-#include <iomanip>
 #include <algorithm>
-#include <limits>
-#include <string>
-#include <functional>
 #include <numeric>
-#include <fstream>
-#include <sstream>
-#include <cctype>
+#include <functional>
+#include <iomanip>
+#include <limits>
+#include <map>
+#include <stdexcept>
+#include <string>
+#include <cmath>
+#include "guard.hpp"
 
 namespace
 {
-  struct IsEvenPolygon
+  double getDeterminant(const guseynov::Point & p1, const guseynov::Point & p2)
   {
-    bool operator()(const guseynov::Polygon& poly) const
-    {
-      return poly.points.size() % 2 == 0;
-    }
-  };
+    return static_cast< double >(p1.x) * p2.y - static_cast< double >(p2.x) * p1.y;
+  }
 
-  struct IsOddPolygon
+  double getArea(const guseynov::Polygon & poly)
   {
-    bool operator()(const guseynov::Polygon& poly) const
+    if (poly.points.size() < 3)
     {
-      return poly.points.size() % 2 != 0;
+      return 0.0;
     }
-  };
+    std::vector< guseynov::Point > rotated = poly.points;
+    std::rotate(rotated.begin(), rotated.begin() + 1, rotated.end());
+    auto currentPoint = poly.points.begin();
+    auto endPoint = poly.points.end();
+    auto nextPoint = rotated.begin();
+    double areaSum = std::inner_product(currentPoint, endPoint, nextPoint, 0.0, std::plus< double >(), getDeterminant);
+    return std::abs(areaSum) / 2.0;
+  }
 
-  struct HasVertexCount
+  bool isEven(const guseynov::Polygon & poly)
   {
-    explicit HasVertexCount(size_t targetCount):
-      target(targetCount)
+    return poly.points.size() % 2 == 0;
+  }
+
+  bool isOdd(const guseynov::Polygon & poly)
+  {
+    return poly.points.size() % 2 == 1;
+  }
+
+  struct IsVertexCount
+  {
+    size_t count;
+    IsVertexCount(size_t c):
+      count(c)
     {}
-    bool operator()(const guseynov::Polygon& poly) const
+    bool operator()(const guseynov::Polygon & poly) const
     {
-      return poly.points.size() == target;
+      return poly.points.size() == count;
     }
-    size_t target;
   };
 
-  struct HasLessArea
+  struct InFrameCheck
   {
-    explicit HasLessArea(double areaThreshold):
-      threshold(areaThreshold)
+    int min_x, max_x, min_y, max_y;
+    InFrameCheck(int minx, int maxx, int miny, int maxy):
+      min_x(minx),
+      max_x(maxx),
+      min_y(miny),
+      max_y(maxy)
     {}
-    bool operator()(const guseynov::Polygon& poly) const
+    bool operator()(const guseynov::Point & pt) const
     {
-      return guseynov::commands::calculateArea(poly) < threshold;
-    }
-    double threshold;
-  };
-
-  struct AreaAccumulator
-  {
-    double operator()(double sum, const guseynov::Polygon& poly) const
-    {
-      return sum + guseynov::commands::calculateArea(poly);
+      return pt.x >= min_x && pt.x <= max_x && pt.y >= min_y && pt.y <= max_y;
     }
   };
 
-  struct ConditionalAreaAccumulatorEven
+  bool areaLess(const guseynov::Polygon & a, const guseynov::Polygon & b)
   {
-    double operator()(double sum, const guseynov::Polygon& poly) const
-    {
-      return IsEvenPolygon()(poly) ? sum + guseynov::commands::calculateArea(poly) : sum;
-    }
-  };
-
-  struct ConditionalAreaAccumulatorOdd
-  {
-    double operator()(double sum, const guseynov::Polygon& poly) const
-    {
-      return IsOddPolygon()(poly) ? sum + guseynov::commands::calculateArea(poly) : sum;
-    }
-  };
-
-  struct ConditionalAreaAccumulatorVertexCount
-  {
-    explicit ConditionalAreaAccumulatorVertexCount(size_t target):
-      target_(target)
-    {}
-    double operator()(double sum, const guseynov::Polygon& poly) const
-    {
-      return HasVertexCount(target_)(poly) ? sum + guseynov::commands::calculateArea(poly) : sum;
-    }
-    size_t target_;
-  };
-
-  struct MaxAreaFinder
-  {
-    double maxArea = 0.0;
-    void operator()(const guseynov::Polygon& poly)
-    {
-      double area = guseynov::commands::calculateArea(poly);
-      if (area > maxArea)
-      {
-        maxArea = area;
-      }
-    }
-  };
-
-  struct MinAreaFinder
-  {
-    double minArea = std::numeric_limits<double>::max();
-    void operator()(const guseynov::Polygon& poly)
-    {
-      double area = guseynov::commands::calculateArea(poly);
-      if (area < minArea)
-      {
-        minArea = area;
-      }
-    }
-  };
-
-  struct MaxVerticesFinder
-  {
-    size_t maxVertices = 0;
-    void operator()(const guseynov::Polygon& poly)
-    {
-      size_t vertices = poly.points.size();
-      if (vertices > maxVertices)
-      {
-        maxVertices = vertices;
-      }
-    }
-  };
-
-  struct MinVerticesFinder
-  {
-    size_t minVertices = std::numeric_limits<size_t>::max();
-    void operator()(const guseynov::Polygon& poly)
-    {
-      size_t vertices = poly.points.size();
-      if (vertices < minVertices)
-      {
-        minVertices = vertices;
-      }
-    }
-  };
-
-  struct FrameBoundsAccumulator
-  {
-    int minX = std::numeric_limits<int>::max();
-    int maxX = std::numeric_limits<int>::min();
-    int minY = std::numeric_limits<int>::max();
-    int maxY = std::numeric_limits<int>::min();
-    void operator()(const guseynov::Polygon& poly)
-    {
-      for (const auto& point : poly.points)
-      {
-        minX = std::min(minX, point.x);
-        maxX = std::max(maxX, point.x);
-        minY = std::min(minY, point.y);
-        maxY = std::max(maxY, point.y);
-      }
-    }
-  };
-
-  struct PointOutsideFrame
-  {
-    int minX;
-    int maxX;
-    int minY;
-    int maxY;
-    PointOutsideFrame(int minX_, int maxX_, int minY_, int maxY_):
-      minX(minX_),
-      maxX(maxX_),
-      minY(minY_),
-      maxY(maxY_)
-    {}
-    bool operator()(const guseynov::Point& point) const
-    {
-      return point.x < minX || point.x > maxX || point.y < minY || point.y > maxY;
-    }
-  };
-}
-
-double guseynov::commands::calculateArea(const Polygon& poly)
-{
-  if (poly.points.size() < 3)
-  {
-    return 0.0;
+    return getArea(a) < getArea(b);
   }
 
-  double area = 0.0;
-  size_t n = poly.points.size();
-  for (size_t i = 0; i < n; ++i)
+  bool vertexLess(const guseynov::Polygon & a, const guseynov::Polygon & b)
   {
-    size_t j = (i + 1) % n;
-    area += poly.points[i].x * poly.points[j].y;
-    area -= poly.points[j].x * poly.points[i].y;
+    return a.points.size() < b.points.size();
   }
-  return std::abs(area) / 2.0;
-}
 
-void guseynov::commands::parsePolygon(std::istream& in, Polygon& poly)
-{
-  poly.points.clear();
-  in >> poly;
-}
-
-void guseynov::commands::readPolygonsFromFile(std::istream& in, std::vector<Polygon>& polygons)
-{
-  polygons.clear();
-  Polygon poly;
-  while (in >> poly)
+  bool compareX(const guseynov::Point & a, const guseynov::Point & b)
   {
-    if (poly.points.size() >= 3)
+    return a.x < b.x;
+  }
+
+  bool compareY(const guseynov::Point & a, const guseynov::Point & b)
+  {
+    return a.y < b.y;
+  }
+
+  struct MinXInAll
+  {
+    bool operator()(const guseynov::Polygon & a, const guseynov::Polygon & b) const
     {
-      polygons.push_back(poly);
+      int minA = std::min_element(a.points.begin(), a.points.end(), compareX)->x;
+      int minB = std::min_element(b.points.begin(), b.points.end(), compareX)->x;
+      return minA < minB;
     }
-    poly.points.clear();
-    in.clear();
-    std::string line;
-    while (std::getline(in, line))
-    {
-      std::istringstream lineStream(line);
-      if (lineStream >> poly)
-      {
-        if (poly.points.size() >= 3)
-        {
-          polygons.push_back(poly);
-        }
-        poly.points.clear();
-        break;
-      }
-    }
-  }
-}
+  };
 
-void guseynov::commands::handleAreaCommand(const std::vector<Polygon>& polygons, const std::string& param)
-{
-  if (param == "EVEN")
+  struct MaxXInAll
   {
-    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, ConditionalAreaAccumulatorEven());
-    std::cout << std::fixed << std::setprecision(1) << sum << '\n';
-  }
-  else if (param == "ODD")
+    bool operator()(const guseynov::Polygon & a, const guseynov::Polygon & b) const
+    {
+      int maxA = std::max_element(a.points.begin(), a.points.end(), compareX)->x;
+      int maxB = std::max_element(b.points.begin(), b.points.end(), compareX)->x;
+      return maxA < maxB;
+    }
+  };
+
+  struct MinYInAll
   {
-    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, ConditionalAreaAccumulatorOdd());
-    std::cout << std::fixed << std::setprecision(1) << sum << '\n';
+    bool operator()(const guseynov::Polygon & a, const guseynov::Polygon & b) const
+    {
+      int minA = std::min_element(a.points.begin(), a.points.end(), compareY)->y;
+      int minB = std::min_element(b.points.begin(), b.points.end(), compareY)->y;
+      return minA < minB;
+    }
+  };
+
+  struct MaxYInAll
+  {
+    bool operator()(const guseynov::Polygon & a, const guseynov::Polygon & b) const
+    {
+      int maxA = std::max_element(a.points.begin(), a.points.end(), compareY)->y;
+      int maxB = std::max_element(b.points.begin(), b.points.end(), compareY)->y;
+      return maxA < maxB;
+    }
+  };
+
+  int getMinX(const std::vector< guseynov::Polygon > & polygons)
+  {
+    auto it = std::min_element(polygons.begin(), polygons.end(), MinXInAll());
+    return std::min_element(it->points.begin(), it->points.end(), compareX)->x;
   }
-  else if (param == "MEAN")
+
+  int getMaxX(const std::vector< guseynov::Polygon > & polygons)
+  {
+    auto it = std::max_element(polygons.begin(), polygons.end(), MaxXInAll());
+    return std::max_element(it->points.begin(), it->points.end(), compareX)->x;
+  }
+
+  int getMinY(const std::vector< guseynov::Polygon > & polygons)
+  {
+    auto it = std::min_element(polygons.begin(), polygons.end(), MinYInAll());
+    return std::min_element(it->points.begin(), it->points.end(), compareY)->y;
+  }
+
+  int getMaxY(const std::vector< guseynov::Polygon > & polygons)
+  {
+    auto it = std::max_element(polygons.begin(), polygons.end(), MaxYInAll());
+    return std::max_element(it->points.begin(), it->points.end(), compareY)->y;
+  }
+
+  void printAreaEven(const std::vector< guseynov::Polygon > & polygons, std::ostream & out)
+  {
+    std::vector< guseynov::Polygon > filtered;
+    std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(filtered), isEven);
+    std::vector< double > areas(filtered.size());
+    std::transform(filtered.begin(), filtered.end(), areas.begin(), getArea);
+    double sum = std::accumulate(areas.begin(), areas.end(), 0.0);
+    out << std::fixed << std::setprecision(1) << sum << "\n";
+  }
+
+  void printAreaOdd(const std::vector< guseynov::Polygon > & polygons, std::ostream & out)
+  {
+    std::vector< guseynov::Polygon > filtered;
+    std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(filtered), isOdd);
+    std::vector< double > areas(filtered.size());
+    std::transform(filtered.begin(), filtered.end(), areas.begin(), getArea);
+    double sum = std::accumulate(areas.begin(), areas.end(), 0.0);
+    out << std::fixed << std::setprecision(1) << sum << "\n";
+  }
+
+  void printAreaMean(const std::vector< guseynov::Polygon > & polygons, std::ostream & out)
   {
     if (polygons.empty())
     {
-      std::cout << "<INVALID COMMAND>\n";
-      return;
+      throw std::logic_error("<INVALID COMMAND>");
     }
-    double total = std::accumulate(polygons.begin(), polygons.end(), 0.0, AreaAccumulator());
-    std::cout << std::fixed << std::setprecision(1) << total / polygons.size() << '\n';
+    std::vector< double > areas(polygons.size());
+    std::transform(polygons.begin(), polygons.end(), areas.begin(), getArea);
+    double sum = std::accumulate(areas.begin(), areas.end(), 0.0);
+    out << std::fixed << std::setprecision(1) << (sum / polygons.size()) << "\n";
   }
-  else
+
+  void printAreaByVertex(const std::vector< guseynov::Polygon > & polygons, std::ostream & out, size_t numVtx)
   {
-    bool isNumber = true;
-    for (char c : param)
+    if (numVtx < 3)
     {
-      if (!std::isdigit(static_cast<unsigned char>(c)))
-      {
-        isNumber = false;
-        break;
-      }
+      throw std::logic_error("<INVALID COMMAND>");
     }
-    if (isNumber)
+    std::vector< guseynov::Polygon > filtered;
+    std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(filtered), IsVertexCount(numVtx));
+    std::vector< double > areas(filtered.size());
+    std::transform(filtered.begin(), filtered.end(), areas.begin(), getArea);
+    double sum = std::accumulate(areas.begin(), areas.end(), 0.0);
+    out << std::fixed << std::setprecision(1) << sum << "\n";
+  }
+
+  void printMaxArea(const std::vector< guseynov::Polygon > & polygons, std::ostream & out)
+  {
+    const guseynov::Polygon & maxPoly = *std::max_element(polygons.begin(), polygons.end(), areaLess);
+    out << std::fixed << std::setprecision(1) << getArea(maxPoly) << "\n";
+  }
+
+  void printMaxVertexes(const std::vector< guseynov::Polygon > & polygons, std::ostream & out)
+  {
+    const guseynov::Polygon & maxPoly = *std::max_element(polygons.begin(), polygons.end(), vertexLess);
+    out << maxPoly.points.size() << "\n";
+  }
+
+  void printMinArea(const std::vector< guseynov::Polygon > & polygons, std::ostream & out)
+  {
+    const guseynov::Polygon & minPoly = *std::min_element(polygons.begin(), polygons.end(), areaLess);
+    out << std::fixed << std::setprecision(1) << getArea(minPoly) << "\n";
+  }
+
+  void printMinVertexes(const std::vector< guseynov::Polygon > & polygons, std::ostream & out)
+  {
+    const guseynov::Polygon & minPoly = *std::min_element(polygons.begin(), polygons.end(), vertexLess);
+    out << minPoly.points.size() << "\n";
+  }
+
+  void printCountEven(const std::vector< guseynov::Polygon > & polygons, std::ostream & out)
+  {
+    size_t cnt = std::count_if(polygons.begin(), polygons.end(), isEven);
+    out << cnt << "\n";
+  }
+
+  void printCountOdd(const std::vector< guseynov::Polygon > & polygons, std::ostream & out)
+  {
+    size_t cnt = std::count_if(polygons.begin(), polygons.end(), isOdd);
+    out << cnt << "\n";
+  }
+
+  void printCountByVertex(const std::vector< guseynov::Polygon > & polygons, std::ostream & out, size_t numVtx)
+  {
+    if (numVtx < 3)
     {
-      size_t target = std::stoul(param);
-      if (target < 3)
-      {
-        std::cout << "<INVALID COMMAND>\n";
-        return;
-      }
-      double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, ConditionalAreaAccumulatorVertexCount(target));
-      std::cout << std::fixed << std::setprecision(1) << sum << '\n';
+      throw std::logic_error("<INVALID COMMAND>");
     }
-    else
+    size_t cnt = std::count_if(polygons.begin(), polygons.end(), IsVertexCount(numVtx));
+    out << cnt << "\n";
+  }
+
+  void printLessAreaHelper(const std::vector< guseynov::Polygon > & polygons, std::ostream & out, const guseynov::Polygon & compPoly)
+  {
+    double compArea = getArea(compPoly);
+    struct AreaLessThan
     {
-      std::cout << "<INVALID COMMAND>\n";
+      double threshold;
+      AreaLessThan(double thresh) : threshold(thresh) {}
+      bool operator()(const guseynov::Polygon & poly) const
+      {
+        return getArea(poly) < threshold;
+      }
+    };
+    size_t cnt = std::count_if(polygons.begin(), polygons.end(), AreaLessThan(compArea));
+    out << cnt << "\n";
+  }
+}
+
+void guseynov::printArea(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons)
+{
+  StreamGuard guard(out);
+  std::string arg;
+  in >> arg;
+  using sub_map =  std::map< std::string, std::function< void() > >;
+  sub_map sub_cmds;
+  sub_cmds["EVEN"] = std::bind(printAreaEven, std::cref(polygons), std::ref(out));
+  sub_cmds["ODD"] = std::bind(printAreaOdd, std::cref(polygons), std::ref(out));
+  sub_cmds["MEAN"] = std::bind(printAreaMean, std::cref(polygons), std::ref(out));
+  try
+  {
+    sub_cmds.at(arg)();
+  }
+  catch (...)
+  {
+    try
+    {
+      size_t numVtx = std::stoull(arg);
+      if (numVtx < 3)
+      {
+        throw std::logic_error("<INVALID COMMAND>");
+      }
+      printAreaByVertex(polygons, out, numVtx);
+    }
+    catch (const std::invalid_argument&)
+    {
+      throw std::logic_error("<INVALID COMMAND>");
     }
   }
 }
 
-void guseynov::commands::handleMaxCommand(const std::vector<Polygon>& polygons, const std::string& param)
+void guseynov::printMax(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons)
 {
   if (polygons.empty())
   {
-    std::cout << "<INVALID COMMAND>\n";
-    return;
+    throw std::logic_error("<INVALID COMMAND>");
   }
-
-  if (param == "AREA")
-  {
-    MaxAreaFinder finder;
-    for (const auto& poly : polygons)
-    {
-      finder(poly);
-    }
-    std::cout << std::fixed << std::setprecision(1) << finder.maxArea << '\n';
-  }
-  else if (param == "VERTEXES")
-  {
-    MaxVerticesFinder finder;
-    for (const auto& poly : polygons)
-    {
-      finder(poly);
-    }
-    std::cout << finder.maxVertices << '\n';
-  }
-  else
-  {
-    std::cout << "<INVALID COMMAND>\n";
-  }
+  StreamGuard guard(out);
+  std::string arg;
+  in >> arg;
+  using sub_map = std::map< std::string, std::function< void() > >;
+  sub_map sub_cmds;
+  sub_cmds["AREA"] = std::bind(printMaxArea, std::cref(polygons), std::ref(out));
+  sub_cmds["VERTEXES"] = std::bind(printMaxVertexes, std::cref(polygons), std::ref(out));
+  sub_cmds.at(arg)();
 }
 
-void guseynov::commands::handleMinCommand(const std::vector<Polygon>& polygons, const std::string& param)
+void guseynov::printMin(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons)
 {
   if (polygons.empty())
   {
-    std::cout << "<INVALID COMMAND>\n";
-    return;
+    throw std::logic_error("<INVALID COMMAND>");
   }
-
-  if (param == "AREA")
-  {
-    MinAreaFinder finder;
-    for (const auto& poly : polygons)
-    {
-      finder(poly);
-    }
-    std::cout << std::fixed << std::setprecision(1) << finder.minArea << '\n';
-  }
-  else if (param == "VERTEXES")
-  {
-    MinVerticesFinder finder;
-    for (const auto& poly : polygons)
-    {
-      finder(poly);
-    }
-    std::cout << finder.minVertices << '\n';
-  }
-  else
-  {
-    std::cout << "<INVALID COMMAND>\n";
-  }
+  StreamGuard guard(out);
+  std::string arg;
+  in >> arg;
+  using sub_map =  std::map< std::string, std::function< void() > >;
+  sub_map sub_cmds;
+  sub_cmds["AREA"] = std::bind(printMinArea, std::cref(polygons), std::ref(out));
+  sub_cmds["VERTEXES"] = std::bind(printMinVertexes, std::cref(polygons), std::ref(out));
+  sub_cmds.at(arg)();
 }
 
-void guseynov::commands::handleCountCommand(const std::vector<Polygon>& polygons, const std::string& param)
+void guseynov::printCount(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons)
 {
-  if (param == "EVEN")
+  std::string arg;
+  in >> arg;
+  using sub_map = std::map< std::string, std::function< void() > >;
+  sub_map sub_cmds;
+  sub_cmds["EVEN"] = std::bind(printCountEven, std::cref(polygons), std::ref(out));
+  sub_cmds["ODD"] = std::bind(printCountOdd, std::cref(polygons), std::ref(out));
+  try
   {
-    size_t count = std::count_if(polygons.begin(), polygons.end(), IsEvenPolygon());
-    std::cout << count << '\n';
+    sub_cmds.at(arg)();
   }
-  else if (param == "ODD")
+  catch (...)
   {
-    size_t count = std::count_if(polygons.begin(), polygons.end(), IsOddPolygon());
-    std::cout << count << '\n';
-  }
-  else
-  {
-    bool isNumber = true;
-    for (char c : param)
+    try
     {
-      if (!std::isdigit(static_cast<unsigned char>(c)))
+      size_t numVtx = std::stoull(arg);
+      if (numVtx < 3)
       {
-        isNumber = false;
-        break;
+        throw std::logic_error("<INVALID COMMAND>");
       }
+      printCountByVertex(polygons, out, numVtx);
     }
-    if (isNumber)
+    catch (const std::invalid_argument&)
     {
-      size_t target = std::stoul(param);
-      if (target < 3)
-      {
-        std::cout << "<INVALID COMMAND>\n";
-        return;
-      }
-      size_t count = std::count_if(polygons.begin(), polygons.end(), HasVertexCount(target));
-      std::cout << count << '\n';
-    }
-    else
-    {
-      std::cout << "<INVALID COMMAND>\n";
+      throw std::logic_error("<INVALID COMMAND>");
     }
   }
 }
 
-void guseynov::commands::handleInFrameCommand(const std::vector<Polygon>& polygons, const std::string& param)
+void guseynov::printInFrame(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons)
 {
-  if (polygons.empty())
+  Polygon poly;
+  if (!(in >> poly) || poly.points.size() < 3 || polygons.empty())
   {
-    std::cout << "<FALSE>\n";
-    return;
+    throw std::logic_error("<INVALID COMMAND>");
   }
-
-  std::istringstream iss(param);
-  Polygon targetPoly;
-  parsePolygon(iss, targetPoly);
-  if (targetPoly.points.size() < 3)
-  {
-    std::cout << "<INVALID COMMAND>\n";
-    return;
-  }
-
-  FrameBoundsAccumulator bounds;
-  for (const auto& poly : polygons)
-  {
-    bounds(poly);
-  }
-
-  bool allPointsInside = std::none_of(targetPoly.points.begin(), targetPoly.points.end(),
-    PointOutsideFrame(bounds.minX, bounds.maxX, bounds.minY, bounds.maxY));
-  std::cout << (allPointsInside ? "<TRUE>" : "<FALSE>") << '\n';
+  int min_x = getMinX(polygons);
+  int max_x = getMaxX(polygons);
+  int min_y = getMinY(polygons);
+  int max_y = getMaxY(polygons);
+  InFrameCheck checker(min_x, max_x, min_y, max_y);
+  bool in_frame = std::all_of(poly.points.begin(), poly.points.end(), checker);
+  out << (in_frame ? "<TRUE>" : "<FALSE>") << "\n";
 }
 
-void guseynov::commands::handleLessAreaCommand(const std::vector<Polygon>& polygons, const std::string& param)
+void guseynov::printLessArea(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons)
 {
-  std::istringstream iss(param);
-  Polygon targetPoly;
-  parsePolygon(iss, targetPoly);
-  if (targetPoly.points.size() < 3)
+  Polygon compPoly;
+  if (!(in >> compPoly) || compPoly.points.size() < 3)
   {
-    std::cout << "<INVALID COMMAND>\n";
-    return;
+    throw std::logic_error("<INVALID COMMAND>");
   }
-
-  double targetArea = calculateArea(targetPoly);
-  size_t count = std::count_if(polygons.begin(), polygons.end(), HasLessArea(targetArea));
-  std::cout << count << '\n';
+  printLessAreaHelper(polygons, out, compPoly);
 }
