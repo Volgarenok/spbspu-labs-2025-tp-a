@@ -2,7 +2,6 @@
 #include "delimiter.hpp"
 #include <iterator>
 #include <algorithm>
-#include <cctype>
 
 std::istream & guseynov::operator>>(std::istream & in, Point & point)
 {
@@ -11,17 +10,7 @@ std::istream & guseynov::operator>>(std::istream & in, Point & point)
   {
     return in;
   }
-  in >> DelimiterI{'('} >> point.x >> DelimiterI{';'};
-  if (in)
-  {
-    char next = in.peek();
-    if (next != ' ' && next != '\t' && next != '-' && next != '+' && !std::isdigit(static_cast<unsigned char>(next)))
-    {
-      in.setstate(std::ios::failbit);
-      return in;
-    }
-  }
-  in >> point.y >> DelimiterI{')'};
+  in >> DelimiterI{'('} >> point.x >> DelimiterI{';'} >> point.y >> DelimiterI{')'};
   return in;
 }
 
