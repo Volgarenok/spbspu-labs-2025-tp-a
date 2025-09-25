@@ -10,14 +10,36 @@ std::istream & guseynov::operator>>(std::istream & in, Point & point)
   {
     return in;
   }
-  in >> DelimiterI{'('} >> point.x >> DelimiterI{';'} >> point.y >> DelimiterI{')'};
-  if (in)
+  char c;
+  in >> c;
+  if (!in || c != '(')
   {
-    char next = in.peek();
-    if (next != ' ' && next != '\t' && next != '\n' && next != '\r' && next != std::char_traits<char>::eof())
-    {
-      in.setstate(std::ios::failbit);
-    }
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  in >> point.x;
+  if (!in)
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  in >> c;
+  if (!in || c != ';')
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  in >> point.y;
+  if (!in)
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  in >> c;
+  if (!in || c != ')')
+  {
+    in.setstate(std::ios::failbit);
+    return in;
   }
   return in;
 }
