@@ -10,7 +10,39 @@ std::istream & guseynov::operator>>(std::istream & in, Point & point)
   {
     return in;
   }
-  in >> DelimiterI{'('} >> point.x >> DelimiterI{';'} >> point.y >> DelimiterI{')'};
+  char openBracket = 0;
+  char semicolon = 0;
+  char closeBracket = 0;
+  in >> openBracket;
+  if (!in || openBracket != '(')
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  in >> point.x;
+  if (!in)
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  in >> semicolon;
+  if (!in || semicolon != ';')
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  in >> point.y;
+  if (!in)
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  in >> closeBracket;
+  if (!in || closeBracket != ')')
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
   return in;
 }
 
@@ -43,9 +75,21 @@ std::istream & guseynov::operator>>(std::istream & in, Polygon & polygon)
     in.setstate(std::ios::failbit);
     return in;
   }
-  std::vector< Point > points(num);
-  using istream_it = std::istream_iterator< Point >;
-  std::copy_n(istream_it{in}, num, points.begin());
+  std::vector<Point> points;
+  points.reserve(num);
+  for (size_t i = 0; i < num; ++i)
+  {
+    Point point;
+    if (in >> point)
+    {
+      points.push_back(point);
+    }
+    else
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+  }
   if (in)
   {
     polygon.points = std::move(points);
