@@ -10,39 +10,45 @@ std::istream & guseynov::operator>>(std::istream & in, Point & point)
   {
     return in;
   }
-  char c = 0;
-  in >> c;
-  if (!in || c != '(')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  in >> point.x;
+  std::string pointStr;
+  in >> pointStr;
   if (!in)
   {
-    in.setstate(std::ios::failbit);
     return in;
   }
-  in >> c;
-  if (!in || c != ';')
+  if (pointStr.empty() || pointStr.front() != '(' || pointStr.back() != ')')
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  in >> point.y;
-  if (!in)
+  std::string content = pointStr.substr(1, pointStr.size() - 2);
+  size_t semicolonPos = content.find(';');
+  if (semicolonPos == std::string::npos)
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  char next = in.peek();
-  if (next != ')')
+  std::string xStr = content.substr(0, semicolonPos);
+  std::string yStr = content.substr(semicolonPos + 1);
+  if (xStr.empty() || yStr.empty())
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  in >> c;
-  if (!in || c != ')')
+  try
+  {
+    point.x = std::stoi(xStr);
+  }
+  catch (const std::exception&)
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  try
+  {
+    point.y = std::stoi(yStr);
+  }
+  catch (const std::exception&)
   {
     in.setstate(std::ios::failbit);
     return in;
