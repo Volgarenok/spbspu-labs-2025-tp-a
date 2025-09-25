@@ -13,31 +13,31 @@ std::istream & guseynov::operator>>(std::istream & in, Point & point)
   char openBracket = 0;
   char semicolon = 0;
   char closeBracket = 0;
-  in >> openBracket;
+  in >> std::ws >> openBracket;
   if (!in || openBracket != '(')
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  in >> point.x;
+  in >> std::ws >> point.x;
   if (!in)
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  in >> semicolon;
+  in >> std::ws >> semicolon;
   if (!in || semicolon != ';')
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  in >> point.y;
+  in >> std::ws >> point.y;
   if (!in)
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  in >> closeBracket;
+  in >> std::ws >> closeBracket;
   if (!in || closeBracket != ')')
   {
     in.setstate(std::ios::failbit);
