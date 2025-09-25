@@ -358,9 +358,15 @@ void guseynov::printCount(std::istream & in, std::ostream & out, const std::vect
 
 void guseynov::printInFrame(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons)
 {
-  Polygon poly;
-  if (!(in >> poly) || poly.points.size() < 3 || polygons.empty())
+  if (polygons.empty())
   {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+  Polygon poly;
+  if (!(in >> poly) || poly.points.size() < 3)
+  {
+    in.clear();
+    in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     throw std::logic_error("<INVALID COMMAND>");
   }
   int min_x = getMinX(polygons);
@@ -377,6 +383,8 @@ void guseynov::printLessArea(std::istream & in, std::ostream & out, const std::v
   Polygon compPoly;
   if (!(in >> compPoly) || compPoly.points.size() < 3)
   {
+    in.clear();
+    in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     throw std::logic_error("<INVALID COMMAND>");
   }
   printLessAreaHelper(polygons, out, compPoly);
