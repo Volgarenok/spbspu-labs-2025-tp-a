@@ -10,48 +10,14 @@ std::istream & guseynov::operator>>(std::istream & in, Point & point)
   {
     return in;
   }
-  std::string pointStr;
-  in >> pointStr;
-  if (!in)
+  in >> DelimiterI{'('} >> point.x >> DelimiterI{';'} >> point.y >> DelimiterI{')'};
+  if (in)
   {
-    return in;
-  }
-  if (pointStr.empty() || pointStr.front() != '(' || pointStr.back() != ')')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  std::string content = pointStr.substr(1, pointStr.size() - 2);
-  size_t semicolonPos = content.find(';');
-  if (semicolonPos == std::string::npos)
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  std::string xStr = content.substr(0, semicolonPos);
-  std::string yStr = content.substr(semicolonPos + 1);
-  if (xStr.empty() || yStr.empty())
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  try
-  {
-    point.x = std::stoi(xStr);
-  }
-  catch (const std::exception&)
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  try
-  {
-    point.y = std::stoi(yStr);
-  }
-  catch (const std::exception&)
-  {
-    in.setstate(std::ios::failbit);
-    return in;
+    char next = in.peek();
+    if (next != ' ' && next != '\t' && next != '\n' && next != '\r' && next != std::char_traits<char>::eof())
+    {
+      in.setstate(std::ios::failbit);
+    }
   }
   return in;
 }
