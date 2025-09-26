@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <cctype>
+#include <limits>
 #include "streamGuard.hpp"
 
 namespace shramko
@@ -40,7 +41,7 @@ namespace shramko
       return lhs.points.size() < rhs.points.size();
     }
 
-    bool checkRightAngle(const std::vector< Point >& points, size_t i = 0)
+    bool checkRightAngle(const std::vector<Point>& points, size_t i = 0)
     {
       if (i >= points.size())
       {
