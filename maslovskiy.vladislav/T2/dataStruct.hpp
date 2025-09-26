@@ -9,8 +9,8 @@ namespace maslovskiy
 {
   struct DataStruct
   {
-    long long key1;                
-    unsigned long long key2;          
+    long long key1;
+    unsigned long long key2;
     std::string key3;
   };
   std::ostream& operator<<(std::ostream& out, const DataStruct& data);
