@@ -1,115 +1,137 @@
 #include "polygon.hpp"
-#include <algorithm>
-#include <numeric>
-#include <iterator>
 #include <vector>
 #include <cmath>
-#include <functional>
-#include <streamGuard.hpp>
-#include <set>
 
-std::istream& shramko::operator>>(std::istream& in, shramko::Point& point)
+namespace shramko
 {
-  std::istream::sentry sentry(in);
-  if (!sentry)
+  bool checkUnique(const std::vector< Point >& points, size_t i = 0, size_t j = 1)
   {
+    if (i >= points.size() - 1)
+    {
+      return true;
+    }
+    if (j >= points.size())
+    {
+      return checkUnique(points, i + 1, i + 2);
+    }
+    if (points[i] == points[j])
+    {
+      return false;
+    }
+    return checkUnique(points, i, j + 1);
+  }
+
+  void readPoints(std::istream& in, std::vector< Point >& points, size_t n)
+  {
+    if (n == 0)
+    {
+      return;
+    }
+    Point p;
+    in >> p;
+    points.push_back(p);
+    readPoints(in, points, n - 1);
+  }
+
+  std::istream& operator>>(std::istream& in, Polygon& polygon)
+  {
+    std::istream::sentry sentry(in);
+    if (!sentry)
+    {
+      return in;
+    }
+    size_t numPoints = 0;
+    in >> numPoints;
+    if (numPoints < 3 || in.fail())
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+    polygon.points.clear();
+    polygon.points.reserve(numPoints);
+    readPoints(in, polygon.points, numPoints);
+    if (!in)
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+    if (!checkUnique(polygon.points))
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
     return in;
   }
 
-  char ch;
-  in >> ch;
-  if (ch != '(')
+  double calculateArea(const std::vector< Point >& points, size_t i = 0, double sum = 0.0)
   {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  in >> point.x;
-  in >> ch;
-  if (ch != ';')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  in >> point.y;
-  in >> ch;
-  if (ch != ')')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  return in;
-}
-
-bool shramko::operator<(const shramko::Point& a, const shramko::Point& b)
-{
-  return a.x < b.x || (a.x == b.x && a.y < b.y);
-}
-
-std::istream& shramko::operator>>(std::istream& in, shramko::Polygon& polygon)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-  size_t numPoints = 0;
-  in >> numPoints;
-  if (numPoints < 3 || in.fail())
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  polygon.points.clear();
-  polygon.points.resize(numPoints);
-
-  std::copy_n(std::istream_iterator< shramko::Point >(in), numPoints, polygon.points.begin());
-
-  if (!in)
-  {
-    in.setstate(std::ios::failbit);
-    return in;
+    if (i >= points.size())
+    {
+      return std::abs(sum) / 2.0;
+    }
+    size_t n = points.size();
+    size_t next = (i + 1) % n;
+    sum += static_cast< double >(points[i].x) * points[next].y - static_cast< double >(points[next].x) * points[i].y;
+    return calculateArea(points, i + 1, sum);
   }
 
-  std::set<shramko::Point> uniquePoints(polygon.points.begin(), polygon.points.end());
-  if (uniquePoints.size() != polygon.points.size())
+  double getPolygonArea(const Polygon& polygon)
   {
-    in.setstate(std::ios::failbit);
+    if (polygon.points.size() < 3)
+    {
+      return 0.0;
+    }
+    return calculateArea(polygon.points);
+  }
+
+  std::istream& operator>>(std::istream& in, Point& point)
+  {
+    std::istream::sentry sentry(in);
+    if (!sentry)
+    {
+      return in;
+    }
+    char ch;
+    in >> ch;
+    if (ch != '(')
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+    in >> point.x;
+    in >> ch;
+    if (ch != ';')
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+    in >> point.y;
+    in >> ch;
+    if (ch != ')')
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
     return in;
   }
 
-  return in;
-}
-
-bool shramko::operator==(const shramko::Point& a, const shramko::Point& b)
-{
-  return a.x == b.x && a.y == b.y;
-}
-
-shramko::Point shramko::operator-(const shramko::Point& a, const shramko::Point& b)
-{
-  return {a.x - b.x, a.y - b.y};
-}
-
-long long shramko::dot(const shramko::Point& a, const shramko::Point& b)
-{
-  return static_cast< long long >(a.x) * b.x + static_cast< long long >(a.y) * b.y;
-}
-
-double shramko::getPolygonArea(const shramko::Polygon& polygon)
-{
-  const auto& points = polygon.points;
-  size_t n = points.size();
-  if (n < 3)
+  bool operator<(const Point& a, const Point& b)
   {
-    return 0.0;
+    return a.x < b.x || (a.x == b.x && a.y < b.y);
   }
 
-  double sum = 0.0;
-  for (size_t i = 0; i < n; ++i)
+  bool operator==(const Point& a, const Point& b)
   {
-    const auto& current = points[i];
-    const auto& next = points[(i + 1) % n];
-    sum += static_cast< double >(current.x) * next.y - static_cast< double >(next.x) * current.y;
+    return a.x == b.x && a.y == b.y;
   }
-  return std::abs(sum) / 2.0;
+
+  Point operator-(const Point& a, const Point& b)
+  {
+    return {a.x - b.x, a.y - b.y};
+  }
+
+  long long dot(const Point& a, const Point& b)
+  {
+    return static_cast< long long >(a.x) * b.x + static_cast< long long >(a.y) * b.y;
+  }
 }
