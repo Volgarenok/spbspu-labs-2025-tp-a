@@ -303,6 +303,8 @@ namespace shramko
     Polygon ref;
     if (!(in >> ref))
     {
+      in.clear();
+      in.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
       throw std::invalid_argument("Invalid reference polygon");
     }
     std::string remaining;

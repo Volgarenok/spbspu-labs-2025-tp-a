@@ -49,23 +49,22 @@ namespace shramko
     commands["COUNT"] = std::bind(&printCount, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
     commands["LESSAREA"] = std::bind(&printLessArea, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
     commands["RIGHTSHAPES"] = std::bind(&printRightShapes, std::cref(polygons), std::ref(std::cout));
+    auto it = commands.find(cmd);
+    if (it == commands.end())
+    {
+      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+      std::cout << "<INVALID COMMAND>\n";
+      processCommands(polygons);
+      return;
+    }
     try
     {
-      auto it = commands.find(cmd);
-      if (it != commands.end())
-      {
-        it->second();
-        std::cout << '\n';
-      }
-      else
-      {
-        throw std::invalid_argument("Invalid command");
-      }
+      it->second();
+      std::cout << '\n';
     }
     catch (const std::exception& e)
     {
       std::cin.clear();
-      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
       std::cout << "<INVALID COMMAND>\n";
     }
     processCommands(polygons);
