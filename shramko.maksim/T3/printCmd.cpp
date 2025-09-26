@@ -40,15 +40,6 @@ namespace shramko
       return lhs.points.size() < rhs.points.size();
     }
 
-    bool hasRightAngle(const Polygon& poly)
-    {
-      if (poly.points.size() < 3)
-      {
-        return false;
-      }
-      return checkRightAngle(poly.points);
-    }
-
     bool checkRightAngle(const std::vector< Point >& points, size_t i = 0)
     {
       if (i >= points.size())
@@ -67,6 +58,15 @@ namespace shramko
         return true;
       }
       return checkRightAngle(points, i + 1);
+    }
+
+    bool hasRightAngle(const Polygon& poly)
+    {
+      if (poly.points.size() < 3)
+      {
+        return false;
+      }
+      return checkRightAngle(poly.points);
     }
 
     double sumAreaIfRecursive(const std::vector< Polygon >& polygons, size_t index, bool (*condition)(const Polygon&))
