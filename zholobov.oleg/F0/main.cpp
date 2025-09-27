@@ -40,6 +40,9 @@ int main(int argc, char* argv[])
   keywords["remove-translation"] = cmdRemoveTranslation;
   keywords["change-word"] = cmdChangeWord;
   keywords["translate-word"] = cmdTranslateWord;
+  keywords["union"] = cmdUnion;
+  keywords["intersect"] = cmdIntersect;
+  keywords["rare"] = cmdRare;
 
   std::string line;
   while (std::getline(std::cin, line)) {

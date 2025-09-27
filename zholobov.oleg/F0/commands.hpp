@@ -34,6 +34,9 @@ namespace zholobov {
   void cmdRemoveTranslation(Dictionaries& dictionaries, const std::vector< std::string >& args);
   void cmdChangeWord(Dictionaries& dictionaries, const std::vector< std::string >& args);
   void cmdTranslateWord(Dictionaries& dictionaries, const std::vector< std::string >& args);
+  void cmdUnion(Dictionaries& dictionaries, const std::vector< std::string >& args);
+  void cmdIntersect(Dictionaries& dictionaries, const std::vector< std::string >& args);
+  void cmdRare(Dictionaries& dictionaries, const std::vector< std::string >& args);
 
 }
 

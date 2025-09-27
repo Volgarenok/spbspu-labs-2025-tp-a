@@ -351,3 +351,145 @@ void zholobov::cmdTranslateWord(Dictionaries& dictionaries, const std::vector< s
   }
   std::cout << '\n';
 }
+
+void zholobov::cmdUnion(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() < 3) {
+    throw InvalidParams();
+  }
+
+  const std::string& newName = args[1];
+
+  for (std::size_t i = 2; i < args.size(); ++i) {
+    if (dictionaries.find(args[i]) == dictionaries.end()) {
+      std::cout << "<INVALID DICTIONARY>\n";
+      return;
+    }
+  }
+
+  std::map< Word, std::set< Word > > temp;
+  for (std::size_t i = 2; i < args.size(); ++i) {
+    const auto it = dictionaries.find(args[i]);
+    const Dictionary& src = it->second;
+    for (const auto& kv: src) {
+      std::set< Word >& s = temp[kv.first];
+      for (const auto& tr: kv.second) {
+        s.insert(tr);
+      }
+    }
+  }
+
+  Dictionary result;
+  for (const auto& kv: temp) {
+    result[kv.first] = Words(kv.second.begin(), kv.second.end());
+  }
+
+  dictionaries[newName] = std::move(result);
+}
+
+void zholobov::cmdIntersect(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() < 3) {
+    throw InvalidParams();
+  }
+
+  const std::string& newName = args[1];
+
+  for (std::size_t i = 2; i < args.size(); ++i) {
+    if (dictionaries.find(args[i]) == dictionaries.end()) {
+      std::cout << "<INVALID DICTIONARY>\n";
+      return;
+    }
+  }
+
+  const auto firstIt = dictionaries.find(args[2]);
+  const Dictionary& firstDict = firstIt->second;
+  std::set< Word > commonKeys;
+  for (const auto& kv: firstDict) {
+    commonKeys.insert(kv.first);
+  }
+
+  for (std::size_t i = 3; i < args.size(); ++i) {
+    const auto it = dictionaries.find(args[i]);
+    const Dictionary& d = it->second;
+    std::set< Word > newCommon;
+    for (const auto& key: commonKeys) {
+      if (d.find(key) != d.end()) newCommon.insert(key);
+    }
+    commonKeys.swap(newCommon);
+    if (commonKeys.empty()) {
+      break;
+    }
+  }
+
+  Dictionary result;
+  for (const auto& key: commonKeys) {
+    std::set< Word > uniq;
+    for (std::size_t i = 2; i < args.size(); ++i) {
+      const auto it = dictionaries.find(args[i]);
+      const Dictionary& d = it->second;
+      auto wit = d.find(key);
+      if (wit != d.end()) {
+        for (const auto& tr: wit->second) uniq.insert(tr);
+      }
+    }
+    result[key] = Words(uniq.begin(), uniq.end());
+  }
+
+  dictionaries[newName] = std::move(result);
+}
+
+void zholobov::cmdRare(Dictionaries& dictionaries, const std::vector< std::string >& args)
+{
+  if (args.size() < 4) {
+    throw InvalidParams();
+  }
+
+  int n = 0;
+  try {
+    n = std::stoi(args[1]);
+  } catch (...) {
+    std::cout << "<INVALID NUMBER>\n";
+    return;
+  }
+
+  if (n < 1) {
+    std::cout << "<INVALID NUMBER>\n";
+    return;
+  }
+
+  const std::string& newName = args[2];
+
+  for (std::size_t i = 3; i < args.size(); ++i) {
+    if (dictionaries.find(args[i]) == dictionaries.end()) {
+      std::cout << "<INVALID DICTIONARY>\n";
+      return;
+    }
+  }
+
+  std::map< Word, int > wordFrequency;
+  for (std::size_t i = 3; i < args.size(); ++i) {
+    const auto& dict = dictionaries[args[i]];
+    for (const auto& kv: dict) {
+      wordFrequency[kv.first]++;
+    }
+  }
+
+  std::map< Word, std::set< Word > > temp;
+  for (std::size_t i = 3; i < args.size(); ++i) {
+    const auto& dict = dictionaries[args[i]];
+    for (const auto& kv: dict) {
+      if (wordFrequency[kv.first] <= n) {
+        std::set< Word >& s = temp[kv.first];
+        s.insert(kv.second.begin(), kv.second.end());
+      }
+    }
+  }
+
+  Dictionary result;
+  for (const auto& kv: temp) {
+    result[kv.first] = Words(kv.second.begin(), kv.second.end());
+  }
+
+  dictionaries[newName] = std::move(result);
+}
