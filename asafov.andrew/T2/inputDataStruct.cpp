@@ -5,10 +5,10 @@
 
 namespace
 {
-  void expect(std::istream& in, std::initializer_list<char> expected)
+  void expect(std::istream& in, std::initializer_list< char > expected)
   {
-    char ch;
-    for (char e : expected)
+    char ch = 0;
+    for (char e: expected)
     {
       if (!(in >> ch) || ch != e)
       {
@@ -18,24 +18,24 @@ namespace
     }
   }
 
-  std::complex<double> read_complex(std::istream& in)
+  std::complex< double > read_complex(std::istream& in)
   {
     double real = 0;
     double imag = 0;
-    expect(in, {' ', '#', 'c', '('});
+    expect(in, { ' ', '#', 'c', '(' });
     in >> real;
-    expect(in, {' '});
+    expect(in, { ' ' });
     in >> imag;
-    expect(in, {')', ':'});
-    return {real, imag};
+    expect(in, { ')', ':' });
+    return { real, imag };
   }
 
   unsigned long long read_binary(std::istream& in)
   {
-    char ch;
-    expect(in, {' ', '0', 'b'});
+    char ch = 0;
+    expect(in, { ' ', '0', 'b' });
     std::string t2;
-    while (true)
+    while (in)
     {
       if (!(in >> ch))
       {
@@ -62,8 +62,8 @@ namespace
 
   std::string read_string(std::istream& in)
   {
-    char ch;
-    expect(in, {' ', '"'});
+    char ch = 0;
+    expect(in, { ' ', '"' });
     std::string t2;
     bool inside_quotes = true;
     while (inside_quotes)
@@ -82,14 +82,14 @@ namespace
         t2 += ch;
       }
     }
-    expect(in, {':'});
+    expect(in, { ':' });
     return t2;
   }
 
   void read_key(std::istream& in, asafov::DataStruct& data)
   {
-    char ch;
-    expect(in, {'k', 'e', 'y'});
+    char ch = 0;
+    expect(in, { 'k', 'e', 'y' });
 
     if (!(in >> ch) || (ch != '1' && ch != '2' && ch != '3'))
     {
@@ -113,16 +113,16 @@ namespace
 
   void unsafe_read(std::istream& in, asafov::DataStruct& data)
   {
-    expect(in, {'(', ':'});
+    expect(in, { '(', ':' });
     read_key(in, data);
     read_key(in, data);
     read_key(in, data);
-    expect(in, {')'});
+    expect(in, { ')' });
   }
 
   void skipLine(std::istream& in)
   {
-    char ch;
+    char ch = 0;
     while (in.get(ch))
     {
       if (ch == '\n')
@@ -135,7 +135,6 @@ namespace
 
 std::istream& asafov::operator>>(std::istream& in, asafov::DataStruct& data)
 {
-  StreamGuard guard(in);
   DataStruct temp;
   in >> std::noskipws;
   unsafe_read(in, temp);
@@ -143,6 +142,7 @@ std::istream& asafov::operator>>(std::istream& in, asafov::DataStruct& data)
   {
     in.setstate(std::ios::failbit);
     skipLine(in);
+    in >> std::skipws;
     return in;
   }
   data = temp;
