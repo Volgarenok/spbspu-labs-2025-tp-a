@@ -1,9 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
-#include <limits>
 #include <vector>
-
 #include "dataStruct.hpp"
 
 int main()
@@ -24,4 +22,3 @@ int main()
   std::copy(data.cbegin(), data.cend(), output_it{ std::cout, "\n" });
   return 0;
 }
-

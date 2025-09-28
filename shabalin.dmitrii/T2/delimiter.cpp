@@ -31,4 +31,3 @@ std::istream& shabalin::operator>>(std::istream& in, DelimiterStr&& exp)
   }
   return in;
 }
-

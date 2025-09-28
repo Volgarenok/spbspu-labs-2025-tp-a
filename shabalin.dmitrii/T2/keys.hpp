@@ -28,4 +28,3 @@ namespace shabalin
 }
 
 #endif
-

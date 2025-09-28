@@ -1,6 +1,5 @@
-#include <iomanip>
-
 #include "dataStruct.hpp"
+#include <iomanip>
 #include "delimiter.hpp"
 #include "keys.hpp"
 #include "scopeGuard.hpp"
@@ -96,4 +95,3 @@ bool shabalin::DataStruct::operator<(const DataStruct& other) const
   }
   return std::abs(key1) < std::abs(other.key1);
 }
-
