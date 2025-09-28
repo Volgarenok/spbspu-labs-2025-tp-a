@@ -30,7 +30,6 @@ std::istream& maslovskiy::operator>>(std::istream& in, SllLitI&& dest)
   {
     numberStr += c;
   }
-
   if (numberStr.empty())
   {
     in.setstate(std::ios::failbit);
@@ -51,7 +50,6 @@ std::istream& maslovskiy::operator>>(std::istream& in, SllLitI&& dest)
     in.setstate(std::ios::failbit);
     return in;
   }
-
   dest.ref = value;
   return in;
 }
@@ -73,7 +71,6 @@ std::istream& maslovskiy::operator>>(std::istream& in, UllHexIO&& dest)
     in.setstate(std::ios::failbit);
     return in;
   }
-
   in >> std::hex >> dest.ref;
   return in;
 }
@@ -89,7 +86,6 @@ std::istream& maslovskiy::operator>>(std::istream& in, DataStruct& data)
 {
   std::istream::sentry s(in);
   if (!s) return in;
-
   DataStruct input;
   in >> DelimiterIO{ '(' };
   if (!in) return in;
