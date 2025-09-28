@@ -1,6 +1,7 @@
 #include "dataStruct.hpp"
 #include <iomanip>
 #include <cctype>
+#include <sstream>
 #include "streamGuard.hpp"
 
 std::ostream& maslovskiy::operator<<(std::ostream& out, const DataStruct& data)
@@ -18,14 +19,29 @@ std::ostream& maslovskiy::operator<<(std::ostream& out, const DataStruct& data)
   out << ":)";
   return out;
 }
+
 std::istream& maslovskiy::operator>>(std::istream& in, SllLitI&& dest)
 {
   std::istream::sentry s(in);
   if (!s) return in;
-
-  long long value;
-  if (!(in >> value))
+  std::string numberStr;
+  char c;
+  while (in.get(c) && (std::isdigit(static_cast<unsigned char>(c)) || c == '-' || c == '+'))
   {
+    numberStr += c;
+  }
+
+  if (numberStr.empty())
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  in.putback(c);
+  std::istringstream iss(numberStr);
+  long long value;
+  if (!(iss >> value))
+  {
+    in.setstate(std::ios::failbit);
     return in;
   }
   char c1 = '\0', c2 = '\0';
@@ -35,15 +51,18 @@ std::istream& maslovskiy::operator>>(std::istream& in, SllLitI&& dest)
     in.setstate(std::ios::failbit);
     return in;
   }
+
   dest.ref = value;
   return in;
 }
+
 std::ostream& maslovskiy::operator<<(std::ostream& out, const SllLitO&& dest)
 {
   std::ostream::sentry s(out);
   if (!s) return out;
   return out << dest.ref << "ll";
 }
+
 std::istream& maslovskiy::operator>>(std::istream& in, UllHexIO&& dest)
 {
   std::istream::sentry s(in);
@@ -54,6 +73,7 @@ std::istream& maslovskiy::operator>>(std::istream& in, UllHexIO&& dest)
     in.setstate(std::ios::failbit);
     return in;
   }
+
   in >> std::hex >> dest.ref;
   return in;
 }
@@ -64,10 +84,12 @@ std::istream& maslovskiy::operator>>(std::istream& in, StringIO&& dest)
   in >> DelimiterIO{ '"' };
   return std::getline(in, dest.ref, '"');
 }
+
 std::istream& maslovskiy::operator>>(std::istream& in, DataStruct& data)
 {
   std::istream::sentry s(in);
   if (!s) return in;
+
   DataStruct input;
   in >> DelimiterIO{ '(' };
   if (!in) return in;
@@ -129,6 +151,7 @@ std::istream& maslovskiy::operator>>(std::istream& in, DataStruct& data)
   }
   return in;
 }
+
 bool maslovskiy::operator<(const DataStruct& lhs, const DataStruct& rhs)
 {
   if (lhs.key1 != rhs.key1)
