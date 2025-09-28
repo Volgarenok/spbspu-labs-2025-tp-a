@@ -18,6 +18,8 @@ int main()
 
   std::sort(data.begin(), data.end());
 
-
+  using output_it = std::ostream_iterator< DataStruct >;
+  std::copy(data.cbegin(), data.cend(), output_it{ std::cout, "\n" });
+  return 0;
 }
 
