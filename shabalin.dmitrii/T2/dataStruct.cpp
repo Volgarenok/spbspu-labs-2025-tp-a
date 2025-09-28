@@ -1,5 +1,6 @@
-#include "dataStruct.hpp"
 #include <iomanip>
+
+#include "dataStruct.hpp"
 #include "delimiter.hpp"
 #include "keys.hpp"
 #include "scopeGuard.hpp"

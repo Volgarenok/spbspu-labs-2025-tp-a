@@ -19,4 +19,6 @@ namespace shabalin
     std::basic_ios< char >::fmtflags fmt_;
   };
 }
+
 #endif
+
