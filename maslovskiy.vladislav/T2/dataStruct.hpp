@@ -12,6 +12,9 @@ namespace maslovskiy
     long long key1;
     unsigned long long key2;
     std::string key3;
+    bool key1Set = false;
+    bool key2Set = false;
+    bool key3Set = false;
   };
   std::ostream& operator<<(std::ostream& out, const DataStruct& data);
   std::istream& operator>>(std::istream& in, DataStruct& data);

@@ -77,45 +77,63 @@ std::istream& maslovskiy::operator>>(std::istream& in, DataStruct& data)
 {
   std::istream::sentry s(in);
   if (!s) return in;
-
   DataStruct input;
-  in >> DelimiterIO{ '(' } >> DelimiterIO{ ':' };
-  std::string key;
-  constexpr size_t keysNumbers = 3;
-  size_t count = 0;
-  bool wasKey1 = false, wasKey2 = false, wasKey3 = false;
-
-  while (count < keysNumbers && in)
+  in >> DelimiterIO{ '(' };
+  if (!in) return in;
+  while (in && in.peek() != ')')
   {
+    in >> DelimiterIO{ ':' };
+    if (!in) return in;
+    if (in.peek() == ')')
+    {
+      in.get();
+      break;
+    }
+
+    std::string key;
     in >> key;
-    if (key == "key1" && !wasKey1)
+    if (key == "key1")
     {
+      if (input.key1Set)
+      {
+        in.setstate(std::ios::failbit);
+        return in;
+      }
       in >> SllLitI{ input.key1 };
-      in >> DelimiterIO{ ':' };
-      wasKey1 = true;
-      ++count;
+      input.key1Set = true;
     }
-    else if (key == "key2" && !wasKey2)
+    else if (key == "key2")
     {
+      if (input.key2Set)
+      {
+        in.setstate(std::ios::failbit);
+        return in;
+      }
       in >> UllHexIO{ input.key2 };
-      in >> DelimiterIO{ ':' };
-      wasKey2 = true;
-      ++count;
+      input.key2Set = true;
     }
-    else if (key == "key3" && !wasKey3)
+    else if (key == "key3")
     {
+      if (input.key3Set)
+      {
+        in.setstate(std::ios::failbit);
+        return in;
+      }
       in >> StringIO{ input.key3 };
-      in >> DelimiterIO{ ':' };
-      wasKey3 = true;
-      ++count;
+      input.key3Set = true;
     }
     else
     {
       in.setstate(std::ios::failbit);
+      return in;
     }
   }
+  if (!input.key1Set || !input.key2Set || !input.key3Set)
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
 
-  in >> DelimiterIO{ ')' };
   if (in)
   {
     data = input;
@@ -125,19 +143,13 @@ std::istream& maslovskiy::operator>>(std::istream& in, DataStruct& data)
 
 bool maslovskiy::operator<(const DataStruct& lhs, const DataStruct& rhs)
 {
-  if (lhs.key1 == rhs.key1)
-  {
-    if (lhs.key2 == rhs.key2)
-    {
-      return lhs.key3.size() < rhs.key3.size();
-    }
-    else
-    {
-      return lhs.key2 < rhs.key2;
-    }
-  }
-  else
+  if (lhs.key1 != rhs.key1)
   {
     return lhs.key1 < rhs.key1;
   }
+  if (lhs.key2 != rhs.key2)
+  {
+    return lhs.key2 < rhs.key2;
+  }
+  return lhs.key3.size() < rhs.key3.size();
 }

@@ -9,19 +9,23 @@
 int main()
 {
   using namespace maslovskiy;
-  std::vector< DataStruct > data;
+  std::vector< DataStruct > data; 
   while (!std::cin.eof())
   {
-    std::copy(std::istream_iterator< DataStruct >{ std::cin }, std::istream_iterator< DataStruct >{}, std::back_inserter(data));
-    if (!std::cin)
+    DataStruct temp;
+    if (std::cin >> temp)
+    {
+      data.push_back(temp);
+    }
+    else if (!std::cin.eof())
     {
       std::cin.clear();
       std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
     }
   }
+
   std::sort(data.begin(), data.end());
   std::copy(data.begin(), data.end(), std::ostream_iterator< DataStruct >{ std::cout, "\n" });
 
   return 0;
 }
-
