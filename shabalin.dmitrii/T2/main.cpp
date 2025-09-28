@@ -3,7 +3,6 @@
 #include <iterator>
 #include <vector>
 #include <limits>
-
 #include "dataStruct.hpp"
 
 int main()
