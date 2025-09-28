@@ -13,7 +13,7 @@ int main()
   {
     std::copy(input_it{ std::cin }, input_it{}, std::back_inserter(data));
     std::cin.clear();
-    std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+    std::cin.ignore(std::numeric_limits< std::streamsize >std::max(), '\n');
   }
 
   std::sort(data.begin(), data.end());
