@@ -1,5 +1,4 @@
 #include <iomanip>
-
 #include "dataStruct.hpp"
 #include "delimiter.hpp"
 #include "keys.hpp"
@@ -77,7 +76,7 @@ std::ostream& shabalin::operator<<(std::ostream& out, const DataStruct& value)
   ScopeGuard guard(out);
   out << std::setprecision(1) << std::fixed;
   out << "(:";
-  out << "key1 #c(" << value.key1.real() << ' ' << value.key1.imag() << "):";
+  out << "key1 #c(" << value.key1.real() << ' ' << value.key1.imag() << ")";
   out << ":key2 " << castDoubleToScientific(value.key2) << ":";
   out << "key3 \"" << value.key3 << '\"';
   out << ":)";
@@ -96,4 +95,3 @@ bool shabalin::DataStruct::operator<(const DataStruct& other) const
   }
   return std::abs(key1) < std::abs(other.key1);
 }
-
