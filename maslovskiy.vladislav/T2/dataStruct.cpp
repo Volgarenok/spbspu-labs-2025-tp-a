@@ -18,7 +18,6 @@ std::ostream& maslovskiy::operator<<(std::ostream& out, const DataStruct& data)
   out << ":)";
   return out;
 }
-
 std::istream& maslovskiy::operator>>(std::istream& in, SllLitI&& dest)
 {
   std::istream::sentry s(in);
@@ -29,7 +28,6 @@ std::istream& maslovskiy::operator>>(std::istream& in, SllLitI&& dest)
   {
     return in;
   }
-
   char c1 = '\0', c2 = '\0';
   if (!(in >> c1) || !(in >> c2) || std::tolower(static_cast<unsigned char>(c1)) != 'l' ||
       std::tolower(static_cast<unsigned char>(c2)) != 'l')
@@ -37,34 +35,28 @@ std::istream& maslovskiy::operator>>(std::istream& in, SllLitI&& dest)
     in.setstate(std::ios::failbit);
     return in;
   }
-
   dest.ref = value;
   return in;
 }
-
 std::ostream& maslovskiy::operator<<(std::ostream& out, const SllLitO&& dest)
 {
   std::ostream::sentry s(out);
   if (!s) return out;
   return out << dest.ref << "ll";
 }
-
 std::istream& maslovskiy::operator>>(std::istream& in, UllHexIO&& dest)
 {
   std::istream::sentry s(in);
   if (!s) return in;
-
   char c0 = '\0', c1 = '\0';
   if (!(in >> c0) || c0 != '0' || !(in >> c1) || std::tolower(static_cast<unsigned char>(c1)) != 'x')
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-
   in >> std::hex >> dest.ref;
   return in;
 }
-
 std::istream& maslovskiy::operator>>(std::istream& in, StringIO&& dest)
 {
   std::istream::sentry s(in);
@@ -72,7 +64,6 @@ std::istream& maslovskiy::operator>>(std::istream& in, StringIO&& dest)
   in >> DelimiterIO{ '"' };
   return std::getline(in, dest.ref, '"');
 }
-
 std::istream& maslovskiy::operator>>(std::istream& in, DataStruct& data)
 {
   std::istream::sentry s(in);
@@ -89,7 +80,6 @@ std::istream& maslovskiy::operator>>(std::istream& in, DataStruct& data)
       in.get();
       break;
     }
-
     std::string key;
     in >> key;
     if (key == "key1")
@@ -133,14 +123,12 @@ std::istream& maslovskiy::operator>>(std::istream& in, DataStruct& data)
     in.setstate(std::ios::failbit);
     return in;
   }
-
   if (in)
   {
     data = input;
   }
   return in;
 }
-
 bool maslovskiy::operator<(const DataStruct& lhs, const DataStruct& rhs)
 {
   if (lhs.key1 != rhs.key1)
