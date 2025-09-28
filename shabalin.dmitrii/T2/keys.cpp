@@ -44,3 +44,4 @@ std::istream& shabalin::operator>>(std::istream& in, StringKey&& key)
   std::getline(in, key.value, '"');
   return in;
 }
+

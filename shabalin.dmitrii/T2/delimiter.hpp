@@ -18,4 +18,6 @@ namespace shabalin
   std::istream& operator>>(std::istream& in, DelimiterSym&& exp);
   std::istream& operator>>(std::istream& in, DelimiterStr&& exp);
 }
+
 #endif
+
