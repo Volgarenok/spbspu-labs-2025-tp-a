@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cctype>
 
-
 namespace shiryaeva
 {
   char tolower_char(unsigned char c);
