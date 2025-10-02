@@ -1,7 +1,7 @@
 #include "data_struct.hpp"
-#include "stream_guard.hpp"
+#include <stream_guard.hpp>
+#include <delimiter.hpp>
 #include "input.hpp"
-#include "delimiter.hpp"
 
 bool shak::operator<(const DataStruct &left, const DataStruct &right)
 {

@@ -30,11 +30,6 @@ namespace kostyukov
   {
     const std::string& ref;
   };
-  struct DelimiterIO
-  {
-    char expected;
-  };
-  std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
   std::istream& operator>>(std::istream& in, StringIO&& dest);
   std::ostream& operator<<(std::ostream& out, BinUllIO&& dest);
   std::ostream& operator<<(std::ostream& out, HexUllIO&& dest);

@@ -1,7 +1,7 @@
 #include "data_struct.hpp"
 #include <iomanip>
-#include "data_input.hpp"
-#include "stream_guard.hpp"
+#include <stream_guard.hpp>
+#include <data_input.hpp>
 
 bool trukhanov::operator<(const DataStruct& lhs, const DataStruct& rhs)
 {

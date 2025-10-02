@@ -1,7 +1,7 @@
 #include "data_struct.hpp"
 #include <iostream>
 #include <string>
-#include "utils.hpp"
+#include <delimiterIO.hpp>
 #include "format_guard.hpp"
 #include "format_wrapper.hpp"
 
@@ -41,17 +41,17 @@ std::istream &pilugina::operator>>(std::istream &in, DataStruct &dest)
     return in;
   }
 
-  DataStruct tmp {};
+  DataStruct tmp{};
   bool gotKey1 = false;
   bool gotKey2 = false;
   bool gotKey3 = false;
 
-  in >> DelimiterIO {'('};
+  in >> DelimiterIO{'('};
 
   std::string field;
   for (int i = 0; i < 3; i++)
   {
-    in >> DelimiterIO {':'} >> field;
+    in >> DelimiterIO{':'} >> field;
 
     if (field == "key1")
     {
@@ -60,7 +60,7 @@ std::istream &pilugina::operator>>(std::istream &in, DataStruct &dest)
         in.setstate(std::ios::failbit);
         return in;
       }
-      in >> UnsignedLongLongOCT {tmp.key1};
+      in >> UnsignedLongLongOCT{tmp.key1};
       gotKey1 = true;
     }
     else if (field == "key2")
@@ -70,7 +70,7 @@ std::istream &pilugina::operator>>(std::istream &in, DataStruct &dest)
         in.setstate(std::ios::failbit);
         return in;
       }
-      in >> UnsignedLongLongBIN {tmp.key2};
+      in >> UnsignedLongLongBIN{tmp.key2};
       gotKey2 = true;
     }
     else if (field == "key3")
@@ -80,7 +80,7 @@ std::istream &pilugina::operator>>(std::istream &in, DataStruct &dest)
         in.setstate(std::ios::failbit);
         return in;
       }
-      in >> StringIO {tmp.key3};
+      in >> StringIO{tmp.key3};
       gotKey3 = true;
     }
     else
@@ -90,7 +90,7 @@ std::istream &pilugina::operator>>(std::istream &in, DataStruct &dest)
     }
   }
 
-  in >> DelimiterIO {':'} >> DelimiterIO {')'};
+  in >> DelimiterIO{':'} >> DelimiterIO{')'};
   if (in && gotKey1 && gotKey2 && gotKey3)
   {
     dest = tmp;

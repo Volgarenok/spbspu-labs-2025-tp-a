@@ -2,8 +2,7 @@
 
 #include <ostream>
 #include <cmath>
-#include "fmtguard.hpp"
-#include "skip_any_of.hpp"
+#include <fmtguard.hpp>
 
 template<>
 std::ostream& rychkov::iofmt::operator<<< rychkov::iofmt::scientific_literal::value_type,

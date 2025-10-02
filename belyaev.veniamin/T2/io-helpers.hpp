@@ -6,10 +6,6 @@
 
 namespace belyaev
 {
-  struct DelimeterIO
-  {
-    char expected;
-  };
 
   struct DoubleEIOIn
   {
@@ -36,7 +32,6 @@ namespace belyaev
     std::string& value;
   };
 
-  std::istream& operator>>(std::istream& in, const DelimeterIO&& dest);
   std::ostream& operator<<(std::ostream& out, const DoubleEIOOut&& dest);
   std::ostream& operator<<(std::ostream& out, const PairLLIOOut&& dest);
   std::istream& operator>>(std::istream& in, const DoubleEIOIn&& dest);

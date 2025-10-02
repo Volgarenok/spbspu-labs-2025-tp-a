@@ -1,15 +1,11 @@
 #include "dataStruct.hpp"
 #include <vector>
 #include <iomanip>
-#include "scopeGuard.hpp"
+#include <scopeGuard.hpp>
+#include <delimiter.hpp>
 
-namespace
+namespace mozhegova
 {
-  struct DelimiterIO
-  {
-    char exp;
-  };
-
   struct UlloctIO
   {
     unsigned long long & ref;
@@ -24,22 +20,6 @@ namespace
   {
     std::string & ref;
   };
-
-  std::istream & operator>>(std::istream & in, DelimiterIO && dest)
-  {
-    std::istream::sentry sentry(in);
-    if (!sentry)
-    {
-      return in;
-    }
-    char c = '0';
-    in >> c;
-    if (in && (c != dest.exp))
-    {
-      in.setstate(std::ios::failbit);
-    }
-    return in;
-  }
 
   std::istream & operator>>(std::istream & in, UlloctIO && dest)
   {

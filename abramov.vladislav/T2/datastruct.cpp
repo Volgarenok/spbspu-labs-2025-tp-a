@@ -18,22 +18,6 @@ std::ostream &abramov::operator<<(std::ostream &out, const DataStruct &data)
   return out;
 }
 
-std::istream &abramov::operator>>(std::istream &in, DelimiterIO &&dest)
-{
-  std::istream::sentry s(in);
-  if (!s)
-  {
-    return in;
-  }
-  char c = '0';
-  in >> c;
-  if (in && (c != dest.delim))
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
-}
-
 std::istream &abramov::operator>>(std::istream &in, DoubleIO &&dest)
 {
   std::istream::sentry s(in);

@@ -18,11 +18,6 @@ namespace orlova
     std::string key3;
   };
 
-  struct DelimiterIO
-  {
-     char exp;
-  };
-
   struct LongLongIO
   {
     long long& ref;
@@ -43,20 +38,6 @@ namespace orlova
     std::string exp;
   };
 
-  class IoGuard
-  {
-  public:
-    explicit IoGuard(std::basic_ios< char >& s);
-    ~IoGuard();
-  private:
-    std::basic_ios< char >& s_;
-    std::streamsize width_;
-    char fill_;
-    std::streamsize precision_;
-    std::basic_ios< char >::fmtflags fmt_;
-  };
-
-  std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
   std::istream& operator>>(std::istream& in, LongLongIO&& dest);
   std::istream& operator>>(std::istream& in, UnsignedLongLongIO&& dest);
   std::istream& operator>>(std::istream& in, StringIO&& dest);
