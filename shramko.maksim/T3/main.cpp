@@ -41,8 +41,8 @@ namespace shramko
     {
       return;
     }
-    using cmd_func = std::function<void()>;
-    std::map<std::string, cmd_func> commands;
+    using cmd_func = std::function< void() >;
+    std::map< std::string, cmd_func > commands;
     commands["AREA"] = std::bind(&printArea, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
     commands["MAX"] = std::bind(&printMax, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
     commands["MIN"] = std::bind(&printMin, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
@@ -64,8 +64,6 @@ namespace shramko
     }
     catch (const std::exception& e)
     {
-      std::cin.clear();
-      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
       std::cout << "<INVALID COMMAND>\n";
     }
     processCommands(polygons);

@@ -168,19 +168,6 @@ namespace shramko
       const Polygon& newMin = vertexLess(polygons[index], currentMin) ? polygons[index] : currentMin;
       return minVertexRecursive(polygons, index + 1, newMin);
     }
-
-    bool hasNonSpace(const std::string& remaining, size_t index = 0)
-    {
-      if (index >= remaining.size())
-      {
-        return false;
-      }
-      if (!std::isspace(remaining[index]))
-      {
-        return true;
-      }
-      return hasNonSpace(remaining, index + 1);
-    }
   }
 
   void printArea(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
@@ -306,14 +293,10 @@ namespace shramko
     {
       throw std::invalid_argument("Invalid reference polygon");
     }
-    std::string remaining;
-    std::getline(in, remaining);
-    if (!remaining.empty())
+    std::string dummy;
+    if (in >> dummy)
     {
-      if (details::hasNonSpace(remaining))
-      {
-        throw std::invalid_argument("Invalid reference polygon");
-      }
+      throw std::invalid_argument("Invalid reference polygon");
     }
     out << details::countLessAreaRecursive(polygons, 0, ref);
   }
