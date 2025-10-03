@@ -21,25 +21,48 @@ int main(int argc, char* argv[])
   try
   {
     std::ifstream file(argv[1]);
-    if (!file) throw std::runtime_error("Failed to open file");
+    if (!file)
+    {
+      throw std::runtime_error("Failed to open file");
+    }
 
-    std::vector<ivanova::Polygon> polygons;
+    std::vector< ivanova::Polygon > polygons;
     std::copy(ivanova::PolygonIterator(file),
-              ivanova::PolygonIterator(),
-              std::back_inserter(polygons));
+      ivanova::PolygonIterator(),
+      std::back_inserter(polygons));
 
     std::string command;
     while (std::cin >> command)
     {
       try
       {
-        if (command == "AREA") ivanova::area(std::cin, std::cout, polygons);
-        else if (command == "MAX") ivanova::max(std::cin, std::cout, polygons);
-        else if (command == "MIN") ivanova::min(std::cin, std::cout, polygons);
-        else if (command == "COUNT") ivanova::count(std::cin, std::cout, polygons);
+        if (command == "AREA")
+        {
+          ivanova::area(std::cin, std::cout, polygons);
+        }
+        else if (command == "MAX")
+        {
+          ivanova::max(std::cin, std::cout, polygons);
+        }
+        else if (command == "MIN")
+        {
+          ivanova::min(std::cin, std::cout, polygons);
+        }
+        else if (command == "COUNT")
+        {
+          ivanova::count(std::cin, std::cout, polygons);
+        }
+        else if (command == "ECHO")
+        {
+          ivanova::echo(std::cin, std::cout, polygons);
+        }
+        else if (command == "SAME")
+        {
+          ivanova::same(std::cin, std::cout, polygons);
+        }
         else
         {
-          std::cin.ignore(100, '\n');
+          std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
           throw std::invalid_argument("<INVALID COMMAND>");
         }
       }

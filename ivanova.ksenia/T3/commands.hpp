@@ -11,7 +11,8 @@ namespace ivanova
   void max(std::istream& in, std::ostream& out, const std::vector < Polygon >& src);
   void min(std::istream& in, std::ostream& out, const std::vector < Polygon >& src);
   void count(std::istream& in, std::ostream& out, const std::vector < Polygon >& src);
-  //вариант
+  void echo(std::istream& in, std::ostream& out, std::vector < Polygon >& src);
+  void same(std::istream& in, std::ostream& out, const std::vector < Polygon >& src);
 }
 
 #endif

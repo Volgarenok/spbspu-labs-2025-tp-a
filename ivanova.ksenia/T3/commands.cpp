@@ -1,12 +1,14 @@
 #include <algorithm>
 #include <iomanip>
 #include <string>
+#include <vector>
+#include <stdexcept>
 #include "streamGuard.hpp"
 #include "commands.hpp"
 
 namespace ivanova
 {
-  void area(std::istream& in, std::ostream& out, const std::vector<Polygon>& polygons)
+  void area(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
   {
     std::string param;
     in >> param;
@@ -66,7 +68,7 @@ namespace ivanova
     }
   }
 
-  void max(std::istream& in, std::ostream& out, const std::vector<Polygon>& polygons)
+  void max(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
   {
     std::string param;
     in >> param;
@@ -76,16 +78,26 @@ namespace ivanova
       throw std::invalid_argument("<INVALID COMMAND>");
     }
 
+    StreamGuard guard(out);
+
     if (param == "AREA")
     {
       auto maxIt = std::max_element(polygons.begin(), polygons.end(),
-              [](const Polygon& a, const Polygon& b){ return calculateArea(a) < calculateArea(b);} );
+        [](const Polygon& a, const Polygon& b)
+        {
+          return calculateArea(a) < calculateArea(b);
+        }
+      );
       out << std::fixed << std::setprecision(1) << calculateArea(*maxIt) << '\n';
     }
     else if (param == "VERTEXES")
     {
       auto maxIt = std::max_element(polygons.begin(), polygons.end(),
-              [](const Polygon& a, const Polygon& b) { return a.points.size() < b.points.size();} );
+        [](const Polygon& a, const Polygon& b)
+        {
+          return a.points.size() < b.points.size();
+        }
+      );
       out << maxIt->points.size() << '\n';
     }
     else
@@ -94,7 +106,7 @@ namespace ivanova
     }
   }
 
-  void min(std::istream& in, std::ostream& out, const std::vector<Polygon>& polygons)
+  void min(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
   {
     std::string param;
     in >> param;
@@ -110,13 +122,21 @@ namespace ivanova
     if (param == "AREA")
     {
       auto minElem = std::min_element(polygons.begin(), polygons.end(),
-               [](const Polygon& a, const Polygon& b) { return calculateArea(a) < calculateArea(b);} );
+        [](const Polygon& a, const Polygon& b)
+        {
+          return calculateArea(a) < calculateArea(b);
+        }
+      );
       out << calculateArea(*minElem) << '\n';
     }
     else if (param == "VERTEXES")
     {
       auto minElem = std::min_element(polygons.begin(), polygons.end(),
-               [](const Polygon& a, const Polygon& b) { return a.points.size() < b.points.size();} );
+        [](const Polygon& a, const Polygon& b)
+        {
+          return a.points.size() < b.points.size();
+        }
+      );
       out << minElem->points.size() << '\n';
     }
     else
@@ -125,7 +145,7 @@ namespace ivanova
     }
   }
 
-  void count(std::istream& in, std::ostream& out, const std::vector<Polygon>& polygons)
+  void count(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
   {
     std::string param;
     in >> param;
@@ -139,7 +159,11 @@ namespace ivanova
     {
       bool isEven = (param == "EVEN");
       size_t cnt = std::count_if(polygons.begin(), polygons.end(),
-        [isEven, isValidPolygon](const Polygon& poly) { return isValidPolygon(poly) && (poly.points.size() % 2 == 0) == isEven;});
+        [isEven, isValidPolygon](const Polygon& poly)
+        {
+          return isValidPolygon(poly) && (poly.points.size() % 2 == 0) == isEven;
+        }
+      );
       out << cnt << '\n';
     }
     else
@@ -152,7 +176,11 @@ namespace ivanova
           throw std::invalid_argument("<INVALID COMMAND>");
         }
         size_t cnt = std::count_if(polygons.begin(), polygons.end(),
-          [numVertices, isValidPolygon](const Polygon& poly) { return isValidPolygon(poly) && poly.points.size() == numVertices;});
+          [numVertices, isValidPolygon](const Polygon& poly)
+          {
+            return isValidPolygon(poly) && poly.points.size() == numVertices;
+          }
+        );
         out << cnt << '\n';
       }
       catch (const std::invalid_argument&)
@@ -160,5 +188,66 @@ namespace ivanova
         throw std::invalid_argument("<INVALID COMMAND>");
       }
     }
+  }
+
+  void echo(std::istream& in, std::ostream& out, std::vector< Polygon >& polygons)
+  {
+    Polygon target;
+    in >> target;
+
+    if (!in || target.points.size() < 3)
+    {
+      throw std::invalid_argument("<INVALID COMMAND>");
+    }
+
+    size_t count = 0;
+    auto it = polygons.begin();
+
+    while (it != polygons.end())
+    {
+      if (*it == target)
+      {
+        it = polygons.insert(it + 1, target);
+        count++;
+        it++;
+      }
+      else
+      {
+        it++;
+      }
+    }
+
+    out << count << '\n';
+  }
+
+  void same(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
+  {
+    Polygon target;
+    in >> target;
+    
+    if (!in || target.points.size() < 3)
+    {
+      throw std::invalid_argument("<INVALID COMMAND>");
+    }
+
+    auto areCompatible = [](const Polygon& a, const Polygon& b)
+    {
+      if (a.points.size() != b.points.size())
+      {
+        return false;
+      }
+      return std::abs(calculateArea(a) - calculateArea(b)) < 1e-6;
+    };
+
+    size_t count = 0;
+    for (const auto& poly : polygons)
+    {
+      if (areCompatible(poly, target))
+      {
+        count++;
+      }
+    }
+
+    out << count << '\n';
   }
 }

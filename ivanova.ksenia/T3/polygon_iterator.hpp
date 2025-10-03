@@ -1,5 +1,6 @@
 #ifndef POLYGON_ITERATOR_HPP
 #define POLYGON_ITERATOR_HPP
+
 #include <istream>
 #include <string>
 #include "polygon.hpp"

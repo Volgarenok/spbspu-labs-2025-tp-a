@@ -19,10 +19,15 @@ namespace ivanova
   std::istream& operator>>(std::istream& in, Point& point)
   {
     std::istream::sentry sent(in);
-    if (!sent) return in;
+    if (!sent)
+    {
+      return in;
+    }
 
     StreamGuard guard(in);
-    char c1, c2, c3;
+    char c1 = 0;
+    char c2 = 0;
+    char c3 = 0;
     if (!(in >> c1 >> point.x >> c2 >> point.y >> c3) || c1 != '(' || c2 != ';' || c3 != ')')
     {
       in.setstate(std::ios::failbit);
@@ -39,7 +44,10 @@ namespace ivanova
   std::istream& operator>>(std::istream& in, Polygon& poly)
   {
     std::istream::sentry sent(in);
-    if (!sent) return in;
+    if (!sent)
+    {
+      return in;
+    }
 
     StreamGuard guard(in);
     size_t count = 0;
@@ -49,9 +57,9 @@ namespace ivanova
       return in;
     }
 
-    std::vector<Point> temp;
+    std::vector< Point > temp;
     temp.reserve(count);
-    std::copy_n(std::istream_iterator<Point>(in), count, std::back_inserter(temp));
+    std::copy_n(std::istream_iterator< Point >(in), count, std::back_inserter(temp));
 
     if (in && temp.size() == count)
     {
@@ -68,7 +76,7 @@ namespace ivanova
   std::ostream& operator<<(std::ostream& out, const Polygon& poly)
   {
     out << poly.points.size() << ' ';
-    std::copy(poly.points.begin(), poly.points.end(), std::ostream_iterator<Point>(out, " "));
+    std::copy(poly.points.begin(), poly.points.end(), std::ostream_iterator< Point >(out, " "));
     return out;
   }
 

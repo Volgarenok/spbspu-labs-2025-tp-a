@@ -1,5 +1,6 @@
 #ifndef POLYGON_HPP
 #define POLYGON_HPP
+
 #include <istream>
 #include <ostream>
 #include <vector>
@@ -8,13 +9,16 @@ namespace ivanova
 {
   struct Point
   {
-    int x, y;
+    int x;
+    int y;
+
     bool operator==(const Point& other) const;
   };
 
   struct Polygon
   {
-    std::vector<Point> points;
+    std::vector< Point > points;
+
     bool operator==(const Polygon& other) const;
   };
 
