@@ -15,17 +15,17 @@ namespace shiryaeva
   struct RelativeFreqFilter
   {
     double min_rel, max_rel;
-    std::size_t total_words;
-    bool operator()(const std::pair<const std::string, std::size_t> &p) const;
+    size_t total_words;
+    bool operator()(const std::pair< const std::string, size_t > &p) const;
   };
 
   struct ExcludeFreqFilter
   {
     double min_rel, max_rel;
-    std::size_t total_words;
-    bool operator()(const std::pair<const std::string, std::size_t> &p) const;
+    size_t total_words;
+    bool operator()(const std::pair< const std::string, size_t > &p) const;
   };
-  
+
   struct MinFreqFilter
   {
     size_t minf;

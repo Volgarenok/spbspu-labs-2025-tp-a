@@ -102,10 +102,10 @@ void shiryaeva::get_freq(Dictionaries &dicts, std::istream &args, std::ostream &
     out << "<DICT NOT FOUND>\n";
     return;
   }
-  
+
   std::string normalized_word = normalize_word(word);
   std::size_t f = it->second.get_freq(normalized_word);
-  
+
   if (f == 0)
   {
     out << "<WORD NOT FOUND>\n";
@@ -133,7 +133,7 @@ void shiryaeva::get_rel_freq(Dictionaries &dicts, std::istream &args, std::ostre
 
   std::string normalized_word = normalize_word(word);
   double rel = it->second.get_rel_freq(normalized_word);
-  
+
   if (rel == 0.0)
   {
     out << "<WORD NOT FOUND>\n";
@@ -171,13 +171,13 @@ void shiryaeva::filter_by_freq(Dictionaries &dicts, std::istream &args, std::ost
     out << "<INVALID COMMAND>\n";
     return;
   }
-  
+
   if (min_rel < 0.0 || max_rel > 1.0 || min_rel > max_rel)
   {
     out << "<INVALID RANGE>\n";
     return;
   }
-  
+
   auto it = dicts.find(name);
   if (it == dicts.end())
   {
@@ -186,7 +186,8 @@ void shiryaeva::filter_by_freq(Dictionaries &dicts, std::istream &args, std::ost
   }
 
   std::vector< std::pair< std::string, size_t >> result;
-  std::copy_if(it->second.dict.begin(), it->second.dict.end(), std::back_inserter(result), RelativeFreqFilter{min_rel, max_rel, it->second.total_words});
+  RelativeFreqFilter filter{min_rel, max_rel, it->second.total_words};
+  std::copy_if(it->second.dict.begin(), it->second.dict.end(), std::back_inserter(result), filter);
 
   if (result.empty())
   {
@@ -207,13 +208,13 @@ void shiryaeva::exclude_by_freq(Dictionaries &dicts, std::istream &args, std::os
     out << "<INVALID COMMAND>\n";
     return;
   }
-  
+
   if (min_rel < 0.0 || max_rel > 1.0 || min_rel > max_rel)
   {
     out << "<INVALID RANGE>\n";
     return;
   }
-  
+
   auto it = dicts.find(name);
   if (it == dicts.end())
   {
@@ -222,7 +223,8 @@ void shiryaeva::exclude_by_freq(Dictionaries &dicts, std::istream &args, std::os
   }
 
   std::vector< std::pair< std::string, size_t >> result;
-  std::copy_if(it->second.dict.begin(), it->second.dict.end(), std::back_inserter(result), ExcludeFreqFilter{min_rel, max_rel, it->second.total_words});
+  ExcludeFreqFilter filter{min_rel, max_rel, it->second.total_words};
+  std::copy_if(it->second.dict.begin(), it->second.dict.end(), std::back_inserter(result), filter);
 
   if (result.empty())
   {
@@ -283,16 +285,16 @@ void shiryaeva::merge_dicts(Dictionaries &dicts, std::istream &args, std::ostrea
     out << "<INVALID COMMAND>\n";
     return;
   }
-  
+
   if (dicts.count(result_dict))
   {
     out << "<RESULT DICT EXISTS>\n";
     return;
   }
-  
+
   auto it1 = dicts.find(dict1);
   auto it2 = dicts.find(dict2);
-  
+
   if (it1 == dicts.end())
   {
     out << "<DICT1 NOT FOUND>\n";
@@ -306,8 +308,8 @@ void shiryaeva::merge_dicts(Dictionaries &dicts, std::istream &args, std::ostrea
 
   FrequencyDictionary merged;
   merged = it1->second;
-  
-  std::vector<std::string> all_words;
+
+  std::vector< std::string > all_words;
   std::transform(it2->second.dict.begin(), it2->second.dict.end(), std::back_inserter(all_words), GetKey{});
   std::transform(all_words.begin(), all_words.end(), all_words.begin(), MergeWord{merged, it2->second});
 
