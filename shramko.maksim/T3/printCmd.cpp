@@ -225,12 +225,12 @@ namespace shramko
 
   void printMax(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
   {
+    std::string subcmd;
+    in >> subcmd;
     if (polygons.empty())
     {
       throw std::invalid_argument("No polygons available");
     }
-    std::string subcmd;
-    in >> subcmd;
     if (subcmd == "AREA")
     {
       shramko::StreamGuard guard(out);
@@ -248,12 +248,12 @@ namespace shramko
 
   void printMin(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
   {
+    std::string subcmd;
+    in >> subcmd;
     if (polygons.empty())
     {
       throw std::invalid_argument("No polygons available");
     }
-    std::string subcmd;
-    in >> subcmd;
     if (subcmd == "AREA")
     {
       shramko::StreamGuard guard(out);
