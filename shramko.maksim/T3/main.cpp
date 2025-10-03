@@ -3,12 +3,73 @@
 #include <vector>
 #include <map>
 #include <functional>
-#include <algorithm>
-#include <iterator>
 #include <limits>
 #include <ios>
 #include "polygon.hpp"
 #include "printCmd.hpp"
+
+namespace shramko
+{
+  void readPolygons(std::ifstream& inputFile, std::vector< Polygon >& polygons)
+  {
+    if (inputFile.eof())
+    {
+      return;
+    }
+    Polygon temp;
+    inputFile >> temp;
+    if (inputFile.eof())
+    {
+      return;
+    }
+    if (inputFile.fail())
+    {
+      inputFile.clear();
+      inputFile.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+    }
+    else
+    {
+      polygons.push_back(temp);
+    }
+    readPolygons(inputFile, polygons);
+  }
+
+  void processCommands(const std::vector< Polygon >& polygons)
+  {
+    std::string cmd;
+    if (!(std::cin >> cmd))
+    {
+      return;
+    }
+    using cmd_func = std::function<void()>;
+    std::map<std::string, cmd_func> commands;
+    commands["AREA"] = std::bind(&printArea, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
+    commands["MAX"] = std::bind(&printMax, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
+    commands["MIN"] = std::bind(&printMin, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
+    commands["COUNT"] = std::bind(&printCount, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
+    commands["LESSAREA"] = std::bind(&printLessArea, std::cref(polygons), std::ref(std::cin), std::ref(std::cout));
+    commands["RIGHTSHAPES"] = std::bind(&printRightShapes, std::cref(polygons), std::ref(std::cout));
+    auto it = commands.find(cmd);
+    if (it == commands.end())
+    {
+      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+      std::cout << "<INVALID COMMAND>\n";
+      processCommands(polygons);
+      return;
+    }
+    try
+    {
+      it->second();
+      std::cout << '\n';
+    }
+    catch (const std::exception& e)
+    {
+      std::cin.clear();
+      std::cout << "<INVALID COMMAND>\n";
+    }
+    processCommands(polygons);
+  }
+}
 
 int main(int argc, char* argv[])
 {
@@ -17,77 +78,14 @@ int main(int argc, char* argv[])
     std::cerr << "Usage: program <input_file>\n";
     return 1;
   }
-
   std::ifstream inputFile(argv[1]);
   if (!inputFile)
   {
     std::cerr << "Cannot open input file\n";
     return 1;
   }
-
   std::vector< shramko::Polygon > polygons;
-  while (!inputFile.eof())
-  {
-    std::copy(std::istream_iterator< shramko::Polygon >(inputFile),
-      std::istream_iterator< shramko::Polygon >(), std::back_inserter(polygons));
-    if (inputFile.fail())
-    {
-      inputFile.clear();
-      inputFile.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
-    }
-  }
-
-  using cmd_func = std::function< void() >;
-  std::map< std::string, cmd_func > commands;
-
-  commands["AREA"] = [&polygons]()
-  {
-    shramko::printArea(polygons, std::cin, std::cout);
-  };
-
-  commands["MAX"] = [&polygons]()
-  {
-    shramko::printMax(polygons, std::cin, std::cout);
-  };
-
-  commands["MIN"] = [&polygons]()
-  {
-    shramko::printMin(polygons, std::cin, std::cout);
-  };
-
-  commands["COUNT"] = [&polygons]()
-  {
-    shramko::printCount(polygons, std::cin, std::cout);
-  };
-
-  commands["LESSAREA"] = [&polygons]()
-  {
-    shramko::printLessArea(polygons, std::cin, std::cout);
-  };
-
-  commands["RIGHTSHAPES"] = [&polygons]()
-  {
-    shramko::printRightShapes(polygons, std::cout);
-  };
-
-  std::string cmd;
-  while (std::cin >> cmd)
-  {
-    try
-    {
-      commands.at(cmd)();
-      std::cout << '\n';
-    }
-    catch (const std::exception&)
-    {
-      if (std::cin.fail())
-      {
-        std::cin.clear(std::cin.rdstate() ^ std::ios::failbit);
-      }
-      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
-      std::cout << "<INVALID COMMAND>\n";
-    }
-  }
-
+  shramko::readPolygons(inputFile, polygons);
+  shramko::processCommands(polygons);
   return 0;
 }

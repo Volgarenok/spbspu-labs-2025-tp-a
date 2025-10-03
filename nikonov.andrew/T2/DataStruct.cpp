@@ -1,5 +1,6 @@
 #include "DataStruct.hpp"
 #include <iomanip>
+#include <DelimetrIO.hpp>
 #include "StreamGuard.hpp"
 #include "IOUtilities.hpp"
 std::istream& nikonov::operator>>(std::istream& in, DataStruct& dest)

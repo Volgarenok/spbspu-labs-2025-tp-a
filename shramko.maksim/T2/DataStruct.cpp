@@ -10,19 +10,18 @@ namespace
 {
   void skip_ws(std::istream& in)
   {
-    while (true)
+    char ch;
+    while (in.get(ch))
     {
-      int next = in.peek();
-      if (next == std::istream::traits_type::eof())
+      if (ch == std::istream::traits_type::eof())
       {
         break;
       }
-      char ch = static_cast< char >(next);
       if (!std::isspace(ch))
       {
+        in.putback(ch);
         break;
       }
-      in.get();
     }
   }
 }
@@ -127,6 +126,7 @@ std::ostream& shramko::operator<<(std::ostream& out, const dataStruct& ds)
 
 std::istream& shramko::operator>>(std::istream& in, ExpectCharT&& x)
 {
+  StreamGuard guard(in);
   char ch;
   if (!(in >> ch) || ch != x.ch)
   {
@@ -137,24 +137,23 @@ std::istream& shramko::operator>>(std::istream& in, ExpectCharT&& x)
 
 std::istream& shramko::operator>>(std::istream& in, DoubleScienceT& x)
 {
+  StreamGuard guard(in);
   skip_ws(in);
 
   double mant_sign = 1.0;
-  int next = in.peek();
-  if (next == std::istream::traits_type::eof())
+  char ch;
+  if (in.get(ch) && ch == std::istream::traits_type::eof())
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  char ch = static_cast< char >(next);
   if (ch == '-')
   {
     mant_sign = -1.0;
-    in.get();
   }
-  else if (ch == '+')
+  else if (ch != '+')
   {
-    in.get();
+    in.putback(ch);
   }
 
   double mant = 0.0;
@@ -162,13 +161,16 @@ std::istream& shramko::operator>>(std::istream& in, DoubleScienceT& x)
   bool has_dot = false;
   bool has_digits = false;
 
-  while (true)
+  while (in.get(ch))
   {
-    next = in.peek();
-    if (next == std::istream::traits_type::eof()) break;
-    ch = static_cast< char >(next);
-    if (!std::isdigit(ch) && ch != '.') break;
-    in.get();
+    if (ch == std::istream::traits_type::eof())
+    {
+      break;
+    }
+    if (!std::isdigit(ch) && ch != '.')
+    {
+      break;
+    }
     if (ch == '.')
     {
       if (has_dot)
@@ -188,7 +190,10 @@ std::istream& shramko::operator>>(std::istream& in, DoubleScienceT& x)
       mant = mant * 10.0 + (ch - '0');
     }
   }
-
+  if (ch != std::istream::traits_type::eof())
+  {
+    in.putback(ch);
+  }
   if (!has_digits)
   {
     in.setstate(std::ios::failbit);
@@ -201,44 +206,43 @@ std::istream& shramko::operator>>(std::istream& in, DoubleScienceT& x)
   }
   mant *= mant_sign;
 
-  next = in.peek();
-  if (next == std::istream::traits_type::eof() || (static_cast< char >(next) != 'e' && static_cast< char >(next) != 'E'))
+  if (!in.get(ch) || (ch != 'e' && ch != 'E'))
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  in.get();
 
   double exp_sign = 1.0;
-  next = in.peek();
-  if (next == std::istream::traits_type::eof())
+  if (in.get(ch) && ch == std::istream::traits_type::eof())
   {
     in.setstate(std::ios::failbit);
     return in;
   }
-  ch = static_cast< char >(next);
   if (ch == '-')
   {
     exp_sign = -1.0;
-    in.get();
   }
-  else if (ch == '+')
+  else if (ch != '+')
   {
-    in.get();
+    in.putback(ch);
   }
 
   int exp = 0;
   bool has_exp_digits = false;
-  while (true)
+  while (in.get(ch))
   {
-    next = in.peek();
-    if (next == std::istream::traits_type::eof()) break;
-    ch = static_cast< char >(next);
-    if (!std::isdigit(ch)) break;
-    in.get();
+    if (ch == std::istream::traits_type::eof())
+    {
+      break;
+    }
+    if (!std::isdigit(ch))
+    {
+      break;
+    }
     has_exp_digits = true;
     exp = exp * 10 + (ch - '0');
   }
+  if (ch != std::istream::traits_type::eof()) in.putback(ch);
 
   if (!has_exp_digits)
   {
@@ -254,19 +258,27 @@ std::istream& shramko::operator>>(std::istream& in, DoubleScienceT& x)
 std::istream& shramko::operator>>(std::istream& in, UllBinT& x)
 {
   StreamGuard guard(in);
-  in >> ExpectCharT{'0'} >> ExpectCharT{'b'};
+  if (!(in >> ExpectCharT{'0'} >> ExpectCharT{'b'}))
+  {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
 
   x.key = 0;
   x.prefix_zeroes = 0;
   bool has_bits = false;
 
-  while (true)
+  char ch;
+  while (in.get(ch))
   {
-    auto next = in.peek();
-    if (next == std::istream::traits_type::eof()) break;
-    char ch = static_cast< char >(next);
-    if (ch != '0' && ch != '1') break;
-    in.get();
+    if (ch == std::istream::traits_type::eof())
+    {
+      break;
+    }
+    if (ch != '0' && ch != '1')
+    {
+      break;
+    }
     if (ch == '0' && !has_bits)
     {
       ++x.prefix_zeroes;
@@ -284,6 +296,7 @@ std::istream& shramko::operator>>(std::istream& in, UllBinT& x)
       x.key |= 1;
     }
   }
+  if (ch != std::istream::traits_type::eof()) in.putback(ch);
 
   if (!has_bits && x.prefix_zeroes == 0)
   {
@@ -315,6 +328,7 @@ std::istream& shramko::operator>>(std::istream& in, StringT& x)
 
 std::istream& shramko::operator>>(std::istream& in, dataStruct& ds)
 {
+  StreamGuard guard(in);
   in >> ExpectCharT{'('};
   dataStruct result;
 

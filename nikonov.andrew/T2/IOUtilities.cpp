@@ -4,22 +4,8 @@
 #include <string>
 #include <iomanip>
 #include <queue>
-#include "StreamGuard.hpp"
-std::istream& nikonov::operator>>(std::istream& in, DelimiterIO&& dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-  char c = '0';
-  in >> c;
-  if (in && (c != dest.exp))
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
-}
+#include <StreamGuard.hpp>
+#include <DelimetrIO.hpp>
 std::istream& nikonov::operator>>(std::istream& in, DoubleI&& dest)
 {
   std::istream::sentry sentry(in);

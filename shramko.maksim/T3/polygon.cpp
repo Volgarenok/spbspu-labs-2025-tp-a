@@ -1,108 +1,137 @@
 #include "polygon.hpp"
-#include <algorithm>
-#include <numeric>
-#include <iterator>
 #include <vector>
 #include <cmath>
-#include <streamGuard.hpp>
 
-namespace
+namespace shramko
 {
-  struct Triangle
+  bool checkUnique(const std::vector< Point >& points, size_t i = 0, size_t j = 1)
   {
-    shramko::Point a;
-    shramko::Point b;
-    shramko::Point c;
-  };
-
-  Triangle makeTriangle(const shramko::Point& first, const std::vector< shramko::Point >& points, size_t index)
-  {
-    return {first, points[index], points[index + 1]};
+    if (i >= points.size() - 1)
+    {
+      return true;
+    }
+    if (j >= points.size())
+    {
+      return checkUnique(points, i + 1, i + 2);
+    }
+    if (points[i] == points[j])
+    {
+      return false;
+    }
+    return checkUnique(points, i, j + 1);
   }
 
-  double calculateTriangleArea(const Triangle& tri)
+  void readPoints(std::istream& in, std::vector< Point >& points, size_t n)
   {
-    return 0.5 * std::abs(tri.a.x * (tri.b.y - tri.c.y) + tri.b.x *
-      (tri.c.y - tri.a.y) + tri.c.x * (tri.a.y - tri.b.y));
+    if (n == 0)
+    {
+      return;
+    }
+    Point p;
+    in >> p;
+    points.push_back(p);
+    readPoints(in, points, n - 1);
   }
-}
 
-std::istream& shramko::operator>>(std::istream& in, Point& point)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
+  std::istream& operator>>(std::istream& in, Polygon& polygon)
   {
-    return in;
-  }
-  StreamGuard guard(in);
-
-  char ch;
-  in >> ch;
-  if (ch != '(')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  in >> point.x;
-  in >> ch;
-  if (ch != ';')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  in >> point.y;
-  in >> ch;
-  if (ch != ')')
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  return in;
-}
-
-std::istream& shramko::operator>>(std::istream& in, Polygon& polygon)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-  size_t numPoints = 0;
-  in >> numPoints;
-  if (numPoints < 3)
-  {
-    in.setstate(std::ios::failbit);
-    return in;
-  }
-  std::vector< Point > temp(numPoints);
-  for (size_t i = 0; i < numPoints; ++i)
-  {
-    if (!(in >> temp[i]))
-  {
+    std::istream::sentry sentry(in);
+    if (!sentry)
+    {
+      return in;
+    }
+    size_t numPoints = 0;
+    in >> numPoints;
+    if (numPoints < 3 || in.fail())
+    {
       in.setstate(std::ios::failbit);
       return in;
     }
+    polygon.points.clear();
+    polygon.points.reserve(numPoints);
+    readPoints(in, polygon.points, numPoints);
+    if (!in)
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+    if (!checkUnique(polygon.points))
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+    return in;
   }
-  if (in)
-  {
-    polygon.points = std::move(temp);
-  }
-  return in;
-}
 
-double shramko::getPolygonArea(const Polygon& polygon)
-{
-  if (polygon.points.size() < 3)
+  double calculateArea(const std::vector< Point >& points, size_t i = 0, double sum = 0.0)
   {
-    return 0.0;
+    if (i >= points.size())
+    {
+      return std::abs(sum) / 2.0;
+    }
+    size_t n = points.size();
+    size_t next = (i + 1) % n;
+    sum += static_cast< double >(points[i].x) * points[next].y - static_cast< double >(points[next].x) * points[i].y;
+    return calculateArea(points, i + 1, sum);
   }
-  const Point& first = polygon.points[0];
-  size_t numTriangles = polygon.points.size() - 2;
-  std::vector< double > areas(numTriangles);
-  for (size_t i = 0; i < numTriangles; ++i)
+
+  double getPolygonArea(const Polygon& polygon)
   {
-    Triangle tri = makeTriangle(first, polygon.points, i + 1);
-    areas[i] = calculateTriangleArea(tri);
+    if (polygon.points.size() < 3)
+    {
+      return 0.0;
+    }
+    return calculateArea(polygon.points);
   }
-  return std::accumulate(areas.begin(), areas.end(), 0.0);
+
+  std::istream& operator>>(std::istream& in, Point& point)
+  {
+    std::istream::sentry sentry(in);
+    if (!sentry)
+    {
+      return in;
+    }
+    char ch;
+    in >> ch;
+    if (ch != '(')
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+    in >> point.x;
+    in >> ch;
+    if (ch != ';')
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+    in >> point.y;
+    in >> ch;
+    if (ch != ')')
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+    return in;
+  }
+
+  bool operator<(const Point& a, const Point& b)
+  {
+    return a.x < b.x || (a.x == b.x && a.y < b.y);
+  }
+
+  bool operator==(const Point& a, const Point& b)
+  {
+    return a.x == b.x && a.y == b.y;
+  }
+
+  Point operator-(const Point& a, const Point& b)
+  {
+    return {a.x - b.x, a.y - b.y};
+  }
+
+  long long dot(const Point& a, const Point& b)
+  {
+    return static_cast< long long >(a.x) * b.x + static_cast< long long >(a.y) * b.y;
+  }
 }

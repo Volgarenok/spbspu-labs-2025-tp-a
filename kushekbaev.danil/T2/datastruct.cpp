@@ -1,5 +1,6 @@
 #include "datastruct.hpp"
 #include <iostream>
+#include <delimiter.hpp>
 
 bool kushekbaev::DataStruct::operator<(const DataStruct& other) const
 {
@@ -12,22 +13,6 @@ bool kushekbaev::DataStruct::operator<(const DataStruct& other) const
     return key2 < other.key2;
   }
   return key1 < other.key1;
-}
-
-std::istream& kushekbaev::operator>>(std::istream& in, DelimiterIO&& obj)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-  char c = 0;
-  in >> c;
-  if (in && std::tolower(c) != obj.exp)
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
 }
 
 std::istream& kushekbaev::operator>>(std::istream& in, ULLBinaryI&& obj)
