@@ -11,7 +11,7 @@ int main()
 {
   std::map< std::string, pilugina::dictionary > dicts;
   std::map< std::string, std::function< void(std::istream &, std::ostream &) > > cmds;
-  
+
   {
     using std::placeholders::_1;
     using std::placeholders::_2;
