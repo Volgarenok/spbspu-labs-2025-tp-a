@@ -7,20 +7,18 @@
 #include <utility>
 #include <ostream>
 #include <istream>
-#include <fstream>
-#include <algorithm>
 
 namespace pilugina
 {
   using dictionary = std::map< std::string, std::vector< std::string > >;
   using dictionaries = std::map< std::string, dictionary >;
 
-  std::string joinedTranslations(const std::vector< std::string > &ts);
-
-  struct WordLineFormatter
-  {
-    std::string operator()(const std::pair< const std::string, std::vector< std::string > > &p) const;
-  };
+  bool read3Words(std::istream &in, std::string &a, std::string &b, std::string &c);
+  bool read2Words(std::istream &in, std::string &a, std::string &b);
+  bool read1Word(std::istream &in, std::string &a);
+  bool fileExists(const std::string &name);
+  void printTranslations(const std::vector< std::string > &ts, std::ostream &os);
+  void printDictionary(const dictionary &d, std::ostream &os);
 
   struct ApplyMergeTranslations
   {
@@ -31,12 +29,6 @@ namespace pilugina
     dictionary *dst_;
   };
 
-  bool read3Words(std::istream &in, std::string &a, std::string &b, std::string &c);
-  bool read2Words(std::istream &in, std::string &a, std::string &b);
-  bool read1Word(std::istream &in, std::string &a);
-
-  bool fileExists(const std::string &name);
-
   struct MissingIn
   {
     explicit MissingIn(const dictionary &d);
@@ -44,34 +36,6 @@ namespace pilugina
 
   private:
     const dictionary *d_;
-  };
-
-  struct PrefixAndAppendToOstream
-  {
-    explicit PrefixAndAppendToOstream(std::ostream &o);
-    char operator()(const std::string &s) const;
-
-  private:
-    std::ostream *out_;
-  };
-
-  struct PrintLine
-  {
-    explicit PrintLine(std::ostream &o);
-    std::string operator()(const std::pair< const std::string, std::vector< std::string > > &p) const;
-    void flush(const std::string &s) const;
-
-  private:
-    std::ostream *out_;
-  };
-
-  struct WriteLine
-  {
-    explicit WriteLine(std::ostream &o);
-    char operator()(const std::string &s) const;
-
-  private:
-    std::ostream *out_;
   };
 }
 

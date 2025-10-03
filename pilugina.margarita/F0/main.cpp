@@ -30,7 +30,7 @@ int main()
     cmds["InnerMerge"] = std::bind(innerMerge, _1, _2, std::ref(dicts));
     cmds["MergeTranslations"] = std::bind(mergeTranslations, _1, _2, std::ref(dicts));
   }
-  
+
   std::string command;
   while (!(std::cin >> command).eof())
   {

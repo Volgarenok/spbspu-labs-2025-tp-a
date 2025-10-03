@@ -166,7 +166,9 @@ namespace pilugina
       return;
     }
 
-    out << "<TRANSLATIONS: " << joinedTranslations(wIt->second) << ">";
+    out << "<TRANSLATIONS: ";
+    printTranslations(wIt->second, out);
+    out << ">";
   }
 
   void printSizeDict(std::istream &in, std::ostream &out, const dictionaries &dicts)
@@ -207,13 +209,7 @@ namespace pilugina
     if (!dict.empty())
     {
       const auto firstWord = *dict.begin();
-      out << firstWord.first << ": " << joinedTranslations(firstWord.second);
-
-      std::vector< std::string > formatted;
-      formatted.reserve(dict.size() - 1);
-      std::transform(std::next(dict.begin()), dict.end(), std::back_inserter(formatted), WordLineFormatter());
-      std::vector< char > sink(formatted.size(), 0);
-      std::transform(formatted.begin(), formatted.end(), sink.begin(), PrefixAndAppendToOstream(out));
+      printDictionary(dict, out);
     }
 
     out << ">";
@@ -245,15 +241,7 @@ namespace pilugina
       return;
     }
 
-    const dictionary &d = dIt->second;
-
-    std::vector< std::string > lines;
-    lines.reserve(d.size());
-    std::transform(d.begin(), d.end(), std::back_inserter(lines), PrintLine(file));
-
-    std::vector< char > sink(lines.size(), 0);
-    std::transform(lines.begin(), lines.end(), sink.begin(), WriteLine(file));
-
+    printDictionary(dIt->second, file);
     out << "<DICT SUCCESSFULLY SAVED>";
   }
 
