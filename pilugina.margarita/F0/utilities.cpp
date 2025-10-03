@@ -119,8 +119,8 @@ namespace pilugina
 
   bool fileExists(const std::string &name)
   {
-    std::ifstream f(name.c_str(), std::ios::in | std::ios::binary);
-    return static_cast< bool >(f);
+    std::ifstream f(name.c_str());
+    return f.good();
   }
 
   MissingIn::MissingIn(const dictionary &d):
