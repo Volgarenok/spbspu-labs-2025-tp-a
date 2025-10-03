@@ -2,6 +2,7 @@
 #include <fstream>
 #include <limits>
 #include <algorithm>
+#include <iomanip>
 
 void smirnov::printHelp() {
     std::cout << "Справка по командам:\n";
