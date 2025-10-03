@@ -5,8 +5,7 @@
 #include <string>
 #include <vector>
 #include <utility>
-#include <ostream>
-#include <istream>
+#include <iostream>
 
 namespace pilugina
 {

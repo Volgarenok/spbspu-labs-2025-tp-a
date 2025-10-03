@@ -1,11 +1,7 @@
 #ifndef COMMANDS_HPP
 #define COMMANDS_HPP
 
-#include <algorithm>
 #include <iostream>
-#include <map>
-#include <string>
-#include <vector>
 #include "utilities.hpp"
 
 namespace pilugina

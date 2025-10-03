@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iterator>
 #include <string>
+#include <algorithm>
 #include "utilities.hpp"
 
 namespace pilugina
