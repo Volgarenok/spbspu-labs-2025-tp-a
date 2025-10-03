@@ -9,7 +9,7 @@
 namespace smirnov {
 
     using dictionaries = std::map<std::string, Dictionary>;
-
+    void printHelp(std::ostream& out);
     void createemptydict(dictionaries& dicts, std::istream& in);
     void insertword(dictionaries& dicts, std::istream& in);
     void insertfile(dictionaries& dicts, std::istream& in);
@@ -35,5 +35,3 @@ namespace smirnov {
 }
 
 #endif
-
-

@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     dictionaries dictOfDicts;
     std::string inputCmd(argv[1]);
     if (inputCmd == "--help") {
-        printHelp();
+        printHelp(std::cout);
     }
 
     using namespace std::placeholders;

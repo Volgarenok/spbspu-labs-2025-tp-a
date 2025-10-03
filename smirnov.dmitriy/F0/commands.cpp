@@ -4,27 +4,28 @@
 #include <algorithm>
 #include <iomanip>
 
-void smirnov::printHelp() {
-    std::cout << "Справка по командам:\n";
-    std::cout << "1. createemptydict <dictname>\n";
-    std::cout << "2. insertword <dictname> <word>\n";
-    std::cout << "3. insertfile <dictname> <filename>\n";
-    std::cout << "4. getfrequency <dictname> <word>\n";
-    std::cout << "5. mostfrequent <dictname>\n";
-    std::cout << "6. deleteword <dictname> <word>\n";
-    std::cout << "7. clear <dictname>\n";
-    std::cout << "8. merge <dict1> <dict2> <newdict>\n";
-    std::cout << "9. intersect <dict1> <dict2> <newdict>\n";
-    std::cout << "10. printsorted <dictname>\n";
-    std::cout << "11. printbyfrequency <dictname>\n";
-    std::cout << "12. size <dictname>\n";
-    std::cout << "13. topprelativefrequent <dictname> <N>\n";
-    std::cout << "14. getrelativefrequency <dictname> <word>\n";
-    std::cout << "15. frequencyrangerelative <dictname> <min> <max>\n";
-    std::cout << "16. bottomprelativefrequent <dictname> <N>\n";
-    std::cout << "17. medianfrequency <dictname>\n";
-    std::cout << "18. delete <dictname>\n";
+void smirnov::printHelp(std::ostream& out) {
+    out << "Help for commands:\n";
+    out << "1. createemptydict <dictname>\n";
+    out << "2. insertword <dictname> <word>\n";
+    out << "3. insertfile <dictname> <filename>\n";
+    out << "4. getfrequency <dictname> <word>\n";
+    out << "5. mostfrequent <dictname>\n";
+    out << "6. deleteword <dictname> <word>\n";
+    out << "7. clear <dictname>\n";
+    out << "8. merge <dict1> <dict2> <newdict>\n";
+    out << "9. intersect <dict1> <dict2> <newdict>\n";
+    out << "10. printsorted <dictname>\n";
+    out << "11. printbyfrequency <dictname>\n";
+    out << "12. size <dictname>\n";
+    out << "13. topprelativefrequent <dictname> <N>\n";
+    out << "14. getrelativefrequency <dictname> <word>\n";
+    out << "15. frequencyrangerelative <dictname> <min> <max>\n";
+    out << "16. bottomprelativefrequent <dictname> <N>\n";
+    out << "17. medianfrequency <dictname>\n";
+    out << "18. delete <dictname>\n";
 }
+
 
 void smirnov::createemptydict(dictionaries& dicts, std::istream& in) {
     std::string name;
@@ -85,7 +86,7 @@ void smirnov::clear(dictionaries& dicts, std::istream& in) {
     dicts[dictname].clear();
 }
 
-    void smirnov::merge(dictionaries& dicts, std::istream& in) {
+void smirnov::merge(dictionaries& dicts, std::istream& in) {
     std::string dict1, dict2, newdict;
     in >> dict1 >> dict2 >> newdict;
 
@@ -117,7 +118,7 @@ void smirnov::clear(dictionaries& dicts, std::istream& in) {
     dicts[newdict] = result;
 }
 
-    void smirnov::intersect(dictionaries& dicts, std::istream& in) {
+void smirnov::intersect(dictionaries& dicts, std::istream& in) {
     std::string dict1, dict2, newdict;
     in >> dict1 >> dict2 >> newdict;
 
@@ -146,7 +147,7 @@ void smirnov::clear(dictionaries& dicts, std::istream& in) {
     dicts[newdict] = result;
 }
 
-    void smirnov::deleteDict(dictionaries& dicts, std::istream& in) {
+void smirnov::deleteDict(dictionaries& dicts, std::istream& in) {
     std::string dictname;
     in >> dictname;
 
@@ -303,5 +304,3 @@ void smirnov::medianfrequency(dictionaries& dicts, std::istream& in, std::ostrea
         out << w << "\n";
     }
 }
-
-
