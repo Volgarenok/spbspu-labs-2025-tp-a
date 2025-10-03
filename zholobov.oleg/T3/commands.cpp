@@ -25,20 +25,24 @@ namespace {
     return !isEvenVertices(polygon);
   }
 
-  bool isRect(const zholobov::Polygon& polygon)
+  struct Dot {
+    int operator()(const zholobov::Point& a, const zholobov::Point& b) const
+    {
+      return a.x * b.x + a.y * b.y;
+    }
+  };
+
+  bool isRect(const zholobov::Polygon& p)
   {
-    if (polygon.points.size() != 4) {
+    if (p.points.size() != 4) {
       return false;
     }
-    zholobov::Point v0{polygon.points[0].x - polygon.points[3].x, polygon.points[0].y - polygon.points[3].y};
-    for (size_t i = 0; i < 3; ++i) {
-      zholobov::Point v{polygon.points[i + 1].x - polygon.points[i].x, polygon.points[i + 1].y - polygon.points[i].y};
-      if ((v0.x * v.x + v0.y * v.y) != 0) {
-        return false;
-      }
-      v0 = v;
-    }
-    return true;
+    Dot dot;
+    zholobov::Point v0{p.points[0].x - p.points[3].x, p.points[0].y - p.points[3].y};
+    zholobov::Point v1{p.points[1].x - p.points[0].x, p.points[1].y - p.points[0].y};
+    zholobov::Point v2{p.points[2].x - p.points[1].x, p.points[2].y - p.points[1].y};
+    zholobov::Point v3{p.points[3].x - p.points[2].x, p.points[3].y - p.points[2].y};
+    return dot(v0, v1) == 0 && dot(v1, v2) == 0 && dot(v2, v3) == 0 && dot(v3, v0) == 0;
   }
 
   struct NumOfVerticesEqualTo {
@@ -57,15 +61,20 @@ namespace {
     }
   };
 
+  struct SumAreaIfFunctor {
+    const Predicate& pred;
+
+    float operator()(float acc, const zholobov::Polygon& polygon) const
+    {
+      if (pred(polygon)) {
+        acc += zholobov::calcArea(polygon);
+      }
+      return acc;
+    }
+  };
   float sumAreaIf(const zholobov::Polygons& polygons, const Predicate& pred)
   {
-    return std::accumulate(polygons.begin(), polygons.end(), 0.0f,
-        [&pred](float acc, const zholobov::Polygon& polygon) {
-          if (pred(polygon)) {
-            acc += zholobov::calcArea(polygon);
-          }
-          return acc;
-        });
+    return std::accumulate(polygons.begin(), polygons.end(), 0.0f, SumAreaIfFunctor{pred});
   }
 
   float calcAreaEven(const zholobov::Polygons& polygons)

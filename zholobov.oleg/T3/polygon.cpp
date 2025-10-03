@@ -32,9 +32,10 @@ namespace {
 
   bool onSegment(const zholobov::Point& a, const zholobov::Point& b, const zholobov::Point& p)
   {
-    return (cross(vector(a, b), vector(a, p)) == 0) &&
-           (std::min(a.x, b.x) <= p.x) && (p.x <= std::max(a.x, b.x)) &&
-           (std::min(a.y, b.y) <= p.y) && (p.y <= std::max(a.y, b.y));
+    bool onLineAB = (cross(vector(a, b), vector(a, p)) == 0);
+    bool coordXinsideAB = (std::min(a.x, b.x) <= p.x) && (p.x <= std::max(a.x, b.x));
+    bool coordYinsideAB = (std::min(a.y, b.y) <= p.y) && (p.y <= std::max(a.y, b.y));
+    return onLineAB && coordXinsideAB && coordYinsideAB;
   }
 
   bool segmentsIntersect(const zholobov::Point& a1, const zholobov::Point& a2,
