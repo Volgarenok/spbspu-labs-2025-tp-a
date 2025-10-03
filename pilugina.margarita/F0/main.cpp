@@ -9,26 +9,28 @@ using namespace pilugina;
 
 int main()
 {
-  using namespace std::placeholders;
   std::map< std::string, pilugina::dictionary > dicts;
-  std::map< std::string, std::function< void(std::istream &, std::ostream &) > > cmds
+  std::map< std::string, std::function< void(std::istream &, std::ostream &) > > cmds;
+  
   {
-    {"CreateDict", std::bind(createDict, std::placeholders::_1, std::placeholders::_2, std::ref(dicts))},
-    {"DeleteDict", std::bind(deleteDict, std::placeholders::_1, std::placeholders::_2, std::ref(dicts))},
-    {"InsertWord", std::bind(insertWord, std::placeholders::_1, std::placeholders::_2, std::ref(dicts))},
-    {"InsertTranslation", std::bind(insertTranslation, std::placeholders::_1, std::placeholders::_2, std::ref(dicts))},
-    {"RemoveWord", std::bind(removeWord, std::placeholders::_1, std::placeholders::_2, std::ref(dicts))},
-    {"RemoveTranslation", std::bind(removeTranslation, std::placeholders::_1, std::placeholders::_2, std::ref(dicts))},
-    {"SearchTranslation", std::bind(searchTranslation, std::placeholders::_1, std::placeholders::_2, std::cref(dicts))},
-    {"PrintSizeDict", std::bind(printSizeDict, std::placeholders::_1, std::placeholders::_2, std::cref(dicts))},
-    {"PrintDict", std::bind(printDict, std::placeholders::_1, std::placeholders::_2, std::cref(dicts))},
-    {"SaveDict", std::bind(saveDict, std::placeholders::_1, std::placeholders::_2, std::cref(dicts))},
-    {"Merge", std::bind(mergeDicts, std::placeholders::_1, std::placeholders::_2, std::ref(dicts))},
-    {"Join", std::bind(joinDicts, std::placeholders::_1, std::placeholders::_2, std::ref(dicts))},
-    {"InnerMerge", std::bind(innerMerge, std::placeholders::_1, std::placeholders::_2, std::ref(dicts))},
-    {"MergeTranslations", std::bind(mergeTranslations, std::placeholders::_1, std::placeholders::_2, std::ref(dicts))}
-  };
-
+    using std::placeholders::_1;
+    using std::placeholders::_2;
+    cmds["CreateDict"] = std::bind(createDict, _1, _2, std::ref(dicts));
+    cmds["DeleteDict"] = std::bind(deleteDict, _1, _2, std::ref(dicts));
+    cmds["InsertWord"] = std::bind(insertWord, _1, _2, std::ref(dicts));
+    cmds["InsertTranslation"] = std::bind(insertTranslation, _1, _2, std::ref(dicts));
+    cmds["RemoveWord"] = std::bind(removeWord, _1, _2, std::ref(dicts));
+    cmds["RemoveTranslation"] = std::bind(removeTranslation, _1, _2, std::ref(dicts));
+    cmds["SearchTranslation"] = std::bind(searchTranslation, _1, _2, std::cref(dicts));
+    cmds["PrintSizeDict"] = std::bind(printSizeDict, _1, _2, std::cref(dicts));
+    cmds["PrintDict"] = std::bind(printDict, _1, _2, std::cref(dicts));
+    cmds["SaveDict"] = std::bind(saveDict, _1, _2, std::cref(dicts));
+    cmds["Merge"] = std::bind(mergeDicts, _1, _2, std::ref(dicts));
+    cmds["Join"] = std::bind(joinDicts, _1, _2, std::ref(dicts));
+    cmds["InnerMerge"] = std::bind(innerMerge, _1, _2, std::ref(dicts));
+    cmds["MergeTranslations"] = std::bind(mergeTranslations, _1, _2, std::ref(dicts));
+  }
+  
   std::string command;
   while (!(std::cin >> command).eof())
   {
