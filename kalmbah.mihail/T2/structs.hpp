@@ -1,15 +1,15 @@
 #ifndef STRUCTS_HPP
 #define STRUCTS_HPP
 
+#include <iosfwd>
 #include <string>
 #include <utility>
-#include <iosfwd>
 
 namespace kalmbah {
 
 struct DataStruct {
     unsigned long long key1_;
-    std::pair<long long, unsigned long long> key2_;
+    std::pair< long long, unsigned long long > key2_;
     std::string key3_;
 };
 
@@ -22,7 +22,7 @@ struct UllOct {
 };
 
 struct RatLsp {
-    std::pair<long long, unsigned long long>& value;
+    std::pair< long long, unsigned long long >& value;
 };
 
 struct StringToken {

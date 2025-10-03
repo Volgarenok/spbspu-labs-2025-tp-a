@@ -1,13 +1,16 @@
-#include "structs.hpp"
-#include "stream_guard.hpp"
 #include <cmath>
 #include <iostream>
+#include "structs.hpp"
+#include "stream_guard.hpp"
 
 namespace kalmbah {
 
-std::istream& operator>>(std::istream& in, DataStruct& data) {
+std::istream& operator>>(std::istream& in, DataStruct& data)
+{
     std::istream::sentry sentry(in);
-    if (!sentry) return in;
+    if (!sentry) {
+        return in;
+    }
 
     DataStruct temp;
     bool hasKey1 = false;
@@ -15,28 +18,26 @@ std::istream& operator>>(std::istream& in, DataStruct& data) {
     bool hasKey3 = false;
 
     in >> Delimiter{'('};
-    while (true) {
-        std::string key;
-        in >> Delimiter{':'} >> key;
 
-        if (key == "key1") {
+    std::string key;
+    while (in >> Delimiter{':'} >> key) {
+        if (key == "key1" && !hasKey1) {
             in >> UllOct{temp.key1_};
             hasKey1 = true;
-        }
-        else if (key == "key2") {
+        } else if (key == "key2" && !hasKey2) {
             in >> RatLsp{temp.key2_};
             hasKey2 = true;
-        }
-        else if (key == "key3") {
+        } else if (key == "key3" && !hasKey3) {
             in >> StringToken{temp.key3_};
             hasKey3 = true;
-        }
-        else {
+        } else {
             in.setstate(std::ios::failbit);
             break;
         }
 
-        if (hasKey1 && hasKey2 && hasKey3) break;
+        if (hasKey1 && hasKey2 && hasKey3) {
+            break;
+        }
     }
 
     in >> Delimiter{':'} >> Delimiter{')'};
@@ -47,19 +48,23 @@ std::istream& operator>>(std::istream& in, DataStruct& data) {
     return in;
 }
 
-std::ostream& operator<<(std::ostream& out, const DataStruct& data) {
+std::ostream& operator<<(std::ostream& out, const DataStruct& data)
+{
     std::ostream::sentry sentry(out);
-    if (!sentry) return out;
+    if (!sentry) {
+        return out;
+    }
 
     kalmbah::StreamGuard guard(out);
-    out << "(:key1 0" << std::oct << data.key1_ << std::dec;
-    out << ":key2 (:N " << data.key2_.first
-        << ":D " << data.key2_.second << ":)";
-    out << ":key3 \"" << data.key3_ << "\":)";
+    out << "(:key1 0" << std::oct << data.key1_ << std::dec
+        << ":key2 (:N " << data.key2_.first
+        << ":D " << data.key2_.second << ":)"
+        << ":key3 \"" << data.key3_ << "\":)";
     return out;
 }
 
-bool operator<(const DataStruct& left, const DataStruct& right) {
+bool operator<(const DataStruct& left, const DataStruct& right)
+{
     if (left.key1_ != right.key1_) {
         return left.key1_ < right.key1_;
     }

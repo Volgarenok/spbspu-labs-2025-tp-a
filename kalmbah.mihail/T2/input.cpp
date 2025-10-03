@@ -1,13 +1,16 @@
+#include <cctype>
+#include <iostream>
 #include "structs.hpp"
 #include "stream_guard.hpp"
-#include <iostream>
-#include <cctype>
 
 namespace kalmbah {
 
-std::istream& operator>>(std::istream& in, Delimiter&& delim) {
+std::istream& operator>>(std::istream& in, Delimiter&& delim)
+{
     std::istream::sentry sentry(in);
-    if (!sentry) return in;
+    if (!sentry) {
+        return in;
+    }
 
     char actual = 0;
     in >> actual;
@@ -17,18 +20,24 @@ std::istream& operator>>(std::istream& in, Delimiter&& delim) {
     return in;
 }
 
-std::istream& operator>>(std::istream& in, UllOct&& ullOct) {
+std::istream& operator>>(std::istream& in, UllOct&& ullOct)
+{
     std::istream::sentry sentry(in);
-    if (!sentry) return in;
+    if (!sentry) {
+        return in;
+    }
 
     StreamGuard guard(in);
     in >> std::oct >> ullOct.value;
     return in;
 }
 
-std::istream& operator>>(std::istream& in, RatLsp&& rat) {
+std::istream& operator>>(std::istream& in, RatLsp&& rat)
+{
     std::istream::sentry sentry(in);
-    if (!sentry) return in;
+    if (!sentry) {
+        return in;
+    }
 
     long long numerator = 0;
     unsigned long long denominator = 0;
@@ -50,9 +59,12 @@ std::istream& operator>>(std::istream& in, RatLsp&& rat) {
     return in;
 }
 
-std::istream& operator>>(std::istream& in, StringToken&& strToken) {
+std::istream& operator>>(std::istream& in, StringToken&& strToken)
+{
     std::istream::sentry sentry(in);
-    if (!sentry) return in;
+    if (!sentry) {
+        return in;
+    }
 
     std::string temp;
     in >> Delimiter{'"'};

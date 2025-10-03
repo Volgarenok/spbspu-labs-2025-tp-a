@@ -1,25 +1,25 @@
 #include "structs.hpp"
-#include <vector>
-#include <iterator>
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <limits>
+#include <vector>
 
-int main() {
+int main()
+{
     using namespace kalmbah;
 
-    std::vector<DataStruct> data;
+    std::vector< DataStruct > data;
 
-    while (!std::cin.eof()) {
-        if (std::cin.fail()) {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        }
+    std::copy(
+        std::istream_iterator< DataStruct >(std::cin),
+        std::istream_iterator< DataStruct >(),
+        std::back_inserter(data)
+    );
 
-        DataStruct temp;
-        if (std::cin >> temp) {
-            data.push_back(std::move(temp));
-        }
+    if (std::cin.fail() && !std::cin.eof()) {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
     }
 
     std::sort(data.begin(), data.end());
@@ -27,7 +27,7 @@ int main() {
     std::copy(
         data.cbegin(),
         data.cend(),
-        std::ostream_iterator<DataStruct>(std::cout, "\n")
+        std::ostream_iterator< DataStruct >(std::cout, "\n")
     );
 
     return 0;
