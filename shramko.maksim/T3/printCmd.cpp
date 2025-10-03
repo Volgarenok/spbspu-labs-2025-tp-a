@@ -41,7 +41,7 @@ namespace shramko
       return lhs.points.size() < rhs.points.size();
     }
 
-    bool checkRightAngle(const std::vector<Point>& points, size_t i = 0)
+    bool checkRightAngle(const std::vector< Point >& points, size_t i = 0)
     {
       if (i >= points.size())
       {
@@ -304,8 +304,6 @@ namespace shramko
     Polygon ref;
     if (!(in >> ref))
     {
-      in.clear();
-      in.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
       throw std::invalid_argument("Invalid reference polygon");
     }
     std::string remaining;
