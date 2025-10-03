@@ -41,7 +41,7 @@ namespace shramko
       return lhs.points.size() < rhs.points.size();
     }
 
-    bool checkRightAngle(const std::vector< Point >& points, size_t i = 0)
+    bool checkRightAngle(const std::vector<Point>& points, size_t i = 0)
     {
       if (i >= points.size())
       {
@@ -168,6 +168,19 @@ namespace shramko
       const Polygon& newMin = vertexLess(polygons[index], currentMin) ? polygons[index] : currentMin;
       return minVertexRecursive(polygons, index + 1, newMin);
     }
+
+    bool hasNonSpace(const std::string& remaining, size_t index = 0)
+    {
+      if (index >= remaining.size())
+      {
+        return false;
+      }
+      if (!std::isspace(remaining[index]))
+      {
+        return true;
+      }
+      return hasNonSpace(remaining, index + 1);
+    }
   }
 
   void printArea(const std::vector< Polygon >& polygons, std::istream& in, std::ostream& out)
@@ -291,12 +304,18 @@ namespace shramko
     Polygon ref;
     if (!(in >> ref))
     {
+      in.clear();
+      in.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
       throw std::invalid_argument("Invalid reference polygon");
     }
-    std::string dummy;
-    if (in >> dummy)
+    std::string remaining;
+    std::getline(in, remaining);
+    if (!remaining.empty())
     {
-      throw std::invalid_argument("Invalid reference polygon");
+      if (details::hasNonSpace(remaining))
+      {
+        throw std::invalid_argument("Invalid reference polygon");
+      }
     }
     out << details::countLessAreaRecursive(polygons, 0, ref);
   }
