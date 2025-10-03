@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <numeric>
 
-
 void smirnov::Dictionary::insertWord(const std::string& word) {
     data[word]++;
 }
@@ -80,7 +79,7 @@ std::vector<std::pair<std::string,double>> smirnov::Dictionary::getTopRelative(i
         vec.push_back({p.first, static_cast<double>(p.second) / total});
     std::sort(vec.begin(), vec.end(),
         [](auto &a, auto &b){ return a.second > b.second; });
-    if ((int)vec.size() < N) return {};
+    if (static_cast<int>(vec.size()) < N) return {};
     vec.resize(N);
     return vec;
 }
@@ -94,7 +93,7 @@ std::vector<std::pair<std::string,double>> smirnov::Dictionary::getBottomRelativ
         vec.push_back({p.first, static_cast<double>(p.second) / total});
     std::sort(vec.begin(), vec.end(),
         [](auto &a, auto &b){ return a.second < b.second; });
-    if ((int)vec.size() < N) return {};
+    if (static_cast<int>(vec.size()) < N) return {};
     vec.resize(N);
     return vec;
 }
