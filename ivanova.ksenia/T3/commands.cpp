@@ -224,7 +224,7 @@ namespace ivanova
   {
     Polygon target;
     in >> target;
-    
+
     if (!in || target.points.size() < 3)
     {
       throw std::invalid_argument("<INVALID COMMAND>");
