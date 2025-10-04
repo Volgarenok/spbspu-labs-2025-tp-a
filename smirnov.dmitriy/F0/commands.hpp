@@ -1,14 +1,14 @@
 #ifndef COMMANDS_HPP
 #define COMMANDS_HPP
 
-#include "dictionary.hpp"
+#include <iostream>
 #include <map>
 #include <string>
-#include <iostream>
+#include "dictionary.hpp"
 
 namespace smirnov
 {
-  using dictionaries = std::map<std::string, Dictionary>;
+  using dictionaries = std::map< std::string, Dictionary >;
 
   void printHelp(std::ostream& out);
   void createemptydict(dictionaries& dicts, std::istream& in);
@@ -34,4 +34,3 @@ namespace smirnov
 }
 
 #endif
-
