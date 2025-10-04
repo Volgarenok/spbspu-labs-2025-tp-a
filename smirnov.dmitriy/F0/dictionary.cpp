@@ -84,7 +84,7 @@ std::vector<std::pair<std::string,double>> smirnov::Dictionary::getTopRelative(i
     for (auto& p : data)
         vec.push_back({p.first, static_cast<double>(p.second) / total});
     std::sort(vec.begin(), vec.end(), compareByFrequency);
-    if (static_cast<int>(vec.size()) < N) return {}; 
+    if (static_cast<int>(vec.size()) < N) return {};
     vec.resize(N);
     return vec;
 }
@@ -97,7 +97,7 @@ std::vector<std::pair<std::string,double>> smirnov::Dictionary::getBottomRelativ
     for (auto& p : data)
         vec.push_back({p.first, static_cast<double>(p.second) / total});
     std::sort(vec.begin(), vec.end(), compareFrequency);
-    if (static_cast<int>(vec.size()) < N) return {}; 
+    if (static_cast<int>(vec.size()) < N) return {};
     vec.resize(N);
     return vec;
 }
