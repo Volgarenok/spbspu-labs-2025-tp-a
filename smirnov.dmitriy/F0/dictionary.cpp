@@ -187,7 +187,7 @@ namespace smirnov
     }
     std::sort(freqs.begin(), freqs.end());
     size_t n = freqs.size();
-    int median;
+    size_t median;
     if (n % 2 == 1)
     {
       median = freqs[n / 2];
