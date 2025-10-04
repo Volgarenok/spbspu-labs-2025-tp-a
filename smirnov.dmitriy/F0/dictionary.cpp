@@ -18,7 +18,10 @@ namespace smirnov
 
   std::string Dictionary::mostFrequent() const
   {
-    if (data.empty()) return "";
+    if (data.empty())
+    {
+      return "";
+    }
     return std::max_element(
       data.begin(), data.end(), smirnov::compareFrequency
     )->first;
@@ -32,7 +35,10 @@ namespace smirnov
   void Dictionary::insertFromFile(const std::string& filename)
   {
     std::ifstream file(filename);
-    if (!file.is_open()) return;
+    if (!file.is_open())
+    {
+      return;
+    }
     std::string word;
     while (file >> word)
     {
@@ -48,7 +54,10 @@ namespace smirnov
   int Dictionary::getFrequency(const std::string& word) const
   {
     auto it = data.find(word);
-    if (it != data.end()) return it->second;
+    if (it != data.end())
+    {
+      return it->second;
+    }
     return -1;
   }
 
@@ -87,22 +96,39 @@ namespace smirnov
 
   double Dictionary::getRelativeFrequency(const std::string& word) const
   {
-    if (data.empty() || !contains(word)) return -1.0;
+    if (data.empty() || !contains(word))
+    {
+      return -1.0;
+    }
     int total = 0;
-    for (auto& p : data) total += p.second;
-    return static_cast< double >(data.at(word)) / total;
+    for (auto& p: data)
+    {
+      total += p.second;
+    }
+    return static_cast<double>(data.at(word)) / total;
   }
 
   std::vector< std::pair<  std::string, double > > Dictionary::getTopRelative(size_t N) const
   {
     std::vector< std::pair< std::string, double > > vec;
-    if (data.empty()) return vec;
+    if (data.empty())
+    {
+      return vec;
+    }
     int total = 0;
-    for (auto& p : data) total += p.second;
+    for (auto& p: data)
+    {
+      total += p.second;
+    }
     for (auto& p : data)
-      vec.push_back({ p.first, static_cast<double>(p.second) / total });
+    {
+      vec.push_back({ p.first, static_cast< double >(p.second) / total });
+    }
     std::sort(vec.begin(), vec.end(), smirnov::compareByFrequency);
-    if (static_cast< int >(vec.size()) < N) return {};
+    if (static_cast< int >(vec.size()) < N)
+    {
+      return {};
+    }
     vec.resize(N);
     return vec;
   }
@@ -112,11 +138,20 @@ namespace smirnov
     std::vector< std::pair< std::string, double > > vec;
     if (data.empty()) return vec;
     int total = 0;
-    for (auto& p : data) total += p.second;
     for (auto& p : data)
-      vec.push_back({ p.first, static_cast< double >(p.second) / total });
+    {
+      total += p.second;
+    }
+    for (auto& p: data)
+    {
+      vec.push_back({ p.first, static_cast<double>(p.second) / total });
+    }
+
     std::sort(vec.begin(), vec.end(), smirnov::compareFrequency);
-    if (static_cast< int >(vec.size()) < N) return {};
+    if (static_cast< int >(vec.size()) < N)
+    {
+      return {};
+    }
     vec.resize(N);
     return vec;
   }
@@ -126,10 +161,10 @@ namespace smirnov
     std::vector< std::pair< std::string, double > > result;
     if (min > max || data.empty()) return result;
     int total = 0;
-    for (auto& p : data) total += p.second;
-    for (auto& p : data)
+    for (auto& p: data) total += p.second;
+    for (auto& p: data)
     {
-      double rel = static_cast< double >(p.second) / total;
+      double rel = static_cast<double>(p.second) / total;
       if (rel >= min && rel <= max)
       {
         result.push_back({ p.first, rel });
@@ -141,20 +176,34 @@ namespace smirnov
   std::vector< std::string > Dictionary::medianFrequency() const
   {
     std::vector< std::string > result;
-    if (data.empty()) return result;
+    if (data.empty())
+    {
+      return result;
+    }
     std::vector< int > freqs;
-    for (auto& p : data) freqs.push_back(p.second);
+    for (auto& p: data)
+    {
+      freqs.push_back(p.second);
+    }
     std::sort(freqs.begin(), freqs.end());
     size_t n = freqs.size();
     int median;
     if (n % 2 == 1)
+    {
       median = freqs[n / 2];
+    }
     else
+    {
       median = (freqs[n / 2 - 1] + freqs[n / 2]) / 2;
+    }
     for (auto& p : data)
+    {
       if (p.second == median)
+      {
         result.push_back(p.first);
+      }
+
+    }
     return result;
   }
 }
-
