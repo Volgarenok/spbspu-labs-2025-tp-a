@@ -122,13 +122,13 @@ void smirnov::merge(dictionaries& dicts, std::istream& in)
 
   for (auto& p : d1.getSortedByWord())
   {
-    for (int i = 0; i < p.second; ++i)
+    for (size_t i = 0; i < p.second; ++i)
       result.insertWord(p.first);
   }
 
   for (auto& p : d2.getSortedByWord())
   {
-    for (int i = 0; i < p.second; ++i)
+    for (size_t i = 0; i < p.second; ++i)
       result.insertWord(p.first);
   }
 
