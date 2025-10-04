@@ -90,7 +90,7 @@ namespace smirnov
     if (data.empty() || !contains(word)) return -1.0;
     int total = 0;
     for (auto& p : data) total += p.second;
-    return static_cast<double>(data.at(word)) / total;
+    return static_cast< double >(data.at(word)) / total;
   }
 
   std::vector< std::pair<  std::string, double > > Dictionary::getTopRelative(size_t N) const
@@ -102,7 +102,7 @@ namespace smirnov
     for (auto& p : data)
       vec.push_back({ p.first, static_cast<double>(p.second) / total });
     std::sort(vec.begin(), vec.end(), smirnov::compareByFrequency);
-    if (static_cast<int>(vec.size()) < N) return {};
+    if (static_cast< int >(vec.size()) < N) return {};
     vec.resize(N);
     return vec;
   }
@@ -114,9 +114,9 @@ namespace smirnov
     int total = 0;
     for (auto& p : data) total += p.second;
     for (auto& p : data)
-      vec.push_back({ p.first, static_cast<double>(p.second) / total });
+      vec.push_back({ p.first, static_cast< double >(p.second) / total });
     std::sort(vec.begin(), vec.end(), smirnov::compareFrequency);
-    if (static_cast<int>(vec.size()) < N) return {};
+    if (static_cast< int >(vec.size()) < N) return {};
     vec.resize(N);
     return vec;
   }
@@ -129,7 +129,7 @@ namespace smirnov
     for (auto& p : data) total += p.second;
     for (auto& p : data)
     {
-      double rel = static_cast<double>(p.second) / total;
+      double rel = static_cast< double >(p.second) / total;
       if (rel >= min && rel <= max)
       {
         result.push_back({ p.first, rel });
@@ -142,7 +142,7 @@ namespace smirnov
   {
     std::vector< std::string > result;
     if (data.empty()) return result;
-    std::vector< int> freqs;
+    std::vector< int > freqs;
     for (auto& p : data) freqs.push_back(p.second);
     std::sort(freqs.begin(), freqs.end());
     size_t n = freqs.size();
