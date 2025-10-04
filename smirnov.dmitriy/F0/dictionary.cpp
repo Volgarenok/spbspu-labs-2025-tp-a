@@ -81,15 +81,15 @@ namespace smirnov
     return data.size();
   }
 
-  std::vector< std::pair< std::string, int > > Dictionary::getSortedByWord() const
+  std::vector< std::pair< std::string, size_t > > Dictionary::getSortedByWord() const
   {
-    std::vector< std::pair< std::string, int > > vec(data.begin(), data.end());
+    std::vector< std::pair< std::string, size_t > > vec(data.begin(), data.end());
     return vec;
   }
 
-  std::vector< std::pair< std::string, int > > Dictionary::getSortedByFrequency() const
+  std::vector< std::pair< std::string, size_t > > Dictionary::getSortedByFrequency() const
   {
-    std::vector< std::pair< std::string, int > > vec(data.begin(), data.end());
+    std::vector< std::pair< std::string, size_t > > vec(data.begin(), data.end());
     std::sort(vec.begin(), vec.end(), smirnov::compareByFrequency);
     return vec;
   }
@@ -133,7 +133,7 @@ namespace smirnov
     return vec;
   }
 
-  std::vector< std::pair< std::string, double > > Dictionary::getBottomRelative(int N) const
+  std::vector< std::pair< std::string, double > > Dictionary::getBottomRelative(size_t N) const
   {
     std::vector< std::pair< std::string, double > > vec;
     if (data.empty()) return vec;
@@ -207,3 +207,4 @@ namespace smirnov
     return result;
   }
 }
+
