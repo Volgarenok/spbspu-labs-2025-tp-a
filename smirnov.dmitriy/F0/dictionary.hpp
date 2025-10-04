@@ -24,7 +24,7 @@ namespace smirnov {
     std::vector< std::pair< std::string, double > > getTopRelative(size_t N) const;
     std::vector< std::pair< std::string, double > > getBottomRelative(size_t N) const;
     std::vector< std::pair< std::string, double > > getRangeRelative(double min, double max) const;
-    std::vector< std::string> medianFrequency() const;
+    std::vector< std::string > medianFrequency() const;
 
   private:
     std::map< std::string, size_t > data;
