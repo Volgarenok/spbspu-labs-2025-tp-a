@@ -6,12 +6,12 @@
 
 namespace smirnov
 {
-  bool compareFrequency(const std::pair<std::string, int>& a, const std::pair<std::string, int>& b)
+  bool compareFrequency(const std::pair< std::string, int >& a, const std::pair< std::string, int >& b)
   {
     return a.second < b.second;
   }
 
-  bool compareByFrequency(const std::pair<std::string, int>& a, const std::pair<std::string, int>& b)
+  bool compareByFrequency(const std::pair< std::string, int >& a, const std::pair< std::string, int >& b)
   {
     return a.second > b.second;
   }
@@ -72,15 +72,15 @@ namespace smirnov
     return data.size();
   }
 
-  std::vector<std::pair<std::string, int>> Dictionary::getSortedByWord() const
+  std::vector< std::pair< std::string, int > > Dictionary::getSortedByWord() const
   {
-    std::vector<std::pair<std::string, int>> vec(data.begin(), data.end());
+    std::vector< std::pair< std::string, int > > vec(data.begin(), data.end());
     return vec;
   }
 
-  std::vector<std::pair<std::string, int>> Dictionary::getSortedByFrequency() const
+  std::vector< std::pair< std::string, int > > Dictionary::getSortedByFrequency() const
   {
-    std::vector<std::pair<std::string, int>> vec(data.begin(), data.end());
+    std::vector< std::pair< std::string, int > > vec(data.begin(), data.end());
     std::sort(vec.begin(), vec.end(), smirnov::compareByFrequency);
     return vec;
   }
@@ -93,9 +93,9 @@ namespace smirnov
     return static_cast<double>(data.at(word)) / total;
   }
 
-  std::vector<std::pair<std::string, double>> Dictionary::getTopRelative(int N) const
+  std::vector< std::pair<  std::string, double > > Dictionary::getTopRelative(size_t N) const
   {
-    std::vector<std::pair<std::string, double>> vec;
+    std::vector< std::pair< std::string, double > > vec;
     if (data.empty()) return vec;
     int total = 0;
     for (auto& p : data) total += p.second;
@@ -107,9 +107,9 @@ namespace smirnov
     return vec;
   }
 
-  std::vector<std::pair<std::string, double>> Dictionary::getBottomRelative(size_t N) const
+  std::vector< std::pair< std::string, double > > Dictionary::getBottomRelative(int N) const
   {
-    std::vector<std::pair<std::string, double>> vec;
+    std::vector< std::pair< std::string, double > > vec;
     if (data.empty()) return vec;
     int total = 0;
     for (auto& p : data) total += p.second;
@@ -121,9 +121,9 @@ namespace smirnov
     return vec;
   }
 
-  std::vector<std::pair<std::string, double>> Dictionary::getRangeRelative(double min, double max) const
+  std::vector< std::pair< std::string, double > > Dictionary::getRangeRelative(double min, double max) const
   {
-    std::vector<std::pair<std::string, double>> result;
+    std::vector< std::pair< std::string, double > > result;
     if (min > max || data.empty()) return result;
     int total = 0;
     for (auto& p : data) total += p.second;
@@ -131,16 +131,18 @@ namespace smirnov
     {
       double rel = static_cast<double>(p.second) / total;
       if (rel >= min && rel <= max)
+      {
         result.push_back({ p.first, rel });
+      }
     }
     return result;
   }
 
-  std::vector<std::string> Dictionary::medianFrequency() const
+  std::vector< std::string > Dictionary::medianFrequency() const
   {
-    std::vector<std::string> result;
+    std::vector< std::string > result;
     if (data.empty()) return result;
-    std::vector<int> freqs;
+    std::vector< int> freqs;
     for (auto& p : data) freqs.push_back(p.second);
     std::sort(freqs.begin(), freqs.end());
     size_t n = freqs.size();
