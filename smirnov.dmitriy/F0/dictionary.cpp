@@ -65,7 +65,7 @@ std::vector<std::pair<std::string, int>> smirnov::Dictionary::getSortedByWord() 
 
 std::vector<std::pair<std::string, int>> smirnov::Dictionary::getSortedByFrequency() const {
     std::vector<std::pair<std::string, int>> vec(data.begin(), data.end());
-    std::sort(vec.begin(), vec.end(), compareByFrequency); 
+    std::sort(vec.begin(), vec.end(), compareByFrequency);
     return vec;
 }
 
@@ -83,7 +83,7 @@ std::vector<std::pair<std::string, double>> smirnov::Dictionary::getTopRelative(
     for (auto& p : data) total += p.second;
     for (auto& p : data)
         vec.push_back({ p.first, static_cast<double>(p.second) / total });
-    std::sort(vec.begin(), vec.end(), compareByFrequency);  
+    std::sort(vec.begin(), vec.end(), compareByFrequency);
     if ((int)vec.size() < N) return {};
     vec.resize(N);
     return vec;
@@ -96,7 +96,7 @@ std::vector<std::pair<std::string, double>> smirnov::Dictionary::getBottomRelati
     for (auto& p : data) total += p.second;
     for (auto& p : data)
         vec.push_back({ p.first, static_cast<double>(p.second) / total });
-    std::sort(vec.begin(), vec.end(), compareFrequency);  
+    std::sort(vec.begin(), vec.end(), compareFrequency);
     if ((int)vec.size() < N) return {};
     vec.resize(N);
     return vec;
