@@ -4,18 +4,18 @@
 #include <algorithm>
 #include <numeric>
 
-bool compareFrequency(const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
+bool smirnov::compareFrequency(const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
     return a.second < b.second;
 }
 
-bool compareByFrequency(const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
+bool smirnov::compareByFrequency(const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
     return a.second > b.second;
 }
 
 std::string smirnov::Dictionary::mostFrequent() const {
     if (data.empty()) return "";
     return std::max_element(
-        data.begin(), data.end(), compareFrequency
+        data.begin(), data.end(), smirnov::compareFrequency
     )->first;
 }
 
@@ -58,13 +58,13 @@ size_t smirnov::Dictionary::size() const {
     return data.size();
 }
 
-std::vector<std::pair<std::string, int>> smirnov::Dictionary::getSortedByWord() const {
-    std::vector<std::pair<std::string, int>> vec(data.begin(), data.end());
+std::vector<std::pair<std::string,int>> smirnov::Dictionary::getSortedByWord() const {
+    std::vector<std::pair<std::string,int>> vec(data.begin(), data.end());
     return vec;
 }
 
-std::vector<std::pair<std::string, int>> smirnov::Dictionary::getSortedByFrequency() const {
-    std::vector<std::pair<std::string, int>> vec(data.begin(), data.end());
+std::vector<std::pair<std::string,int>> smirnov::Dictionary::getSortedByFrequency() const {
+    std::vector<std::pair<std::string,int>> vec(data.begin(), data.end());
     std::sort(vec.begin(), vec.end(), compareByFrequency);
     return vec;
 }
@@ -76,41 +76,41 @@ double smirnov::Dictionary::getRelativeFrequency(const std::string& word) const 
     return static_cast<double>(data.at(word)) / total;
 }
 
-std::vector<std::pair<std::string, double>> smirnov::Dictionary::getTopRelative(int N) const {
-    std::vector<std::pair<std::string, double>> vec;
+std::vector<std::pair<std::string,double>> smirnov::Dictionary::getTopRelative(int N) const {
+    std::vector<std::pair<std::string,double>> vec;
     if (data.empty()) return vec;
     int total = 0;
     for (auto& p : data) total += p.second;
     for (auto& p : data)
-        vec.push_back({ p.first, static_cast<double>(p.second) / total });
+        vec.push_back({p.first, static_cast<double>(p.second) / total});
     std::sort(vec.begin(), vec.end(), compareByFrequency);
-    if ((int)vec.size() < N) return {};
+    if (static_cast<int>(vec.size()) < N) return {}; 
     vec.resize(N);
     return vec;
 }
 
-std::vector<std::pair<std::string, double>> smirnov::Dictionary::getBottomRelative(int N) const {
-    std::vector<std::pair<std::string, double>> vec;
+std::vector<std::pair<std::string,double>> smirnov::Dictionary::getBottomRelative(int N) const {
+    std::vector<std::pair<std::string,double>> vec;
     if (data.empty()) return vec;
     int total = 0;
     for (auto& p : data) total += p.second;
     for (auto& p : data)
-        vec.push_back({ p.first, static_cast<double>(p.second) / total });
+        vec.push_back({p.first, static_cast<double>(p.second) / total});
     std::sort(vec.begin(), vec.end(), compareFrequency);
-    if ((int)vec.size() < N) return {};
+    if (static_cast<int>(vec.size()) < N) return {}; 
     vec.resize(N);
     return vec;
 }
 
-std::vector<std::pair<std::string, double>> smirnov::Dictionary::getRangeRelative(double min, double max) const {
-    std::vector<std::pair<std::string, double>> result;
+std::vector<std::pair<std::string,double>> smirnov::Dictionary::getRangeRelative(double min, double max) const {
+    std::vector<std::pair<std::string,double>> result;
     if (min > max || data.empty()) return result;
     int total = 0;
     for (auto& p : data) total += p.second;
     for (auto& p : data) {
         double rel = static_cast<double>(p.second) / total;
         if (rel >= min && rel <= max)
-            result.push_back({ p.first, rel });
+            result.push_back({p.first, rel});
     }
     return result;
 }
@@ -124,9 +124,9 @@ std::vector<std::string> smirnov::Dictionary::medianFrequency() const {
     size_t n = freqs.size();
     int median;
     if (n % 2 == 1)
-        median = freqs[n / 2];
+        median = freqs[n/2];
     else
-        median = (freqs[n / 2 - 1] + freqs[n / 2]) / 2;
+        median = (freqs[n/2 - 1] + freqs[n/2]) / 2;
     for (auto& p : data)
         if (p.second == median)
             result.push_back(p.first);
