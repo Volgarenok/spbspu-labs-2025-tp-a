@@ -18,11 +18,11 @@ namespace smirnov {
     void clear();
     bool empty() const;
     size_t size() const;
-    std::vector< std::pair< std::string, int > > getSortedByWord() const;
-    std::vector< std::pair< std::string, int > > getSortedByFrequency() const;
+    std::vector< std::pair< std::string, size_t > > getSortedByWord() const;
+    std::vector< std::pair< std::string, size_t > > getSortedByFrequency() const;
     double getRelativeFrequency(const std::string& word) const;
     std::vector< std::pair< std::string, double > > getTopRelative(size_t N) const;
-    std::vector< std::pair< std::string, double > > getBottomRelative(int N) const;
+    std::vector< std::pair< std::string, double > > getBottomRelative(size_t N) const;
     std::vector< std::pair< std::string, double > > getRangeRelative(double min, double max) const;
     std::vector< std::string> medianFrequency() const;
 
