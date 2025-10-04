@@ -101,34 +101,40 @@ namespace smirnov
       return -1.0;
     }
     int total = 0;
-    for (auto& p: data)
+    for (auto& p : data)
     {
       total += p.second;
     }
     return static_cast<double>(data.at(word)) / total;
   }
 
-  std::vector< std::pair<  std::string, double > > Dictionary::getTopRelative(size_t N) const
+  std::vector< std::pair< std::string, double > > Dictionary::getTopRelative(size_t N) const
   {
     std::vector< std::pair< std::string, double > > vec;
+    vec.reserve(data.size());
+
     if (data.empty())
     {
       return vec;
     }
+
     int total = 0;
-    for (auto& p: data)
+    for (auto& p : data)
     {
       total += p.second;
     }
+
     for (auto& p : data)
     {
-      vec.push_back({ p.first, static_cast< double >(p.second) / total });
+      vec.push_back({ p.first, static_cast<double>(p.second) / total });
     }
+
     std::sort(vec.begin(), vec.end(), smirnov::compareByFrequency);
     if (static_cast< size_t >(vec.size()) < N)
     {
       return {};
     }
+
     vec.resize(N);
     return vec;
   }
@@ -136,9 +142,11 @@ namespace smirnov
   std::vector< std::pair< std::string, double > > Dictionary::getBottomRelative(size_t N) const
   {
     std::vector< std::pair< std::string, double > > vec;
+    vec.reserve(data.size());
+
     if (data.empty()) return vec;
     int total = 0;
-    for (auto& p : data)
+    for (auto& p: data)
     {
       total += p.second;
     }
@@ -159,12 +167,14 @@ namespace smirnov
   std::vector< std::pair< std::string, double > > Dictionary::getRangeRelative(double min, double max) const
   {
     std::vector< std::pair< std::string, double > > result;
+    result.reserve(data.size());
+
     if (min > max || data.empty()) return result;
     int total = 0;
     for (auto& p: data) total += p.second;
     for (auto& p: data)
     {
-      double rel = static_cast<double>(p.second) / total;
+      double rel = static_cast< double >(p.second) / total;
       if (rel >= min && rel <= max)
       {
         result.push_back({ p.first, rel });
@@ -180,7 +190,7 @@ namespace smirnov
     {
       return result;
     }
-    std::vector< size_t > freqs;
+    std::vector<size_t> freqs;
     for (auto& p: data)
     {
       freqs.push_back(p.second);
@@ -196,7 +206,7 @@ namespace smirnov
     {
       median = (freqs[n / 2 - 1] + freqs[n / 2]) / 2;
     }
-    for (auto& p : data)
+    for (auto& p: data)
     {
       if (p.second == median)
       {
