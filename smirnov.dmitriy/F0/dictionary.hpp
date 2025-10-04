@@ -27,7 +27,7 @@ namespace smirnov {
     std::vector< std::string> medianFrequency() const;
 
   private:
-    std::map< std::string, int > data;
+    std::map< std::string, size_t > data;
   };
 
   bool compareFrequency(const std::pair< std::string, int >& a, const std::pair< std::string, int >& b);
