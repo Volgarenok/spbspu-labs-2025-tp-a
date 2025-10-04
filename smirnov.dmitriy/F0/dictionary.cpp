@@ -107,7 +107,7 @@ namespace smirnov
     return vec;
   }
 
-  std::vector<std::pair<std::string, double>> Dictionary::getBottomRelative(int N) const
+  std::vector<std::pair<std::string, double>> Dictionary::getBottomRelative(size_t N) const
   {
     std::vector<std::pair<std::string, double>> vec;
     if (data.empty()) return vec;
