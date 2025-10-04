@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 
   using namespace std::placeholders;
 
-  const std::map<std::string, std::function<void(dictionaries&, std::istream&)>> commandsIn = {
+  const std::map< std::string, std::function< void(dictionaries&, std::istream&) > > commandsIn = {
     {"createemptydict", createemptydict},
     {"insertword", insertword},
     {"insertfile", insertfile},
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     {"delete", deleteDict}
   };
 
-  const std::map<std::string, std::function<void(dictionaries&, std::istream&, std::ostream&)>> commandsInOut = {
+  const std::map< std::string, std::function< void(dictionaries&, std::istream&, std::ostream&) > > commandsInOut = {
     {"getfrequency", getfrequency},
     {"mostfrequent", mostfrequent},
     {"printsorted", printsorted},
@@ -63,15 +63,14 @@ int main(int argc, char** argv)
       {
         std::cerr << e.what() << '\n';
         std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
       }
     }
     catch (const std::exception& e)
     {
       std::cerr << e.what() << '\n';
       std::cin.clear();
-      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
     }
   }
 }
-
