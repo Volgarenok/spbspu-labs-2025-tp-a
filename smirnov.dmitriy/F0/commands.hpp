@@ -30,7 +30,7 @@ namespace smirnov {
     void bottomprelativefrequent(dictionaries& dicts, std::istream& in, std::ostream& out);
     void medianfrequency(dictionaries& dicts, std::istream& in, std::ostream& out);
 
-    void printHelp();
+
 
 }
 
