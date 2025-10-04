@@ -125,7 +125,7 @@ namespace smirnov
       vec.push_back({ p.first, static_cast< double >(p.second) / total });
     }
     std::sort(vec.begin(), vec.end(), smirnov::compareByFrequency);
-    if (static_cast< int >(vec.size()) < N)
+    if (static_cast< size_t >(vec.size()) < N)
     {
       return {};
     }
@@ -148,7 +148,7 @@ namespace smirnov
     }
 
     std::sort(vec.begin(), vec.end(), smirnov::compareFrequency);
-    if (static_cast< int >(vec.size()) < N)
+    if (static_cast< size_t >(vec.size()) < N)
     {
       return {};
     }
@@ -180,7 +180,7 @@ namespace smirnov
     {
       return result;
     }
-    std::vector< int > freqs;
+    std::vector< size_t > freqs;
     for (auto& p: data)
     {
       freqs.push_back(p.second);
