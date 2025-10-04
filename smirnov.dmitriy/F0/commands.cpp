@@ -120,13 +120,13 @@ void smirnov::merge(dictionaries& dicts, std::istream& in)
 
   Dictionary result;
 
-  for (auto& p : d1.getSortedByWord())
+  for (auto& p: d1.getSortedByWord())
   {
     for (size_t i = 0; i < p.second; ++i)
       result.insertWord(p.first);
   }
 
-  for (auto& p : d2.getSortedByWord())
+  for (auto& p: d2.getSortedByWord())
   {
     for (size_t i = 0; i < p.second; ++i)
       result.insertWord(p.first);
@@ -150,7 +150,7 @@ void smirnov::intersect(dictionaries& dicts, std::istream& in)
   const Dictionary& d2 = dicts[dict2];
 
   Dictionary result;
-  for (auto& p : d1.getSortedByWord())
+  for (auto& p: d1.getSortedByWord())
   {
     if (d2.contains(p.first))
     {
@@ -220,7 +220,7 @@ void smirnov::printsorted(dictionaries& dicts, std::istream& in, std::ostream& o
     out << "<INVALID COMMAND>\n";
     return;
   }
-  for (auto& p : dicts[dictname].getSortedByWord())
+  for (auto& p: dicts[dictname].getSortedByWord())
   {
     out << p.first << ": " << p.second << "\n";
   }
@@ -235,7 +235,7 @@ void smirnov::printbyfrequency(dictionaries& dicts, std::istream& in, std::ostre
     out << "<INVALID COMMAND>\n";
     return;
   }
-  for (auto& p : dicts[dictname].getSortedByFrequency())
+  for (auto& p: dicts[dictname].getSortedByFrequency())
   {
     out << p.first << ": " << p.second << "\n";
   }
@@ -270,7 +270,7 @@ void smirnov::topprelativefrequent(dictionaries& dicts, std::istream& in, std::o
     return;
   }
   out << std::fixed << std::setprecision(6);
-  for (auto& p : result)
+  for (auto& p: result)
   {
     out << p.first << ": " << p.second << "\n";
   }
@@ -312,7 +312,7 @@ void smirnov::frequencyrangerelative(dictionaries& dicts, std::istream& in, std:
     return;
   }
   out << std::fixed << std::setprecision(6);
-  for (auto& p : result)
+  for (auto& p: result)
   {
     out << p.first << ": " << p.second << "\n";
   }
@@ -335,7 +335,7 @@ void smirnov::bottomprelativefrequent(dictionaries& dicts, std::istream& in, std
     return;
   }
   out << std::fixed << std::setprecision(6);
-  for (auto& p : result)
+  for (auto& p: result)
   {
     out << p.first << ": " << p.second << "\n";
   }
@@ -356,7 +356,7 @@ void smirnov::medianfrequency(dictionaries& dicts, std::istream& in, std::ostrea
     out << "<EMPTY>\n";
     return;
   }
-  for (auto& w : result)
+  for (auto& w: result)
   {
     out << w << "\n";
   }
