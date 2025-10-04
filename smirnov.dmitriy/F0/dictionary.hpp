@@ -5,9 +5,10 @@
 #include <map>
 #include <vector>
 
-namespace smirnov {
-
-  class Dictionary {
+namespace smirnov
+{
+  class Dictionary
+  {
   public:
     void insertWord(const std::string& word);
     void insertFromFile(const std::string& filename);
