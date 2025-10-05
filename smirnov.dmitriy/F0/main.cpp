@@ -6,6 +6,7 @@
 int main(int argc, char** argv)
 {
   using namespace smirnov;
+  using namespace std::placeholders;
 
   if (argc < 2)
   {
@@ -21,27 +22,26 @@ int main(int argc, char** argv)
 
   dictionaries dictOfDicts;
 
-  std::map< std::string, std::function< void(std::istream&, std::ostream&) > > commands;
-
-  commands["createemptydict"] = std::bind(createemptydict, std::ref(dictOfDicts), std::placeholders::_1);
-  commands["insertword"] = std::bind(insertword, std::ref(dictOfDicts), std::placeholders::_1);
-  commands["insertfile"] = std::bind(insertfile, std::ref(dictOfDicts), std::placeholders::_1);
-  commands["deleteword"] = std::bind(deleteword, std::ref(dictOfDicts), std::placeholders::_1);
-  commands["clear"] = std::bind(clear, std::ref(dictOfDicts), std::placeholders::_1);
-  commands["merge"] = std::bind(merge, std::ref(dictOfDicts), std::placeholders::_1);
-  commands["intersect"] = std::bind(intersect, std::ref(dictOfDicts), std::placeholders::_1);
-  commands["delete"] = std::bind(deleteDict, std::ref(dictOfDicts), std::placeholders::_1);
-
-  commands["getfrequency"] = std::bind(getfrequency, std::ref(dictOfDicts), std::placeholders::_1, std::ref(std::cout));
-  commands["mostfrequent"] = std::bind(mostfrequent, std::ref(dictOfDicts), std::placeholders::_1, std::ref(std::cout));
-  commands["printsorted"] = std::bind(printsorted, std::ref(dictOfDicts), std::placeholders::_1, std::ref(std::cout));
-  commands["printbyfrequency"] = std::bind(printbyfrequency, std::ref(dictOfDicts), std::placeholders::_1, std::ref(std::cout));
-  commands["size"] = std::bind(size, std::ref(dictOfDicts), std::placeholders::_1, std::ref(std::cout));
-  commands["topprelativefrequent"] = std::bind(topprelativefrequent, std::ref(dictOfDicts), std::placeholders::_1, std::ref(std::cout));
-  commands["getrelativefrequency"] = std::bind(getrelativefrequency, std::ref(dictOfDicts), std::placeholders::_1, std::ref(std::cout));
-  commands["frequencyrangerelative"] = std::bind(frequencyrangerelative, std::ref(dictOfDicts), std::placeholders::_1, std::ref(std::cout));
-  commands["bottomprelativefrequent"] = std::bind(bottomprelativefrequent, std::ref(dictOfDicts), std::placeholders::_1, std::ref(std::cout));
-  commands["medianfrequency"] = std::bind(medianfrequency, std::ref(dictOfDicts), std::placeholders::_1, std::ref(std::cout));
+  const std::map<std::string, std::function<void(std::istream&, std::ostream&)>> commands = {
+    { "createemptydict", std::bind(createemptydict, std::ref(dictOfDicts), _1) },
+    { "insertword", std::bind(insertword, std::ref(dictOfDicts), _1) },
+    { "insertfile", std::bind(insertfile, std::ref(dictOfDicts), _1) },
+    { "deleteword", std::bind(deleteword, std::ref(dictOfDicts), _1) },
+    { "clear", std::bind(clear, std::ref(dictOfDicts), _1) },
+    { "merge", std::bind(merge, std::ref(dictOfDicts), _1) },
+    { "intersect", std::bind(intersect, std::ref(dictOfDicts), _1) },
+    { "delete", std::bind(deleteDict, std::ref(dictOfDicts), _1) },
+    { "getfrequency", std::bind(getfrequency, std::ref(dictOfDicts), _1, std::ref(std::cout)) },
+    { "mostfrequent", std::bind(mostfrequent, std::ref(dictOfDicts), _1, std::ref(std::cout)) },
+    { "printsorted", std::bind(printsorted, std::ref(dictOfDicts), _1, std::ref(std::cout)) },
+    { "printbyfrequency", std::bind(printbyfrequency, std::ref(dictOfDicts), _1, std::ref(std::cout)) },
+    { "size", std::bind(size, std::ref(dictOfDicts), _1, std::ref(std::cout)) },
+    { "topprelativefrequent", std::bind(topprelativefrequent, std::ref(dictOfDicts), _1, std::ref(std::cout)) },
+    { "getrelativefrequency", std::bind(getrelativefrequency, std::ref(dictOfDicts), _1, std::ref(std::cout)) },
+    { "frequencyrangerelative", std::bind(frequencyrangerelative, std::ref(dictOfDicts), _1, std::ref(std::cout)) },
+    { "bottomprelativefrequent", std::bind(bottomprelativefrequent, std::ref(dictOfDicts), _1, std::ref(std::cout)) },
+    { "medianfrequency", std::bind(medianfrequency, std::ref(dictOfDicts), _1, std::ref(std::cout)) }
+  };
 
   std::string cmd;
   while (std::cin >> cmd)
