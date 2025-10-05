@@ -13,11 +13,17 @@ namespace smirnov
     void operator()(dictionaries& dicts, std::istream& in, std::ostream& out) const
     {
       if (inOnly)
+      {
         inOnly(dicts, in);
+      }
       else if (inOut)
+      {
         inOut(dicts, in, out);
+      }
       else
+      {
         throw std::invalid_argument("<INVALID COMMAND>");
+      }
     }
   };
 }
