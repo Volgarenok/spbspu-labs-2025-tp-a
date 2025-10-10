@@ -50,7 +50,7 @@ std::istream& operator>>(std::istream& in, RatLsp&& rat)
        >> Delimiter{':'}
        >> Delimiter{')'};
 
-    if (denominator == 0) {
+    if (!in || denominator == 0) {
         in.setstate(std::ios::failbit);
         return in;
     }
@@ -68,9 +68,16 @@ std::istream& operator>>(std::istream& in, StringToken&& strToken)
 
     std::string temp;
     in >> Delimiter{'"'};
+    if (!in) {
+        return in;
+    }
 
     char ch;
     while (in.get(ch) && ch != '"') {
+        if (ch == '\n') {
+            in.setstate(std::ios::failbit);
+            return in;
+        }
         temp += ch;
     }
 

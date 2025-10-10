@@ -18,21 +18,30 @@ std::istream& operator>>(std::istream& in, DataStruct& data)
     bool hasKey3 = false;
 
     in >> Delimiter{'('};
+    if (!in) {
+        return in;
+    }
 
     std::string key;
-    while (in >> Delimiter{':'} >> key) {
+    while (in >> Delimiter{':'} && in >> key) {
         if (key == "key1" && !hasKey1) {
-            in >> UllOct{temp.key1_};
+            if (!(in >> UllOct{temp.key1_})) {
+                return in;
+            }
             hasKey1 = true;
         } else if (key == "key2" && !hasKey2) {
-            in >> RatLsp{temp.key2_};
+            if (!(in >> RatLsp{temp.key2_})) {
+                return in;
+            }
             hasKey2 = true;
         } else if (key == "key3" && !hasKey3) {
-            in >> StringToken{temp.key3_};
+            if (!(in >> StringToken{temp.key3_})) {
+                return in;
+            }
             hasKey3 = true;
         } else {
             in.setstate(std::ios::failbit);
-            break;
+            return in;
         }
 
         if (hasKey1 && hasKey2 && hasKey3) {
@@ -40,10 +49,16 @@ std::istream& operator>>(std::istream& in, DataStruct& data)
         }
     }
 
+    if (!in) {
+        return in;
+    }
+
     in >> Delimiter{':'} >> Delimiter{')'};
 
     if (in && hasKey1 && hasKey2 && hasKey3) {
         data = std::move(temp);
+    } else {
+        in.setstate(std::ios::failbit);
     }
     return in;
 }
