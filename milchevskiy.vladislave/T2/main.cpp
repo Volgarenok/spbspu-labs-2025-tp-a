@@ -1,39 +1,32 @@
-#include "DataStruct.hpp"
-
 #include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <limits>
 #include <vector>
 
+#include "DataStruct.hpp"
+
 int main()
 {
-  using milchevskiy::DataStruct;
+    using milchevskiy::DataStruct;
+    using input = std::istream_iterator< DataStruct >;
+    using output = std::ostream_iterator< DataStruct >;
 
-  std::vector<DataStruct> data;
+    std::vector<DataStruct> data;
 
-  while (!std::cin.eof())
-  {
-    std::copy(
-      std::istream_iterator<DataStruct>(std::cin),
-      std::istream_iterator<DataStruct>(),
-      std::back_inserter(data)
-    );
-
-    if (std::cin.fail())
+    while (!std::cin.eof())
     {
-      std::cin.clear();
-      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::copy(input{std::cin}, input{}, std::back_inserter(data));
+
+        if (std::cin.fail())
+        {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
     }
-  }
 
-  std::sort(data.begin(), data.end());
-  std::copy(
-    std::begin(data),
-    std::end(data),
-    std::ostream_iterator<DataStruct>(std::cout, "\n")
-  );
+    std::sort(data.begin(), data.end());
+    std::copy(data.begin(), data.end(), output(std::cout, "\n"));
 
-  return 0;
+    return 0;
 }
-
