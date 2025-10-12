@@ -50,10 +50,9 @@ std::istream& milchevskiy::operator>>(std::istream& in, LITvalue&& dest)
   }
 
   char a = temp, b = 0, c = 0;
-  if (in && isExpectedULLSequence(a, b, c))
+  if (a == 'u')
   {
-    in >> b >> c;
-    if (in && isExpectedULLSequence(a, b, c))
+    if (in >> b >> c && isExpectedULLSequence(a, b, c))
     {
       dest.ref = num;
     }
