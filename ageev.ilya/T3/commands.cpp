@@ -159,7 +159,7 @@ namespace
   {
     bool operator()(const ageev::Point& A, const ageev::Point& B, const ageev::Point& P) const
     {
-      if (P.x >= std::min(A.x, B.x) && P.x <= std::max(A.x, B.x) && 
+      if (P.x >= std::min(A.x, B.x) && P.x <= std::max(A.x, B.x) &&
           P.y >= std::min(A.y, B.y) && P.y <= std::max(A.y, B.y))
       {
         PointOrientation orient;
@@ -172,7 +172,7 @@ namespace
 
   struct SegmentIntersectionChecker
   {
-    bool operator()(const ageev::Point& A, const ageev::Point& B, 
+    bool operator()(const ageev::Point& A, const ageev::Point& B,
                    const ageev::Point& C, const ageev::Point& D) const
     {
       PointOrientation orient;
@@ -246,7 +246,7 @@ namespace
       }
       const Bounds b1 = calculate_bounds(poly1);
       const Bounds b2 = calculate_bounds(poly2);
-      return !(b1.max_x < b2.min_x || b2.max_x < b1.min_x || 
+      return !(b1.max_x < b2.min_x || b2.max_x < b1.min_x ||
                b1.max_y < b2.min_y || b2.max_y < b1.min_y);
     }
   };
@@ -254,7 +254,7 @@ namespace
   struct PointInPolygonChecker
   {
     explicit PointInPolygonChecker(const ageev::Point& pt): point(pt) {}
-    
+
     struct State
     {
       bool inside = false;

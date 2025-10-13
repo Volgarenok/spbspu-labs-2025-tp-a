@@ -108,7 +108,7 @@ double ageev::get_area(const Polygon& polygon)
   CalcAreaTerm calc_term;
   double area = std::inner_product(
     points.begin(), points.end() - 1,
-    points.begin() + 1, 
+    points.begin() + 1,
     calc_term(last, first),
     std::plus< double >{},
     calc_term
