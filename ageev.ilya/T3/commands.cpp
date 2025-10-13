@@ -177,19 +177,19 @@ namespace
     {
       PointOrientation orient;
       OnSegment on_segment;
-      
+
       int ccw1 = orient(A, B, C);
       int ccw2 = orient(A, B, D);
       int ccw3 = orient(C, D, A);
       int ccw4 = orient(C, D, B);
-      
+
       bool pred1 = ccw1 * ccw2 < 0;
       pred1 = pred1 && ccw3 * ccw4 < 0;
       if (pred1)
       {
         return true;
       }
-      
+
       pred1 = ccw1 == 0;
       pred1 = pred1 && ccw2 == 0;
       pred1 = pred1 && ccw3 == 0;
@@ -199,7 +199,7 @@ namespace
         return !((std::max(A.x, B.x) < std::min(C.x, D.x) || std::max(C.x, D.x) < std::min(A.x, B.x))
           || (std::max(A.y, B.y) < std::min(C.y, D.y) || std::max(C.y, D.y) < std::min(A.y, B.y)));
       }
-      
+
       pred1 = ccw1 == 0 && on_segment(A, B, C);
       pred1 = pred1 || (ccw2 == 0 && on_segment(A, B, D));
       pred1 = pred1 || (ccw3 == 0 && on_segment(C, D, A));
@@ -260,11 +260,11 @@ namespace
       bool inside = false;
       const ageev::Point* prev_point = nullptr;
     };
-    
+
     struct RayCrossingChecker
     {
       explicit RayCrossingChecker(const ageev::Point& pt): point(pt) {}
-      
+
       State operator()(State state, const ageev::Point& current_point) const
       {
         if (state.prev_point)
@@ -285,21 +285,21 @@ namespace
       }
       const ageev::Point& point;
     };
-    
+
     bool operator()(const ageev::Polygon& polygon) const
     {
       if (polygon.points.size() < 3)
       {
         return false;
       }
-      
+
       State init_state;
       init_state.prev_point = &polygon.points.back();
       RayCrossingChecker checker(point);
       State result = std::accumulate(polygon.points.begin(), polygon.points.end(), init_state, checker);
       return result.inside;
     }
-    
+
     const ageev::Point& point;
   };
 
@@ -312,30 +312,28 @@ namespace
       {
         return false;
       }
-      
+
       SegmentIntersectionChecker seg_check;
       const int n1 = poly1.points.size();
       const int n2 = poly2.points.size();
-      
-      // Check if any segments intersect
+
       for (int i = 0; i < n1; ++i)
       {
         const ageev::Point& A = poly1.points[i];
         const ageev::Point& B = poly1.points[(i + 1) % n1];
-        
+
         for (int j = 0; j < n2; ++j)
         {
           const ageev::Point& C = poly2.points[j];
           const ageev::Point& D = poly2.points[(j + 1) % n2];
-          
+
           if (seg_check(A, B, C, D))
           {
             return true;
           }
         }
       }
-      
-      // Check if one polygon is inside the other
+
       PointInPolygonChecker point_checker{poly1.points[0]};
       return (!poly1.points.empty() && point_checker(poly2)) ||
              (!poly2.points.empty() && PointInPolygonChecker{poly2.points[0]}(poly1));
@@ -345,13 +343,13 @@ namespace
   struct CheckIntersect
   {
     explicit CheckIntersect(const ageev::Polygon& p): polygon(p) {}
-    
+
     bool operator()(const ageev::Polygon& other) const
     {
       PolygonIntersectionChecker checker;
       return checker(polygon, other);
     }
-    
+
     const ageev::Polygon& polygon;
   };
 }

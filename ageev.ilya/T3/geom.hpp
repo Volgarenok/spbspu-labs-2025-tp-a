@@ -24,7 +24,7 @@ namespace ageev
   std::istream& operator>>(std::istream& in, Polygon& polygon);
   std::ostream& operator<<(std::ostream& out, const Point& point);
   std::ostream& operator<<(std::ostream& out, const Polygon& polygon);
-  
+
   double get_area(const Polygon& polygon);
   bool has_right_angle(const Polygon& polygon);
 }

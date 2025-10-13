@@ -38,7 +38,7 @@ namespace
   struct VertexAngleChecker
   {
     explicit VertexAngleChecker(const ageev::Polygon& p): polygon(p) {}
-    
+
     bool operator()(size_t vertex_index) const
     {
       const auto& points = polygon.points;
@@ -46,15 +46,15 @@ namespace
       const ageev::Point& prev = points[(vertex_index + size - 1) % size];
       const ageev::Point& curr = points[vertex_index];
       const ageev::Point& next = points[(vertex_index + 1) % size];
-      
+
       GetSide get_side;
       IsRightAngle is_right_angle;
-      
+
       const ageev::Point a = get_side(prev, curr);
       const ageev::Point b = get_side(curr, next);
       return is_right_angle(a, b);
     }
-    
+
     const ageev::Polygon& polygon;
   };
 }
@@ -101,19 +101,19 @@ double ageev::get_area(const Polygon& polygon)
   {
     return 0.0;
   }
-  
+
   const Point& first = points.front();
   const Point& last = points.back();
-  
+
   CalcAreaTerm calc_term;
   double area = std::inner_product(
-    points.begin(), points.end() - 1, 
+    points.begin(), points.end() - 1,
     points.begin() + 1, 
-    calc_term(last, first), 
-    std::plus< double >{}, 
+    calc_term(last, first),
+    std::plus< double >{},
     calc_term
   );
-  
+
   return std::abs(area) / 2.0;
 }
 
@@ -123,10 +123,10 @@ bool ageev::has_right_angle(const Polygon& polygon)
   {
     return false;
   }
-  
+
   std::vector< size_t > indices(polygon.points.size());
   std::iota(indices.begin(), indices.end(), 0);
-  
+
   VertexAngleChecker checker{polygon};
   return std::any_of(indices.begin(), indices.end(), checker);
 }
