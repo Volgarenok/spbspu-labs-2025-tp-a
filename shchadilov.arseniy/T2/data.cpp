@@ -1,28 +1,13 @@
 #include "data.hpp"
 #include <ios>
 #include <iomanip>
-#include "streamGuard.hpp"
+#include <streamGuard.hpp>
+#include <delimiter.hpp>
 
 shchadilov::KeyIO::KeyIO(DataStruct& data, std::array< bool, 3 > used):
   data(data),
   used(used)
 {}
-
-std::istream& shchadilov::operator>>(std::istream& in, DelimiterIO&& dest)
-{
-  std::istream::sentry sentry(in);
-  if (!sentry)
-  {
-    return in;
-  }
-  char c = '\0';
-  in >> c;
-  if (in && (c != dest.exp))
-  {
-    in.setstate(std::ios::failbit);
-  }
-  return in;
-}
 
 std::istream& shchadilov::operator>>(std::istream& in, DoubleI&& dest)
 {

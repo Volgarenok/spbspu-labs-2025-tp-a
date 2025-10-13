@@ -1,6 +1,6 @@
 #include "data_struct.hpp"
-#include "input_struct.hpp"
-#include "format_guard.hpp"
+#include <input_struct.hpp>
+#include <format_guard.hpp>
 
 bool shiryaeva::operator<(const DataStruct &lhs, const DataStruct &rhs)
 {

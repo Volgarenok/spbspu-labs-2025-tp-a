@@ -8,9 +8,9 @@ namespace ageev
 {
   bool DataStruct::operator<(const DataStruct& var) const
   {
-    if(key1 == var.key1)
+    if (key1 == var.key1)
     {
-      if(key2 == var.key2)
+      if (key2 == var.key2)
       {
         return key3.size() < var.key3.size();
       }
@@ -56,7 +56,7 @@ namespace ageev
     std::string str;
     try
     {
-      while (in >> c && c != 'e' && c != 'E')
+      while (in >> c && std::tolower(c) != 'e')
       {
         str += c;
       }
@@ -75,7 +75,7 @@ namespace ageev
       in.unget();
       dest.ref = number * std::pow(10, degree);
     }
-    catch (const std::exception& e)
+    catch (...)
     {
       in.setstate(std::ios::failbit);
     }
@@ -108,7 +108,7 @@ namespace ageev
     return in;
   }
 
-  std::ostream & operator<<(std::ostream & out, const DoubleToSciForm & dest)
+  std::ostream & operator<<(std::ostream& out, const DoubleToSciForm& dest)
   {
     Iofmtguard guard(out);
     if (dest.ref == 0.0)
@@ -174,21 +174,24 @@ namespace ageev
       in >> sep{':'} >> key;
       if (key == "key1" && !hasKey1)
       {
-        if (in >> dbl{input.key1}){
+        if (in >> dbl{input.key1})
+        {
           hasKey1 = true;
         }
         else break;
       }
       else if (key == "key2" && !hasKey2)
       {
-        if (in >> dblsci{input.key2}) {
+        if (in >> dblsci{input.key2})
+        {
           hasKey2 = true;
         }
         else break;
       }
       else if (key == "key3" && !hasKey3)
       {
-        if (in >> str{input.key3}) {
+        if (in >> str{input.key3})
+        {
           hasKey3 = true;
         }
         else break;

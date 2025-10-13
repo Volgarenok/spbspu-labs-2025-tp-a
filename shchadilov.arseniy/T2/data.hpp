@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <array>
+#include <delimiter.hpp>
 
 namespace shchadilov
 {
@@ -12,11 +13,6 @@ namespace shchadilov
     double key1;
     unsigned long long key2;
     std::string key3;
-  };
-
-  struct DelimiterIO
-  {
-    char exp;
   };
 
   struct DoubleI
