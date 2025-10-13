@@ -1,20 +1,21 @@
 #ifndef COMMAND_HANDLER_HPP
 #define COMMAND_HANDLER_HPP
-#include <string>
-#include <vector>
-#include <map>
+
 #include "book.hpp"
+#include <vector>
+#include <string>
 
 namespace guseynov {
-  class CommandHandler {
-  private:
-    std::map<std::string, Book> books;
-    void printHelp() const;
-    std::vector<std::string> splitString(const std::string& str, char delimiter) const;
-  public:
-    CommandHandler() = default;
-    void executeCommand(const std::vector<std::string>& args);
-    static std::string extractQuotedText(const std::string& input, size_t& pos);
-  };
+    class CommandHandler {
+    private:
+        BookSystem book_system_;
+        std::vector<std::string> parseCommand(const std::string& input);
+        std::vector<std::string> extractQuotedText(const std::string& input);
+        void printHelp();
+    public:
+        void processCommand(const std::string& command);
+        void runInteractive();
+    };
 }
+
 #endif
