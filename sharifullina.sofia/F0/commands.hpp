@@ -12,6 +12,7 @@ namespace sharifullina
   using Dictionary = std::unordered_map< std::string, std::set< std::string > >;
   using DictCollection = std::unordered_map< std::string, Dictionary >;
 
+  void printError(const std::string & message);
   void createDict(std::istream & in, DictCollection & dicts);
   void deleteDict(std::istream & in, DictCollection & dicts);
   void listDicts(std::istream &, DictCollection & dicts);

@@ -59,6 +59,10 @@ int main(int argc, char * argv[])
     {
       std::cout << "<INVALID COMMAND>\n";
     }
+    catch (const std::runtime_error & e)
+    {
+      printError(e.what());
+    }
     catch (const std::exception & e)
     {
       std::cout << e.what() << '\n';
