@@ -163,8 +163,7 @@ namespace
     void operator()(const std::pair< std::string, std::set< std::string > > & wordPair)
     {
       wordCount[wordPair.first]++;
-      wordTranslations[wordPair.first].insert(
-        wordPair.second.cbegin(), wordPair.second.cend());
+      wordTranslations[wordPair.first].insert(wordPair.second.cbegin(), wordPair.second.cend());
     }
   };
 
@@ -561,8 +560,7 @@ void sharifullina::statDict(std::istream & in, DictCollection & dicts)
   size_t totalWords = dict.size();
   size_t totalTranslations = 0;
   std::for_each(dict.cbegin(), dict.cend(), StatDictProcessor{totalTranslations});
-  double avgTranslations = totalWords > 0 ?
-    static_cast< double >(totalTranslations) / totalWords : 0.0;
+  double avgTranslations = totalWords > 0 ? static_cast< double >(totalTranslations) / totalWords : 0.0;
   std::cout << "Words: " << totalWords << "\n";
   std::cout << "Translations: " << totalTranslations << "\n";
   std::cout << "Average translations per word: " << avgTranslations << "\n";
@@ -608,8 +606,7 @@ void sharifullina::subtractDicts(std::istream & in, DictCollection & dicts)
   }
   const auto & firstDict = dicts.at(dictNames[0]);
   Dictionary newDict;
-  std::for_each(firstDict.cbegin(), firstDict.cend(),
-    SubtractDictProcessor{dictNames, dicts, newDict});
+  std::for_each(firstDict.cbegin(), firstDict.cend(), SubtractDictProcessor{dictNames, dicts, newDict});
   dicts[newDictName] = newDict;
 }
 
@@ -657,11 +654,9 @@ void sharifullina::symdiffDicts(std::istream & in, DictCollection & dicts)
   for (const auto & name : dictNames)
   {
     const auto & dict = dicts.at(name);
-    std::for_each(dict.cbegin(), dict.cend(),
-      SymdiffDictProcessor{dictNames, dicts, wordCount, wordTranslations});
+    std::for_each(dict.cbegin(), dict.cend(), SymdiffDictProcessor{dictNames, dicts, wordCount, wordTranslations});
   }
-  std::for_each(wordCount.cbegin(), wordCount.cend(),
-    SymdiffFinalProcessor{wordCount, wordTranslations, newDict});
+  std::for_each(wordCount.cbegin(), wordCount.cend(), SymdiffFinalProcessor{wordCount, wordTranslations, newDict});
   dicts[newDictName] = newDict;
 }
 
