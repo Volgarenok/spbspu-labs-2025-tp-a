@@ -21,7 +21,10 @@ namespace
   bool wordExists(const std::string & dictName, const std::string & word, const sharifullina::DictCollection & dicts)
   {
     auto dictIt = dicts.find(dictName);
-    if (dictIt == dicts.end()) return false;
+    if (dictIt == dicts.end())
+    {
+      return false;
+    }
     return dictIt->second.find(word) != dictIt->second.end();
   }
 
@@ -69,11 +72,16 @@ namespace
     std::string line;
     while (std::getline(in, line))
     {
-      if (line.empty()) continue;
+      if (line.empty())
+      {
+        continue;
+      }
 
       size_t firstSpace = line.find(' ');
-      if (firstSpace == std::string::npos) continue;
-
+      if (firstSpace == std::string::npos)
+      {
+        continue;
+      }
       std::string word = line.substr(0, firstSpace);
       std::string translationsStr = line.substr(firstSpace + 1);
 
@@ -102,6 +110,78 @@ namespace
     }
     return dict;
   }
+
+  struct MergeDictProcessor
+  {
+    sharifullina::Dictionary & newDict;
+    void operator()(const std::pair< std::string, std::set< std::string > > & wordPair)
+    {
+      newDict[wordPair.first].insert(wordPair.second.cbegin(), wordPair.second.cend());
+    }
+  };
+
+  struct StatDictProcessor
+  {
+    size_t & totalTranslations;
+    void operator()(const std::pair< std::string, std::set< std::string > > & wordPair)
+    {
+      totalTranslations += wordPair.second.size();
+    }
+  };
+
+  struct SubtractDictProcessor
+  {
+    const std::vector< std::string > & dictNames;
+    const sharifullina::DictCollection & dicts;
+    sharifullina::Dictionary & newDict;
+
+    void operator()(const std::pair< std::string, std::set< std::string > > & wordPair)
+    {
+      bool foundInOthers = false;
+      for (size_t i = 1; i < dictNames.size() && !foundInOthers; ++i)
+      {
+        const auto & otherDict = dicts.at(dictNames[i]);
+        if (otherDict.find(wordPair.first) != otherDict.end())
+        {
+          foundInOthers = true;
+        }
+      }
+      if (!foundInOthers)
+      {
+        newDict[wordPair.first] = wordPair.second;
+      }
+    }
+  };
+
+  struct SymdiffDictProcessor
+  {
+    const std::vector< std::string > & dictNames;
+    const sharifullina::DictCollection & dicts;
+    std::unordered_map< std::string, int > & wordCount;
+    std::unordered_map< std::string, std::set< std::string > > & wordTranslations;
+
+    void operator()(const std::pair< std::string, std::set< std::string > > & wordPair)
+    {
+      wordCount[wordPair.first]++;
+      wordTranslations[wordPair.first].insert(
+        wordPair.second.cbegin(), wordPair.second.cend());
+    }
+  };
+
+  struct SymdiffFinalProcessor
+  {
+    const std::unordered_map< std::string, int > & wordCount;
+    const std::unordered_map< std::string, std::set< std::string > > & wordTranslations;
+    sharifullina::Dictionary & newDict;
+
+    void operator()(const std::pair< std::string, int > & countPair)
+    {
+      if (countPair.second == 1)
+      {
+        newDict[countPair.first] = wordTranslations.at(countPair.first);
+      }
+    }
+  };
 }
 
 void sharifullina::createDict(std::istream & in, DictCollection & dicts)
@@ -152,7 +232,8 @@ void sharifullina::listDicts(std::istream &, DictCollection & dicts)
 
 void sharifullina::addWord(std::istream & in, DictCollection & dicts)
 {
-  std::string dictName, word;
+  std::string dictName;
+  std::string word;
   if (!(in >> dictName >> word))
   {
     printError("invalid arguments for addword");
@@ -181,13 +262,15 @@ void sharifullina::addWord(std::istream & in, DictCollection & dicts)
 
 void sharifullina::addTranslation(std::istream & in, DictCollection & dicts)
 {
-  std::string dictName, word, translation;
+  std::string dictName;
+  std::string word;
+  std::string translation;
   if (!(in >> dictName >> word >> translation))
   {
     printError("invalid arguments for addtranslation");
     return;
   }
-    if (!wordExists(dictName, word, dicts))
+  if (!wordExists(dictName, word, dicts))
   {
     printError("dictionary or word not found");
     return;
@@ -199,7 +282,9 @@ void sharifullina::addTranslation(std::istream & in, DictCollection & dicts)
 
 void sharifullina::removeTranslation(std::istream & in, DictCollection & dicts)
 {
-  std::string dictName, word, translation;
+  std::string dictName;
+  std::string word;
+  std::string translation;
   if (!(in >> dictName >> word >> translation))
   {
     printError("invalid arguments for removetranslation");
@@ -233,7 +318,8 @@ void sharifullina::removeTranslation(std::istream & in, DictCollection & dicts)
 
 void sharifullina::deleteWord(std::istream & in, DictCollection & dicts)
 {
-  std::string dictName, word;
+  std::string dictName;
+  std::string word;
   if (!(in >> dictName >> word))
   {
     printError("invalid arguments for deleteword");
@@ -253,7 +339,8 @@ void sharifullina::deleteWord(std::istream & in, DictCollection & dicts)
 
 void sharifullina::findTranslations(std::istream & in, DictCollection & dicts)
 {
-  std::string dictName, word;
+  std::string dictName;
+  std::string word;
   if (!(in >> dictName >> word))
   {
     printError("invalid arguments for findtranslations");
@@ -273,7 +360,6 @@ void sharifullina::findTranslations(std::istream & in, DictCollection & dicts)
   }
   std::copy(wordIt->second.cbegin(), wordIt->second.cend(), std::ostream_iterator<std::string>(std::cout, " "));
   std::cout << '\n';
-
 }
 
 void sharifullina::listWords(std::istream & in, DictCollection & dicts)
@@ -301,7 +387,7 @@ void sharifullina::listWords(std::istream & in, DictCollection & dicts)
 void sharifullina::mergeDicts(std::istream & in, DictCollection & dicts)
 {
   std::string newDictName;
-  int count;
+  int count = 0;
   if (!(in >> newDictName >> count))
   {
     printError("invalid arguments for merge");
@@ -340,11 +426,7 @@ void sharifullina::mergeDicts(std::istream & in, DictCollection & dicts)
   for (const auto & name : dictNames)
   {
     const auto & sourceDict = dicts.at(name);
-    std::for_each(sourceDict.cbegin(), sourceDict.cend(),
-      [&](const auto & wordPair)
-      {
-        newDict[wordPair.first].insert(wordPair.second.cbegin(), wordPair.second.cend());
-      });
+    std::for_each(sourceDict.cbegin(), sourceDict.cend(), MergeDictProcessor{newDict});
   }
   dicts[newDictName] = newDict;
 }
@@ -352,7 +434,7 @@ void sharifullina::mergeDicts(std::istream & in, DictCollection & dicts)
 void sharifullina::findCommon(std::istream & in, DictCollection & dicts)
 {
   std::string dictName;
-  int count;
+  int count = 0;
   if (!(in >> dictName >> count))
   {
     printError("invalid arguments for findcommon");
@@ -411,7 +493,8 @@ void sharifullina::findCommon(std::istream & in, DictCollection & dicts)
 
 void sharifullina::saveDict(std::istream & in, DictCollection & dicts)
 {
-  std::string dictName, filename;
+  std::string dictName;
+  std::string filename;
   if (!(in >> dictName >> filename))
   {
     printError("invalid arguments for save");
@@ -434,7 +517,8 @@ void sharifullina::saveDict(std::istream & in, DictCollection & dicts)
 
 void sharifullina::loadDict(std::istream & in, DictCollection & dicts)
 {
-  std::string dictName, filename;
+  std::string dictName;
+  std::string filename;
   if (!(in >> dictName >> filename))
   {
     printError("invalid arguments for load");
@@ -476,11 +560,7 @@ void sharifullina::statDict(std::istream & in, DictCollection & dicts)
   const auto & dict = dicts.at(dictName);
   size_t totalWords = dict.size();
   size_t totalTranslations = 0;
-  std::for_each(dict.cbegin(), dict.cend(),
-    [&](const auto & wordPair)
-    {
-      totalTranslations += wordPair.second.size();
-    });
+  std::for_each(dict.cbegin(), dict.cend(), StatDictProcessor{totalTranslations});
   double avgTranslations = totalWords > 0 ?
     static_cast< double >(totalTranslations) / totalWords : 0.0;
   std::cout << "Words: " << totalWords << "\n";
@@ -491,7 +571,7 @@ void sharifullina::statDict(std::istream & in, DictCollection & dicts)
 void sharifullina::subtractDicts(std::istream & in, DictCollection & dicts)
 {
   std::string newDictName;
-  int count;
+  int count = 0;
   if (!(in >> newDictName >> count))
   {
     printError("invalid arguments for subtract");
@@ -529,29 +609,14 @@ void sharifullina::subtractDicts(std::istream & in, DictCollection & dicts)
   const auto & firstDict = dicts.at(dictNames[0]);
   Dictionary newDict;
   std::for_each(firstDict.cbegin(), firstDict.cend(),
-    [&](const auto & wordPair)
-    {
-      bool foundInOthers = false;
-      for (size_t i = 1; i < dictNames.size() && !foundInOthers; ++i)
-      {
-        const auto & otherDict = dicts.at(dictNames[i]);
-        if (otherDict.find(wordPair.first) != otherDict.end())
-        {
-          foundInOthers = true;
-        }
-      }
-      if (!foundInOthers)
-      {
-        newDict[wordPair.first] = wordPair.second;
-      }
-    });
+    SubtractDictProcessor{dictNames, dicts, newDict});
   dicts[newDictName] = newDict;
 }
 
 void sharifullina::symdiffDicts(std::istream & in, DictCollection & dicts)
 {
   std::string newDictName;
-  int count;
+  int count = 0;
   if (!(in >> newDictName >> count))
   {
     printError("invalid arguments for symdiff");
@@ -593,21 +658,10 @@ void sharifullina::symdiffDicts(std::istream & in, DictCollection & dicts)
   {
     const auto & dict = dicts.at(name);
     std::for_each(dict.cbegin(), dict.cend(),
-      [&](const auto & wordPair)
-      {
-        wordCount[wordPair.first]++;
-        wordTranslations[wordPair.first].insert(
-          wordPair.second.cbegin(), wordPair.second.cend());
-      });
+      SymdiffDictProcessor{dictNames, dicts, wordCount, wordTranslations});
   }
   std::for_each(wordCount.cbegin(), wordCount.cend(),
-    [&](const auto & countPair)
-    {
-      if (countPair.second == 1)
-      {
-        newDict[countPair.first] = wordTranslations[countPair.first];
-      }
-    });
+    SymdiffFinalProcessor{wordCount, wordTranslations, newDict});
   dicts[newDictName] = newDict;
 }
 
