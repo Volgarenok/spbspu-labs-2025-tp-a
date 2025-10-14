@@ -178,11 +178,6 @@ namespace
   };
 }
 
-void sharifullina::printError(const std::string & message)
-{
-  std::cout << "<ERROR: " << message << ">\n";
-}
-
 void sharifullina::createDict(std::istream & in, DictCollection & dicts)
 {
   std::string name;
@@ -677,4 +672,9 @@ void sharifullina::printHelp(std::ostream & out)
 
   out << std::setw(numWidth) << "16." << std::setw(cmdWidth);
   out << "symdiff <new> <count> <dicts...>" << "symmetric difference\n";
+}
+
+void sharifullina::printError(const std::string & message)
+{
+  std::cout << "<ERROR: " << message << ">\n";
 }
