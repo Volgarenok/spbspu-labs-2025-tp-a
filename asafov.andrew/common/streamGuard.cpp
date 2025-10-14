@@ -1,11 +1,12 @@
 #include "streamGuard.h"
 
 asafov::StreamGuard::StreamGuard(std::ios& s):
-stream(s),
-flags(s.flags()),
-precision(s.precision()),
-width(s.width()),
-fill(s.fill()) {}
+  stream(s),
+  flags(s.flags()),
+  precision(s.precision()),
+  width(s.width()),
+  fill(s.fill())
+{}
 
 asafov::StreamGuard::~StreamGuard()
 {
