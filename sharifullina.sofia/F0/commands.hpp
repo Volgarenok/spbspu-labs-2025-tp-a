@@ -14,18 +14,18 @@ namespace sharifullina
 
   void createDict(std::istream & in, DictCollection & dicts);
   void deleteDict(std::istream & in, DictCollection & dicts);
-  void listDicts(std::istream &, DictCollection & dicts);
+  void listDicts(std::istream &, const DictCollection & dicts);
   void addWord(std::istream & in, DictCollection & dicts);
   void addTranslation(std::istream & in, DictCollection & dicts);
   void removeTranslation(std::istream & in, DictCollection & dicts);
   void deleteWord(std::istream & in, DictCollection & dicts);
-  void findTranslations(std::istream & in, DictCollection & dicts);
-  void listWords(std::istream & in, DictCollection & dicts);
+  void findTranslations(std::istream & in, const DictCollection & dicts);
+  void listWords(std::istream & in, const DictCollection & dicts);
   void mergeDicts(std::istream & in, DictCollection & dicts);
-  void findCommon(std::istream & in, DictCollection & dicts);
-  void saveDict(std::istream & in, DictCollection & dicts);
+  void findCommon(std::istream & in, const DictCollection & dicts);
+  void saveDict(std::istream & in, const DictCollection & dicts);
   void loadDict(std::istream & in, DictCollection & dicts);
-  void statDict(std::istream & in, DictCollection & dicts);
+  void statDict(std::istream & in, const DictCollection & dicts);
   void subtractDicts(std::istream & in, DictCollection & dicts);
   void symdiffDicts(std::istream & in, DictCollection & dicts);
 
