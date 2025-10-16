@@ -191,7 +191,7 @@ void sharifullina::listDicts(std::istream &, const DictCollection & dicts)
   }
   std::vector< DictNameView > views;
   views.reserve(dicts.size());
-  std::copy(dicts.begin(), dicts.end(), std:back_inserter(views));
+  std::copy(dicts.begin(), dicts.end(), std::back_inserter(views));
   std::copy(views.cbegin(), views.cend(), std::ostream_iterator< DictNameView >(std::cout, "\n"));
 }
 
@@ -348,14 +348,10 @@ void sharifullina::mergeDicts(std::istream & in, DictCollection & dicts)
     throw std::runtime_error("invalid count");
   }
   std::vector< std::string > dictNames;
-  std::string dictName;
-  for (int i = 0; i < count; ++i)
+  std::copy(std::istream_iterator< std::string >(in), std::istream_iterator< std::string >(), std::back_inserter(dictNames));
+  if (dictNames.size() != count)
   {
-    if (!(in >> dictName))
-    {
-      throw std::runtime_error("invalid count");
-    }
-    dictNames.push_back(dictName);
+    throw std::runtime_error("invalid count");
   }
   for (const auto & name : dictNames)
   {
@@ -394,14 +390,10 @@ void sharifullina::findCommon(std::istream & in, const DictCollection & dicts)
     throw std::runtime_error("dictionary or word(s) not found");
   }
   std::vector< std::string > words;
-  std::string word;
-  for (int i = 0; i < count; ++i)
+  std::copy(std::istream_iterator< std::string >(in), std::istream_iterator< std::string >(), std::back_inserter(words));
+  if (words.size() != count)
   {
-    if (!(in >> word))
-    {
-      throw std::runtime_error("invalid count");
-    }
-    words.push_back(word);
+    throw std::runtime_error("invalid count");
   }
   const auto & dict = dicts.at(dictName);
   for (const auto & w : words)
@@ -452,10 +444,7 @@ void sharifullina::saveDict(std::istream & in, const DictCollection & dicts)
   const auto & dict = dicts.at(dictName);
   std::vector< WordEntry > entries;
   entries.reserve(dict.size());
-  for (const auto & pair : dict)
-  {
-    entries.push_back({pair});
-  }
+  std::copy(dict.begin(), dict.end(), std::back_inserter(entries));
   std::copy(entries.cbegin(), entries.cend(), std::ostream_iterator< WordEntry >(file, "\n"));
 }
 
@@ -518,14 +507,10 @@ void sharifullina::subtractDicts(std::istream & in, DictCollection & dicts)
     throw std::runtime_error("invalid count");
   }
   std::vector< std::string > dictNames;
-  std::string dictName;
-  for (int i = 0; i < count; ++i)
+  std::copy(std::istream_iterator< std::string >(in), std::istream_iterator< std::string >(), std::back_inserter(dictNames));
+  if (dictNames.size() != count)
   {
-    if (!(in >> dictName))
-    {
-      throw std::runtime_error("invalid count");
-    }
-    dictNames.push_back(dictName);
+    throw std::runtime_error("invalid count");
   }
   for (const auto & name : dictNames)
   {
@@ -557,14 +542,10 @@ void sharifullina::symdiffDicts(std::istream & in, DictCollection & dicts)
     throw std::runtime_error("invalid count");
   }
   std::vector< std::string > dictNames;
-  std::string dictName;
-  for (int i = 0; i < count; ++i)
+  std::copy(std::istream_iterator< std::string >(in), std::istream_iterator< std::string >(), std::back_inserter(dictNames));
+  if (dictNames.size() != count)
   {
-    if (!(in >> dictName))
-    {
-      throw std::runtime_error("invalid count");
-    }
-    dictNames.push_back(dictName);
+    throw std::runtime_error("invalid count");
   }
   for (const auto & name : dictNames)
   {
