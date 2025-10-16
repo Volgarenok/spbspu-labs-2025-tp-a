@@ -26,7 +26,8 @@ namespace
   struct WordEntry
   {
     const std::pair< const std::string, std::set< std::string > > & data;
-    WordEntry(const std::pair<const std::string, std::set<std::string>>& pair): data(pair)
+    WordEntry(const std::pair<const std::string, std::set<std::string>>& pair):
+      data(pair)
     {}
   };
 
@@ -40,8 +41,9 @@ namespace
   struct DictNameView
   {
     const std::pair< const std::string, sharifullina::Dictionary > & data;
-      DictNameView(const std::pair< const std::string, sharifullina::Dictionary > & pair): data(pair)
-      {}
+    DictNameView(const std::pair< const std::string, sharifullina::Dictionary > & pair):
+      data(pair)
+    {}
   };
 
   std::ostream & operator<<(std::ostream & out, const DictNameView & view)
@@ -309,7 +311,7 @@ void sharifullina::findTranslations(std::istream & in, const DictCollection & di
   {
     throw std::runtime_error("dictionary or word not found");
   }
-  std::copy(wordIt->second.cbegin(), wordIt->second.cend(), std::ostream_iterator<std::string>(std::cout, " "));
+  std::copy(wordIt->second.cbegin(), wordIt->second.cend(), std::ostream_iterator< std::string >(std::cout, " "));
   std::cout << '\n';
 }
 
