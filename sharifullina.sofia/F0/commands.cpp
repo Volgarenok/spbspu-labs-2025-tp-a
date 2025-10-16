@@ -338,7 +338,7 @@ void sharifullina::listWords(std::istream & in, const DictCollection & dicts)
 void sharifullina::mergeDicts(std::istream & in, DictCollection & dicts)
 {
   std::string newDictName;
-  int count = 0;
+  size_t count = 0;
   if (!(in >> newDictName >> count))
   {
     throw std::runtime_error("invalid arguments for merge");
@@ -376,7 +376,7 @@ void sharifullina::mergeDicts(std::istream & in, DictCollection & dicts)
 void sharifullina::findCommon(std::istream & in, const DictCollection & dicts)
 {
   std::string dictName;
-  int count = 0;
+  size_t count = 0;
   if (!(in >> dictName >> count))
   {
     throw std::runtime_error("invalid arguments for findcommon");
@@ -497,7 +497,7 @@ void sharifullina::statDict(std::istream & in, const DictCollection & dicts)
 void sharifullina::subtractDicts(std::istream & in, DictCollection & dicts)
 {
   std::string newDictName;
-  int count = 0;
+  size_t count = 0;
   if (!(in >> newDictName >> count))
   {
     throw std::runtime_error("invalid arguments for subtract");
@@ -532,7 +532,7 @@ void sharifullina::subtractDicts(std::istream & in, DictCollection & dicts)
 void sharifullina::symdiffDicts(std::istream & in, DictCollection & dicts)
 {
   std::string newDictName;
-  int count = 0;
+  size_t count = 0;
   if (!(in >> newDictName >> count))
   {
     throw std::runtime_error("invalid arguments for symdiff");
