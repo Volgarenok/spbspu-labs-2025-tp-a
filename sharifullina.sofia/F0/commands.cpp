@@ -26,6 +26,8 @@ namespace
   struct WordEntry
   {
     const std::pair< const std::string, std::set< std::string > > & data;
+    WordEntry(const std::pair<const std::string, std::set<std::string>>& pair): data(pair)
+    {}
   };
 
   std::ostream & operator<<(std::ostream & out, const WordEntry & entry)
@@ -38,6 +40,8 @@ namespace
   struct DictNameView
   {
     const std::pair< const std::string, sharifullina::Dictionary > & data;
+      DictNameView(const std::pair< const std::string, sharifullina::Dictionary > & pair): data(pair)
+      {}
   };
 
   std::ostream & operator<<(std::ostream & out, const DictNameView & view)
@@ -326,10 +330,7 @@ void sharifullina::listWords(std::istream & in, const DictCollection & dicts)
     std::cout << "<EMPTY>\n";
     return;
   }
-  std::vector< WordEntry > entries;
-  entries.reserve(dict.size());
-  std::copy(dict.begin(), dict.end(), std::back_inserter(entries));
-  std::copy(entries.cbegin(), entries.cend(), std::ostream_iterator< WordEntry >(std::cout, "\n"));
+  std::copy(dict.cbegin(), dict.cend(), std::ostream_iterator< WordEntry >(std::cout, "\n"));
 }
 
 void sharifullina::mergeDicts(std::istream & in, DictCollection & dicts)
@@ -439,10 +440,7 @@ void sharifullina::saveDict(std::istream & in, const DictCollection & dicts)
     throw std::runtime_error("dictionary not found or file error");
   }
   const auto & dict = dicts.at(dictName);
-  std::vector< WordEntry > entries;
-  entries.reserve(dict.size());
-  std::copy(dict.begin(), dict.end(), std::back_inserter(entries));
-  std::copy(entries.cbegin(), entries.cend(), std::ostream_iterator< WordEntry >(file, "\n"));
+  std::copy(dict.cbegin(), dict.cend(), std::ostream_iterator< WordEntry >(std::cout, "\n"));
 }
 
 void sharifullina::loadDict(std::istream & in, DictCollection & dicts)
