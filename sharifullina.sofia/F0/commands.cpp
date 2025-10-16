@@ -189,10 +189,7 @@ void sharifullina::listDicts(std::istream &, const DictCollection & dicts)
     std::cout << "<EMPTY>\n";
     return;
   }
-  std::vector< DictNameView > views;
-  views.reserve(dicts.size());
-  std::copy(dicts.begin(), dicts.end(), std::back_inserter(views));
-  std::copy(views.cbegin(), views.cend(), std::ostream_iterator< DictNameView >(std::cout, "\n"));
+  std::copy(dicts.cbegin(), dicts.cend(), std::ostream_iterator< DictNameView >(std::cout, "\n"));
 }
 
 void sharifullina::addWord(std::istream & in, DictCollection & dicts)
