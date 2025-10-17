@@ -1,21 +1,16 @@
 #ifndef COMMANDS_HPP
 #define COMMANDS_HPP
-
-#include <string>
-#include <vector>
 #include "polygon.hpp"
+#include <iostream>
+#include <vector>
 
 namespace guseynov
 {
-  namespace commands
-  {
-    void handleAreaCommand(const std::vector< Polygon >& polygons, const std::string& param);
-    void handleMaxCommand(const std::vector< Polygon >& polygons, const std::string& param);
-    void handleMinCommand(const std::vector< Polygon >& polygons, const std::string& param);
-    void handleCountCommand(const std::vector< Polygon >& polygons, const std::string& param);
-    void handleInFrameCommand(const std::vector< Polygon >& polygons, const std::string& param);
-    void handleLessAreaCommand(const std::vector< Polygon >& polygons, const std::string& param);
-  }
+  void printArea(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons);
+  void printMax(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons);
+  void printMin(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons);
+  void printCount(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons);
+  void printInFrame(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons);
+  void printLessArea(std::istream & in, std::ostream & out, const std::vector< Polygon > & polygons);
 }
-
 #endif
