@@ -188,14 +188,14 @@ void sharifullina::deleteDict(std::istream & in, DictCollection & dicts)
   dicts.erase(it);
 }
 
-void sharifullina::listDicts(std::istream &, const DictCollection & dicts)
+void sharifullina::listDicts(std::istream &, const DictCollection & dicts, std::ostream & out)
 {
   if (dicts.empty())
   {
-    std::cout << "<EMPTY>\n";
+    out << "<EMPTY>\n";
     return;
   }
-  std::copy(dicts.cbegin(), dicts.cend(), std::ostream_iterator< DictNameView >(std::cout, "\n"));
+  std::copy(dicts.cbegin(), dicts.cend(), std::ostream_iterator< DictNameView >(out, "\n"));
 }
 
 void sharifullina::addWord(std::istream & in, DictCollection & dicts)
@@ -293,7 +293,7 @@ void sharifullina::deleteWord(std::istream & in, DictCollection & dicts)
   }
 }
 
-void sharifullina::findTranslations(std::istream & in, const DictCollection & dicts)
+void sharifullina::findTranslations(std::istream & in, const DictCollection & dicts, std::ostream & out)
 {
   std::string dictName;
   std::string word;
@@ -311,11 +311,11 @@ void sharifullina::findTranslations(std::istream & in, const DictCollection & di
   {
     throw std::runtime_error("dictionary or word not found");
   }
-  std::copy(wordIt->second.cbegin(), wordIt->second.cend(), std::ostream_iterator< std::string >(std::cout, " "));
-  std::cout << '\n';
+  std::copy(wordIt->second.cbegin(), wordIt->second.cend(), std::ostream_iterator< std::string >(out, " "));
+  out << '\n';
 }
 
-void sharifullina::listWords(std::istream & in, const DictCollection & dicts)
+void sharifullina::listWords(std::istream & in, const DictCollection & dicts, std::ostream & out)
 {
   std::string dictName;
   if (!(in >> dictName))
@@ -329,10 +329,10 @@ void sharifullina::listWords(std::istream & in, const DictCollection & dicts)
   const auto & dict = dicts.at(dictName);
   if (dict.empty())
   {
-    std::cout << "<EMPTY>\n";
+    out << "<EMPTY>\n";
     return;
   }
-  std::copy(dict.cbegin(), dict.cend(), std::ostream_iterator< WordEntry >(std::cout, "\n"));
+  std::copy(dict.cbegin(), dict.cend(), std::ostream_iterator< WordEntry >(out, "\n"));
 }
 
 void sharifullina::mergeDicts(std::istream & in, DictCollection & dicts)
@@ -373,7 +373,7 @@ void sharifullina::mergeDicts(std::istream & in, DictCollection & dicts)
   dicts[newDictName] = newDict;
 }
 
-void sharifullina::findCommon(std::istream & in, const DictCollection & dicts)
+void sharifullina::findCommon(std::istream & in, const DictCollection & dicts, std::ostream & out)
 {
   std::string dictName;
   size_t count = 0;
@@ -417,14 +417,14 @@ void sharifullina::findCommon(std::istream & in, const DictCollection & dicts)
   }
   if (commonTranslations.empty())
   {
-    std::cout << "<EMPTY>\n";
+    out << "<EMPTY>\n";
     return;
   }
-  std::copy(commonTranslations.cbegin(), commonTranslations.cend(), std::ostream_iterator< std::string >(std::cout, " "));
-  std::cout << '\n';
+  std::copy(commonTranslations.cbegin(), commonTranslations.cend(), std::ostream_iterator< std::string >(out, " "));
+  out << '\n';
 }
 
-void sharifullina::saveDict(std::istream & in, const DictCollection & dicts)
+void sharifullina::saveDict(std::istream & in, const DictCollection & dicts, std::ostream & out)
 {
   std::string dictName;
   std::string filename;
@@ -442,7 +442,7 @@ void sharifullina::saveDict(std::istream & in, const DictCollection & dicts)
     throw std::runtime_error("dictionary not found or file error");
   }
   const auto & dict = dicts.at(dictName);
-  std::copy(dict.cbegin(), dict.cend(), std::ostream_iterator< WordEntry >(std::cout, "\n"));
+  std::copy(dict.cbegin(), dict.cend(), std::ostream_iterator< WordEntry >(out, "\n"));
 }
 
 void sharifullina::loadDict(std::istream & in, DictCollection & dicts)
@@ -470,7 +470,7 @@ void sharifullina::loadDict(std::istream & in, DictCollection & dicts)
   dicts[dictName] = newDict;
 }
 
-void sharifullina::statDict(std::istream & in, const DictCollection & dicts)
+void sharifullina::statDict(std::istream & in, const DictCollection & dicts, std::ostream & out)
 {
   std::string dictName;
   if (!(in >> dictName))
@@ -486,9 +486,9 @@ void sharifullina::statDict(std::istream & in, const DictCollection & dicts)
   size_t totalTranslations = 0;
   std::for_each(dict.cbegin(), dict.cend(), StatDictProcessor{totalTranslations});
   double avgTranslations = totalWords > 0 ? static_cast< double >(totalTranslations) / totalWords : 0.0;
-  std::cout << "Words: " << totalWords << "\n";
-  std::cout << "Translations: " << totalTranslations << "\n";
-  std::cout << "Average translations per word: " << avgTranslations << "\n";
+  out << "Words: " << totalWords << "\n";
+  out << "Translations: " << totalTranslations << "\n";
+  out << "Average translations per word: " << avgTranslations << "\n";
 }
 
 void sharifullina::subtractDicts(std::istream & in, DictCollection & dicts)
@@ -636,7 +636,7 @@ void sharifullina::printHelp(std::ostream & out)
   out << "symdiff <new> <count> <dicts...>" << "symmetric difference\n";
 }
 
-void sharifullina::printError(const std::string & message)
+void sharifullina::printError(const std::string & message, std::ostream & out)
 {
-  std::cout << "<ERROR: " << message << ">\n";
+  out << "<ERROR: " << message << ">\n";
 }
