@@ -93,12 +93,11 @@ namespace
     }
   };
 
-  struct StatDictProcessor
+  struct TranslationCounter
   {
-    size_t & totalTranslations;
-    void operator()(const std::pair< const std::string, std::set< std::string > > & wordPair)
+    size_t operator()(size_t sum, const std::pair< const std::string, std::set< std::string > > & rhs)
     {
-      totalTranslations += wordPair.second.size();
+      return sum + rhs.second.size();
     }
   };
 
@@ -483,8 +482,7 @@ void sharifullina::statDict(std::istream & in, const DictCollection & dicts, std
   }
   const auto & dict = dicts.at(dictName);
   size_t totalWords = dict.size();
-  size_t totalTranslations = 0;
-  std::for_each(dict.cbegin(), dict.cend(), StatDictProcessor{totalTranslations});
+  size_t totalTranslations = std::accumulate(dict.cbegin(), dict.cend(), 0, TranslationCounter{});
   double avgTranslations = totalWords > 0 ? static_cast< double >(totalTranslations) / totalWords : 0.0;
   out << "Words: " << totalWords << "\n";
   out << "Translations: " << totalTranslations << "\n";
