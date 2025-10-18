@@ -128,7 +128,6 @@ namespace
     }
   };
 
-
   struct TranslationCounter
   {
     size_t operator()(size_t sum, const std::pair< const std::string, std::set< std::string > > & rhs)
@@ -443,15 +442,15 @@ void sharifullina::findCommon(std::istream & in, const DictCollection & dicts, s
   std::copy_if(dict.cbegin(), dict.cend(), std::inserter(temp, temp.end()), WordInside{words});
   SetWrapper wrapper;
   std::copy_if(dict.cbegin(), dict.cend(), std::back_inserter(wrapper), WordInside{words});
-  std::set< std::string > commonTranslations;
-  std::copy_if(wrapper.output.cbegin(), wrapper.output.cend(), std::inserter(commonTranslations, commonTranslations.end()), CommonCondition{temp});
+  std::set< std::string > commonTs;
+  std::copy_if(wrapper.output.cbegin(), wrapper.output.cend(), std::inserter(commonTs, commonTs.end()), CommonCondition{temp});
 
-  if (commonTranslations.empty())
+  if (commonTs.empty())
   {
     out << "<EMPTY>\n";
     return;
   }
-  std::copy(commonTranslations.cbegin(), commonTranslations.cend(), std::ostream_iterator< std::string >(out, " "));
+  std::copy(commonTs.cbegin(), commonTs.cend(), std::ostream_iterator< std::string >(out, " "));
   out << '\n';
 }
 
@@ -554,7 +553,8 @@ void sharifullina::subtractDicts(std::istream & in, DictCollection & dicts)
   std::copy_if(std::next(target), dicts.end(), std::back_inserter(wrapper), MergeCondition{dictNames});
   
   sharifullina::Dictionary newDict;
-  std::copy_if(target->second.cbegin(), target->second.cend(), std::inserter(newDict, newDict.end()), SubstractCondition{wrapper.output});
+  auto & temp = target->second;
+  std::copy_if(temp.cbegin(), temp.cend(), std::inserter(newDict, newDict.end()), SubstractCondition{wrapper.output});
   dicts[newDictName] = newDict;
 }
 
@@ -588,7 +588,8 @@ void sharifullina::symdiffDicts(std::istream & in, DictCollection & dicts)
   std::copy_if(dicts.cbegin(), dicts.cend(), std::back_inserter(wrapper), MergeCondition{dictNames});
     
   sharifullina::Dictionary newDict;
-  std::copy_if(wrapper.output.cbegin(), wrapper.output.cend(), std::inserter(newDict, newDict.end()), SymDiffCondition{dicts});
+  auto & temp = wrapper.output;
+  std::copy_if(temp.cbegin(), temp.cend(), std::inserter(newDict, newDict.end()), SymDiffCondition{dicts});
   dicts[newDictName] = newDict;
 }
 
