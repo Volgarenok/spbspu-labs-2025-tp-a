@@ -23,6 +23,15 @@ namespace
     return dictIt->second.find(word) != dictIt->second.end();
   }
 
+  struct DictExists
+  {
+    const sharifullina::DictCollection & dicts;
+    bool operator()(const std::string & rhs)
+    {
+      return dictExists(rhs, dicts);
+    }
+  };
+
   struct WordEntry
   {
     const std::pair< const std::string, std::set< std::string > > & data;
@@ -84,14 +93,41 @@ namespace
     return dict;
   }
 
-  struct MergeDictProcessor
+  struct MergeCondition
   {
-    sharifullina::Dictionary & newDict;
-    void operator()(const std::pair< const std::string, std::set< std::string > > & wordPair)
+    const std::vector< std::string > & names;
+    
+    bool operator()(const std::pair< std::string, sharifullina::Dictionary > & pair)
     {
-      newDict[wordPair.first].insert(wordPair.second.cbegin(), wordPair.second.cend());
+        return std::find(names.cbegin(), names.cend(), pair.first) != names.cend();
     }
   };
+
+  struct MergePusher
+  {
+    using value_type = std::pair< std::string, std::set< std::string > >;
+
+    sharifullina::Dictionary & output;
+    
+    void push_back(const std::pair< std::string, std::set< std::string > > & pair)
+    {
+        output[pair.first].insert(pair.second.cbegin(), pair.second.cend());
+    }
+  };
+
+  struct MergeWrapper
+  {
+    using value_type = std::pair< std::string, sharifullina::Dictionary >;
+    
+    sharifullina::Dictionary output;
+    
+    void push_back(const std::pair< std::string, sharifullina::Dictionary > & pair)
+    {
+        MergePusher pusher{output};
+        std::copy(pair.second.cbegin(), pair.second.cend(), std::back_inserter(pusher));
+    }
+  };
+
 
   struct TranslationCounter
   {
@@ -101,56 +137,67 @@ namespace
     }
   };
 
-  struct SubtractDictProcessor
+  struct SubstractCondition
   {
-    const std::vector< std::string > & dictNames;
-    const sharifullina::DictCollection & dicts;
-    sharifullina::Dictionary & newDict;
-
-    void operator()(const std::pair< std::string, std::set< std::string > > & wordPair)
+    const sharifullina::Dictionary & discard;
+    bool operator()(const std::pair< std::string, std::set< std::string > > & rhs)
     {
-      bool foundInOthers = false;
-      for (size_t i = 1; i < dictNames.size() && !foundInOthers; ++i)
-      {
-        const auto & otherDict = dicts.at(dictNames[i]);
-        if (otherDict.find(wordPair.first) != otherDict.end())
-        {
-          foundInOthers = true;
-        }
-      }
-      if (!foundInOthers)
-      {
-        newDict[wordPair.first] = wordPair.second;
-      }
+        return discard.find(rhs.first) == discard.cend(); 
     }
   };
 
-  struct SymdiffDictProcessor
+  struct WordChecker
   {
-    const std::vector< std::string > & dictNames;
-    const sharifullina::DictCollection & dicts;
-    std::unordered_map< std::string, int > & wordCount;
-    std::unordered_map< std::string, std::set< std::string > > & wordTranslations;
-
-    void operator()(const std::pair< std::string, std::set< std::string > > & wordPair)
+    const std::pair< std::string, std::set< std::string > > & src;
+    bool operator()(const std::pair< std::string, sharifullina::Dictionary > & rhs)
     {
-      wordCount[wordPair.first]++;
-      wordTranslations[wordPair.first].insert(wordPair.second.cbegin(), wordPair.second.cend());
+      return rhs.second.find(src.first) != rhs.second.end();
     }
   };
 
-  struct SymdiffFinalProcessor
+  struct SymDiffCondition
   {
-    const std::unordered_map< std::string, int > & wordCount;
-    const std::unordered_map< std::string, std::set< std::string > > & wordTranslations;
-    sharifullina::Dictionary & newDict;
-
-    void operator()(const std::pair< std::string, int > & countPair)
+    const sharifullina::DictCollection & all;
+    bool operator()(const std::pair< std::string, std::set< std::string > > & rhs)
     {
-      if (countPair.second == 1)
-      {
-        newDict[countPair.first] = wordTranslations.at(countPair.first);
-      }
+      return std::count_if(all.cbegin(), all.cend(), WordChecker{rhs}) == 1;
+    }
+  };
+
+  struct WordInside
+  {
+    const std::vector< std::string > & src;
+    bool operator()(const std::pair< std::string, std::set< std::string > > & rhs)
+    {
+      return std::find(src.cbegin(), src.cend(), rhs.first) != src.cend();
+    }
+  };
+
+  struct TranslationInside
+  {
+    const std::string & src;
+    bool operator()(const std::pair< std::string, std::set< std::string > > & rhs)
+    {
+      return std::find(rhs.second.cbegin(), rhs.second.cend(), src) != rhs.second.cend();
+    }
+  };
+
+  struct SetWrapper
+  {
+    using value_type = std::pair< std::string, std::set< std::string > >;
+    std::set< std::string > output;
+    void push_back(const std::pair< std::string, std::set< std::string > > & rhs)
+    {
+      output.insert(rhs.second.cbegin(), rhs.second.cend());
+    }
+  };
+
+  struct CommonCondition
+  {
+    const sharifullina::Dictionary & src;
+    bool operator()(const std::string & rhs)
+    {
+      return std::all_of(src.cbegin(), src.cend(), TranslationInside{rhs});
     }
   };
 }
@@ -352,24 +399,17 @@ void sharifullina::mergeDicts(std::istream & in, DictCollection & dicts)
   {
     throw std::runtime_error("invalid count");
   }
-  for (const auto & name : dictNames)
+  if (!std::all_of(dictNames.cbegin(), dictNames.cend(), DictExists{dicts}))
   {
-    if (!dictExists(name, dicts))
-    {
-      throw std::runtime_error("dictionary not found");
-    }
+    throw std::runtime_error("dictionary not found");
   }
   if (dictExists(newDictName, dicts))
   {
     throw std::runtime_error("dictionary already exists");
   }
-  Dictionary newDict;
-  for (const auto & name : dictNames)
-  {
-    const auto & sourceDict = dicts.at(name);
-    std::for_each(sourceDict.cbegin(), sourceDict.cend(), MergeDictProcessor{newDict});
-  }
-  dicts[newDictName] = newDict;
+  MergeWrapper wrapper;
+  std::copy_if(dicts.cbegin(), dicts.cend(), std::back_inserter(wrapper), MergeCondition{dictNames});
+  dicts[newDictName] = wrapper.output;
 }
 
 void sharifullina::findCommon(std::istream & in, const DictCollection & dicts, std::ostream & out)
@@ -395,25 +435,17 @@ void sharifullina::findCommon(std::istream & in, const DictCollection & dicts, s
     throw std::runtime_error("invalid count");
   }
   const auto & dict = dicts.at(dictName);
-  for (const auto & w : words)
+  if (!std::all_of(dict.cbegin(), dict.cend(), WordInside{words}))
   {
-    if (dict.find(w) == dict.end())
-    {
-      throw std::runtime_error("dictionary or word(s) not found");
-    }
+    throw std::runtime_error("dictionary or word(s) not found");
   }
-  std::set< std::string > commonTranslations = dict.at(words[0]);
-  for (size_t i = 1; i < words.size(); ++i)
-  {
-    const auto & currentTranslations = dict.at(words[i]);
-    std::set< std::string > temp;
-    std::set_intersection(
-      commonTranslations.cbegin(), commonTranslations.cend(),
-      currentTranslations.cbegin(), currentTranslations.cend(),
-      std::inserter(temp, temp.begin())
-    );
-    commonTranslations = std::move(temp);
-  }
+  sharifullina::Dictionary temp;
+  std::copy_if(dict.cbegin(), dict.cend(), std::inserter(temp, temp.end()), WordInside{words});
+  SetWrapper wrapper;
+  std::copy_if(dict.cbegin(), dict.cend(), std::back_inserter(wrapper), WordInside{words});
+  std::set< std::string > commonTranslations;
+  std::copy_if(wrapper.output.cbegin(), wrapper.output.cend(), std::inserter(commonTranslations, commonTranslations.end()), CommonCondition{temp});
+
   if (commonTranslations.empty())
   {
     out << "<EMPTY>\n";
@@ -507,20 +539,22 @@ void sharifullina::subtractDicts(std::istream & in, DictCollection & dicts)
   {
     throw std::runtime_error("invalid count");
   }
-  for (const auto & name : dictNames)
+  if (!std::all_of(dictNames.cbegin(), dictNames.cend(), DictExists{dicts}))
   {
-    if (!dictExists(name, dicts))
-    {
-      throw std::runtime_error("dictionary not found");
-    }
+    throw std::runtime_error("dictionary not found");
   }
   if (dictExists(newDictName, dicts))
   {
     throw std::runtime_error("dictionary already exists");
   }
-  const auto & firstDict = dicts.at(dictNames[0]);
-  Dictionary newDict;
-  std::for_each(firstDict.cbegin(), firstDict.cend(), SubtractDictProcessor{dictNames, dicts, newDict});
+  auto target = dicts.find(dictNames[0]);
+
+  MergeWrapper wrapper;
+  std::copy_if(dicts.begin(), target, std::back_inserter(wrapper), MergeCondition{dictNames});
+  std::copy_if(std::next(target), dicts.end(), std::back_inserter(wrapper), MergeCondition{dictNames});
+  
+  sharifullina::Dictionary newDict;
+  std::copy_if(target->second.cbegin(), target->second.cend(), std::inserter(newDict, newDict.end()), SubstractCondition{wrapper.output});
   dicts[newDictName] = newDict;
 }
 
@@ -542,26 +576,19 @@ void sharifullina::symdiffDicts(std::istream & in, DictCollection & dicts)
   {
     throw std::runtime_error("invalid count");
   }
-  for (const auto & name : dictNames)
+  if (!std::all_of(dictNames.cbegin(), dictNames.cend(), DictExists{dicts}))
   {
-    if (!dictExists(name, dicts))
-    {
-      throw std::runtime_error("dictionary not found");
-    }
+    throw std::runtime_error("dictionary not found");
   }
   if (dictExists(newDictName, dicts))
   {
     throw std::runtime_error("dictionary already exists");
   }
-  Dictionary newDict;
-  std::unordered_map< std::string, int > wordCount;
-  std::unordered_map< std::string, std::set< std::string > > wordTranslations;
-  for (const auto & name : dictNames)
-  {
-    const auto & dict = dicts.at(name);
-    std::for_each(dict.cbegin(), dict.cend(), SymdiffDictProcessor{dictNames, dicts, wordCount, wordTranslations});
-  }
-  std::for_each(wordCount.cbegin(), wordCount.cend(), SymdiffFinalProcessor{wordCount, wordTranslations, newDict});
+  MergeWrapper wrapper;
+  std::copy_if(dicts.cbegin(), dicts.cend(), std::back_inserter(wrapper), MergeCondition{dictNames});
+    
+  sharifullina::Dictionary newDict;
+  std::copy_if(wrapper.output.cbegin(), wrapper.output.cend(), std::inserter(newDict, newDict.end()), SymDiffCondition{dicts});
   dicts[newDictName] = newDict;
 }
 
