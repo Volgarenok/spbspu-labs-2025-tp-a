@@ -96,7 +96,7 @@ namespace
   struct MergeCondition
   {
     const std::vector< std::string > & names;
-    
+
     bool operator()(const std::pair< std::string, sharifullina::Dictionary > & pair)
     {
         return std::find(names.cbegin(), names.cend(), pair.first) != names.cend();
@@ -108,7 +108,7 @@ namespace
     using value_type = std::pair< std::string, std::set< std::string > >;
 
     sharifullina::Dictionary & output;
-    
+
     void push_back(const std::pair< std::string, std::set< std::string > > & pair)
     {
         output[pair.first].insert(pair.second.cbegin(), pair.second.cend());
@@ -118,9 +118,9 @@ namespace
   struct MergeWrapper
   {
     using value_type = std::pair< std::string, sharifullina::Dictionary >;
-    
+
     sharifullina::Dictionary output;
-    
+
     void push_back(const std::pair< std::string, sharifullina::Dictionary > & pair)
     {
         MergePusher pusher{output};
@@ -141,7 +141,7 @@ namespace
     const sharifullina::Dictionary & discard;
     bool operator()(const std::pair< std::string, std::set< std::string > > & rhs)
     {
-        return discard.find(rhs.first) == discard.cend(); 
+        return discard.find(rhs.first) == discard.cend();
     }
   };
 
@@ -551,7 +551,7 @@ void sharifullina::subtractDicts(std::istream & in, DictCollection & dicts)
   MergeWrapper wrapper;
   std::copy_if(dicts.begin(), target, std::back_inserter(wrapper), MergeCondition{dictNames});
   std::copy_if(std::next(target), dicts.end(), std::back_inserter(wrapper), MergeCondition{dictNames});
-  
+
   sharifullina::Dictionary newDict;
   auto & temp = target->second;
   std::copy_if(temp.cbegin(), temp.cend(), std::inserter(newDict, newDict.end()), SubstractCondition{wrapper.output});
@@ -586,7 +586,7 @@ void sharifullina::symdiffDicts(std::istream & in, DictCollection & dicts)
   }
   MergeWrapper wrapper;
   std::copy_if(dicts.cbegin(), dicts.cend(), std::back_inserter(wrapper), MergeCondition{dictNames});
-    
+
   sharifullina::Dictionary newDict;
   auto & temp = wrapper.output;
   std::copy_if(temp.cbegin(), temp.cend(), std::inserter(newDict, newDict.end()), SymDiffCondition{dicts});
