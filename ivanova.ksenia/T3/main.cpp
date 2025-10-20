@@ -1,81 +1,58 @@
-#include <cstddef>
-#include <fstream>
 #include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <functional>
 #include <iterator>
 #include <limits>
-#include <stdexcept>
-#include <vector>
-
-#include "commands.hpp"
 #include "polygon.hpp"
 #include "polygon_iterator.hpp"
+#include "commands.hpp"
 
-int main(int argc, char* argv[])
+int main()
 {
-  if (argc != 2)
+  using namespace ivanova;
+
+  std::vector< Polygon > polygons;
+  std::map< std::string, std::function< void(std::istream&, std::ostream&, std::vector< Polygon >&) > > commands;
+
+  commands["AREA"] = area;
+  commands["MAX"] = max;
+  commands["MIN"] = min;
+  commands["COUNT"] = count;
+  commands["ECHO"] = echo;
+  commands["SAME"] = same;
+
+  std::copy(
+    PolygonIterator(std::cin),
+    PolygonIterator(),
+    std::back_inserter(polygons)
+  );
+
+  std::cin.clear();
+  std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+
+  std::string command;
+  while (std::cin >> command)
   {
-    std::cerr << "Usage: " << argv[0] << " <filename>\n";
-    return 1;
-  }
-
-  try
-  {
-    std::ifstream file(argv[1]);
-    if (!file)
+    try
     {
-      throw std::runtime_error("Failed to open file");
-    }
-
-    std::vector< ivanova::Polygon > polygons;
-    std::copy(ivanova::PolygonIterator(file),
-      ivanova::PolygonIterator(),
-      std::back_inserter(polygons));
-
-    std::string command;
-    while (std::cin >> command)
-    {
-      try
+      auto it = commands.find(command);
+      if (it != commands.end())
       {
-        if (command == "AREA")
-        {
-          ivanova::area(std::cin, std::cout, polygons);
-        }
-        else if (command == "MAX")
-        {
-          ivanova::max(std::cin, std::cout, polygons);
-        }
-        else if (command == "MIN")
-        {
-          ivanova::min(std::cin, std::cout, polygons);
-        }
-        else if (command == "COUNT")
-        {
-          ivanova::count(std::cin, std::cout, polygons);
-        }
-        else if (command == "ECHO")
-        {
-          ivanova::echo(std::cin, std::cout, polygons);
-        }
-        else if (command == "SAME")
-        {
-          ivanova::same(std::cin, std::cout, polygons);
-        }
-        else
-        {
-          std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
-          throw std::invalid_argument("<INVALID COMMAND>");
-        }
+        it->second(std::cin, std::cout, polygons);
       }
-      catch (const std::exception& e)
+      else
       {
-        std::cout << e.what() << "\n";
+        throw std::invalid_argument("<INVALID COMMAND>");
       }
     }
-  }
-  catch (const std::exception& e)
-  {
-    std::cerr << e.what() << '\n';
-    return 1;
+    catch (const std::exception& e)
+    {
+      std::cout << e.what() << '\n';
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+    }
   }
 
   return 0;

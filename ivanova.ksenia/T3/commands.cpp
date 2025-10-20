@@ -3,11 +3,112 @@
 #include <string>
 #include <cmath>
 #include <sstream>
+#include <functional>
+#include <numeric>
 #include "streamGuard.hpp"
 #include "commands.hpp"
 
 namespace ivanova
 {
+  struct EvenAreaSum
+  {
+    double sum = 0.0;
+    void operator()(const Polygon& poly)
+    {
+      if (poly.points.size() % 2 == 0)
+      {
+        sum += calculateArea(poly);
+      }
+    }
+  };
+
+  struct OddAreaSum
+  {
+    double sum = 0.0;
+    void operator()(const Polygon& poly)
+    {
+      if (poly.points.size() % 2 == 1)
+      {
+        sum += calculateArea(poly);
+      }
+    }
+  };
+
+  struct NumVerticesAreaSum
+  {
+    size_t num;
+    double sum = 0.0;
+    void operator()(const Polygon& poly)
+    {
+      if (poly.points.size() == num)
+      {
+        sum += calculateArea(poly);
+      }
+    }
+  };
+
+  struct TotalAreaSum
+  {
+    double sum = 0.0;
+    void operator()(const Polygon& poly)
+    {
+      sum += calculateArea(poly);
+    }
+  };
+
+  struct AreaComparator
+  {
+    bool operator()(const Polygon& a, const Polygon& b) const
+    {
+      return calculateArea(a) < calculateArea(b);
+    }
+  };
+
+  struct VertexCountComparator
+  {
+    bool operator()(const Polygon& a, const Polygon& b) const
+    {
+      return a.points.size() < b.points.size();
+    }
+  };
+
+  struct EvenCount
+  {
+    size_t count = 0;
+    void operator()(const Polygon& poly)
+    {
+      if (poly.points.size() >= 3 && poly.points.size() % 2 == 0)
+      {
+        count++;
+      }
+    }
+  };
+
+  struct OddCount
+  {
+    size_t count = 0;
+    void operator()(const Polygon& poly)
+    {
+      if (poly.points.size() >= 3 && poly.points.size() % 2 == 1)
+      {
+        count++;
+      }
+    }
+  };
+
+  struct NumVerticesCount
+  {
+    size_t num;
+    size_t count = 0;
+    void operator()(const Polygon& poly)
+    {
+      if (poly.points.size() >= 3 && poly.points.size() == num)
+      {
+        count++;
+      }
+    }
+  };
+
   void area(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
   {
     std::string param;
@@ -16,18 +117,17 @@ namespace ivanova
     StreamGuard guard(out);
     out << std::fixed << std::setprecision(1);
 
-    if (param == "EVEN" || param == "ODD")
+    if (param == "EVEN")
     {
-      bool isEven = (param == "EVEN");
-      double sum = 0.0;
-      for (const auto& poly : polygons)
-      {
-        if ((poly.points.size() % 2 == 0) == isEven)
-        {
-          sum += calculateArea(poly);
-        }
-      }
-      out << sum << '\n';
+      EvenAreaSum accumulator;
+      std::for_each(polygons.begin(), polygons.end(), std::ref(accumulator));
+      out << accumulator.sum << '\n';
+    }
+    else if (param == "ODD")
+    {
+      OddAreaSum accumulator;
+      std::for_each(polygons.begin(), polygons.end(), std::ref(accumulator));
+      out << accumulator.sum << '\n';
     }
     else if (param == "MEAN")
     {
@@ -35,36 +135,34 @@ namespace ivanova
       {
         throw std::invalid_argument("<INVALID COMMAND>");
       }
-      double sum = 0.0;
-      for (const auto& poly : polygons)
-      {
-        sum += calculateArea(poly);
-      }
-      out << (sum / polygons.size()) << '\n';
+      TotalAreaSum accumulator;
+      std::for_each(polygons.begin(), polygons.end(), std::ref(accumulator));
+      out << (accumulator.sum / polygons.size()) << '\n';
     }
     else
     {
+      size_t numVertices = 0;
       try
       {
-        size_t numVertices = std::stoul(param);
-        if (numVertices < 3)
-        {
-          throw std::invalid_argument("<INVALID COMMAND>");
-        }
-        double sum = 0.0;
-        for (const auto& poly : polygons)
-        {
-          if (poly.points.size() == numVertices)
-          {
-            sum += calculateArea(poly);
-          }
-        }
-        out << sum << '\n';
+        numVertices = std::stoul(param);
       }
       catch (const std::invalid_argument&)
       {
         throw std::invalid_argument("<INVALID COMMAND>");
       }
+      catch (const std::out_of_range&)
+      {
+        throw std::invalid_argument("<INVALID COMMAND>");
+      }
+      
+      if (numVertices < 3)
+      {
+        throw std::invalid_argument("<INVALID COMMAND>");
+      }
+      
+      NumVerticesAreaSum accumulator{numVertices};
+      std::for_each(polygons.begin(), polygons.end(), std::ref(accumulator));
+      out << accumulator.sum << '\n';
     }
   }
 
@@ -82,22 +180,12 @@ namespace ivanova
 
     if (param == "AREA")
     {
-      auto maxIt = std::max_element(polygons.begin(), polygons.end(),
-        [](const Polygon& a, const Polygon& b)
-        {
-          return calculateArea(a) < calculateArea(b);
-        }
-      );
+      auto maxIt = std::max_element(polygons.begin(), polygons.end(), AreaComparator());
       out << std::fixed << std::setprecision(1) << calculateArea(*maxIt) << '\n';
     }
     else if (param == "VERTEXES")
     {
-      auto maxIt = std::max_element(polygons.begin(), polygons.end(),
-        [](const Polygon& a, const Polygon& b)
-        {
-          return a.points.size() < b.points.size();
-        }
-      );
+      auto maxIt = std::max_element(polygons.begin(), polygons.end(), VertexCountComparator());
       out << maxIt->points.size() << '\n';
     }
     else
@@ -121,22 +209,12 @@ namespace ivanova
 
     if (param == "AREA")
     {
-      auto minIt = std::min_element(polygons.begin(), polygons.end(),
-        [](const Polygon& a, const Polygon& b)
-        {
-          return calculateArea(a) < calculateArea(b);
-        }
-      );
+      auto minIt = std::min_element(polygons.begin(), polygons.end(), AreaComparator());
       out << calculateArea(*minIt) << '\n';
     }
     else if (param == "VERTEXES")
     {
-      auto minIt = std::min_element(polygons.begin(), polygons.end(),
-        [](const Polygon& a, const Polygon& b)
-        {
-          return a.points.size() < b.points.size();
-        }
-      );
+      auto minIt = std::min_element(polygons.begin(), polygons.end(), VertexCountComparator());
       out << minIt->points.size() << '\n';
     }
     else
@@ -150,43 +228,42 @@ namespace ivanova
     std::string param;
     in >> param;
 
-    auto isValidPolygon = [](const Polygon& poly)
+    if (param == "EVEN")
     {
-      return poly.points.size() >= 3;
-    };
-
-    if (param == "EVEN" || param == "ODD")
+      EvenCount counter;
+      std::for_each(polygons.begin(), polygons.end(), std::ref(counter));
+      out << counter.count << '\n';
+    }
+    else if (param == "ODD")
     {
-      bool isEven = (param == "EVEN");
-      size_t cnt = std::count_if(polygons.begin(), polygons.end(),
-        [isEven, isValidPolygon](const Polygon& poly)
-        {
-          return isValidPolygon(poly) && (poly.points.size() % 2 == 0) == isEven;
-        }
-      );
-      out << cnt << '\n';
+      OddCount counter;
+      std::for_each(polygons.begin(), polygons.end(), std::ref(counter));
+      out << counter.count << '\n';
     }
     else
     {
+      size_t numVertices = 0;
       try
       {
-        size_t numVertices = std::stoul(param);
-        if (numVertices < 3)
-        {
-          throw std::invalid_argument("<INVALID COMMAND>");
-        }
-        size_t cnt = std::count_if(polygons.begin(), polygons.end(),
-          [numVertices, isValidPolygon](const Polygon& poly)
-          {
-            return isValidPolygon(poly) && poly.points.size() == numVertices;
-          }
-        );
-        out << cnt << '\n';
+        numVertices = std::stoul(param);
       }
       catch (const std::invalid_argument&)
       {
         throw std::invalid_argument("<INVALID COMMAND>");
       }
+      catch (const std::out_of_range&)
+      {
+        throw std::invalid_argument("<INVALID COMMAND>");
+      }
+      
+      if (numVertices < 3)
+      {
+        throw std::invalid_argument("<INVALID COMMAND>");
+      }
+      
+      NumVerticesCount counter{numVertices};
+      std::for_each(polygons.begin(), polygons.end(), std::ref(counter));
+      out << counter.count << '\n';
     }
   }
 
@@ -209,21 +286,33 @@ namespace ivanova
       throw std::invalid_argument("<INVALID COMMAND>");
     }
 
-    size_t count = 0;
-    std::vector< Polygon > result;
-
-    for (const auto& poly : polygons)
+    struct EchoProcessor
     {
-      result.push_back(poly);
-      if (poly == target)
-      {
-        result.push_back(target);
-        count++;
-      }
-    }
+      const Polygon& target_;
+      std::vector< Polygon >& result_;
+      size_t count_ = 0;
 
+      EchoProcessor(const Polygon& target, std::vector< Polygon >& result):
+        target_(target),
+        result_(result)
+      {}
+
+      void operator()(const Polygon& poly)
+      {
+        result_.push_back(poly);
+        if (poly == target_)
+        {
+          result_.push_back(target_);
+          count_++;
+        }
+      }
+    };
+
+    std::vector< Polygon > result;
+    EchoProcessor processor(target, result);
+    std::for_each(polygons.begin(), polygons.end(), std::ref(processor));
     polygons = std::move(result);
-    out << count << '\n';
+    out << processor.count_ << '\n';
   }
 
   double distance(const Point& a, const Point& b)
@@ -287,15 +376,26 @@ namespace ivanova
       throw std::invalid_argument("<INVALID COMMAND>");
     }
 
-    size_t count = 0;
-    for (const auto& poly : polygons)
+    struct SameCounter
     {
-      if (areCompatible(poly, target))
-      {
-        count++;
-      }
-    }
+      const Polygon target_;
+      size_t count_ = 0;
 
-    out << count << '\n';
+      SameCounter(const Polygon& target):
+        target_(target)
+      {}
+
+      void operator()(const Polygon& poly)
+      {
+        if (areCompatible(poly, target_))
+        {
+          count_++;
+        }
+      }
+    };
+
+    SameCounter counter(target);
+    std::for_each(polygons.begin(), polygons.end(), std::ref(counter));
+    out << counter.count_ << '\n';
   }
 }
