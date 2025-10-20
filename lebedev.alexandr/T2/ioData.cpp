@@ -37,23 +37,25 @@ namespace
     return in;
   }
 
-  std::istream& operator>>(std::istream& in, UnsignedLongLongOctIO&& rhs)
+  std::istream & operator>>(std::istream & in, UnsignedLongLongOctIO && rhs)
   {
     std::istream::sentry sentry(in);
     if (!sentry)
     {
       return in;
     }
-    std::string token;
-    in >> token;
-    try
+    in >> DelimiterIO{ '0' } >> rhs.obj;
+    if (in)
     {
-      size_t pos = 0;
-      rhs.obj = std::stoull(token, &pos, 8);
-    }
-    catch (...)
-    {
-      in.setstate(std::ios::failbit);
+      unsigned long long a = rhs.obj;
+      while (a > 0)
+      {
+        if (a % 10 >= 8)
+        {
+          in.setstate(std::ios::failbit);
+        }
+        a /= 10;
+      }
     }
     return in;
   }
@@ -142,7 +144,7 @@ std::ostream& lebedev::operator<<(std::ostream& out, const DataStruct& rhs)
   out << "(:key1 ";
   out << rhs.key1;
   out << "ull:";
-  out << "key2 0";
+  out << "key2 " << '0';
   out << rhs.key2;
   out << ":key3 \"";
   out << rhs.key3;
