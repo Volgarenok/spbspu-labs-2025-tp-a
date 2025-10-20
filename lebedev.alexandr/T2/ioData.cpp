@@ -143,7 +143,7 @@ std::ostream& lebedev::operator<<(std::ostream& out, const DataStruct& rhs)
   out << rhs.key1;
   out << "ull:";
   out << "key2 0";
-  out << std::oct << rhs.key2 << std::dec;
+  out << rhs.key2;
   out << ":key3 \"";
   out << rhs.key3;
   out << "\":)";
