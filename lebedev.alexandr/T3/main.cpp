@@ -41,7 +41,7 @@ int main(int argc, char * argv[])
   cmds["MIN"] = std::bind(lebedev::printMin, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
   cmds["COUNT"] = std::bind(lebedev::printCount, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
   cmds["ECHO"] = std::bind(lebedev::printEcho, std::ref(std::cin), std::ref(std::cout), std::ref(polygons));
-  cmds["SAME"] = std::bind(lebedev::printSame, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
+  cmds["INTERSECTIONS"] = std::bind(lebedev::printIntersections, std::ref(std::cin), std::ref(std::cout), std::cref(polygons));
 
   std::string command;
   while (!(std::cin >> command).eof())
