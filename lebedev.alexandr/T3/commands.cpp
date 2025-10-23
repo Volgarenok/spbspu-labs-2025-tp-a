@@ -180,39 +180,39 @@ namespace
     return false;
   }
 
-  bool comparePoints(const lebedev::Point &a, const lebedev::Point &b)
-  {
-    if (a.x != b.x)
-    {
-      return a.x < b.x;
-    }
-    return a.y < b.y;
-  }
+  // bool comparePoints(const lebedev::Point &a, const lebedev::Point &b)
+  // {
+  //   if (a.x != b.x)
+  //   {
+  //     return a.x < b.x;
+  //   }
+  //   return a.y < b.y;
+  // }
 
-  lebedev::Polygon sortPolygonPoints(const lebedev::Polygon &poly)
-  {
-    lebedev::Polygon result = poly;
-    std::sort(result.points.begin(), result.points.end(), comparePoints);
-    return result;
-  }
+  // lebedev::Polygon sortPolygonPoints(const lebedev::Polygon &poly)
+  // {
+  //   lebedev::Polygon result = poly;
+  //   std::sort(result.points.begin(), result.points.end(), comparePoints);
+  //   return result;
+  // }
 
-  bool arePolygonsSame(const lebedev::Polygon &a, const lebedev::Polygon &b)
-  {
-    if (a.points.size() != b.points.size())
-    {
-      return false;
-    }
-    lebedev::Polygon poly1 = sortPolygonPoints(a);
-    lebedev::Polygon poly2 = sortPolygonPoints(b);
-    return poly1.points == poly2.points;
-  }
+  // bool arePolygonsSame(const lebedev::Polygon &a, const lebedev::Polygon &b)
+  // {
+  //   if (a.points.size() != b.points.size())
+  //   {
+  //     return false;
+  //   }
+  //   lebedev::Polygon poly1 = sortPolygonPoints(a);
+  //   lebedev::Polygon poly2 = sortPolygonPoints(b);
+  //   return poly1.points == poly2.points;
+  // }
 
   bool polygonsIntersect(const lebedev::Polygon &a, const lebedev::Polygon &b)
   {
-    if (arePolygonsSame(a, b))
-    {
-      return true;
-    }
+    // if (arePolygonsSame(a, b))
+    // {
+    //   return true;
+    // }
 
     for (size_t i = 0; i < a.points.size(); ++i)
     {
