@@ -26,7 +26,7 @@ bool shiryaeva::ExcludeFreqFilter::operator()(const std::pair< const std::string
   return rel_freq < min_rel || rel_freq > max_rel;
 }
 
-bool shiryaeva::Cmp::operator()(const std::pair<std::string, size_t>& a, const std::pair< std::string, size_t >& b) const
+bool shiryaeva::Cmp::operator()(const std::pair< std::string, size_t >& a, const std::pair< std::string, size_t >& b) const
 {
   if (a.second != b.second) return a.second > b.second;
   return a.first < b.first;
@@ -42,12 +42,12 @@ void shiryaeva::WordInserter::push_back(const std::string& word)
   dict.add_word(normalize_word(word));
 }
 
-void shiryaeva::PrinterInserter::push_back(const std::pair<std::string, size_t>& pair)
+void shiryaeva::PrinterInserter::push_back(const std::pair< std::string, size_t >& pair)
 {
   out << Printer{}(pair);
 }
 
-void shiryaeva::MergeInserter::push_back(const std::pair<const std::string, size_t>& pair)
+void shiryaeva::MergeInserter::push_back(const std::pair< const std::string, size_t >& pair)
 {
   const std::string& word = pair.first;
   size_t count = pair.second;

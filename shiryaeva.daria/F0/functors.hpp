@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cctype>
 #include <iostream>
+#include <vector>
 
 namespace shiryaeva
 {
@@ -46,16 +47,16 @@ namespace shiryaeva
 
   struct PrinterInserter
   {
-    using value_type = std::pair<std::string, size_t>;
+    using value_type = std::pair< std::string, size_t >;
     std::ostream &out;
-    void push_back(const std::pair<std::string, size_t>& pair);
+    void push_back(const std::pair< std::string, size_t >& pair);
   };
 
   struct MergeInserter
   {
-    using value_type = std::pair<const std::string, size_t>;
+    using value_type = std::pair< const std::string, size_t >;
     FrequencyDictionary &target;
-    void push_back(const std::pair<const std::string, size_t>& pair);
+    void push_back(const std::pair< const std::string, size_t >& pair);
   };
 }
 

@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <cctype>
 #include <numeric>
+#include <vector>
 
 void shiryaeva::process_text_and_add(FrequencyDictionary &dict, const std::string &text)
 {
