@@ -164,14 +164,14 @@ namespace
   {
     auto cross = [](const lebedev::Point &p1, const lebedev::Point &p2, const lebedev::Point &p3)
     {
-        return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
+      return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
     };
-    
+
     double d1 = cross(a1, a2, b1);
     double d2 = cross(a1, a2, b2);
     double d3 = cross(b1, b2, a1);
     double d4 = cross(b1, b2, a2);
-    
+
     if ((d1 == 0 && isPointOnSegment(a1, a2, b1)) || (d2 == 0 && isPointOnSegment(a1, a2, b2))
         || (d3 == 0 && isPointOnSegment(b1, b2, a1)) || (d4 == 0 && isPointOnSegment(b1, b2, a2)))
     {
