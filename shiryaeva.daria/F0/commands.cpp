@@ -2,7 +2,6 @@
 #include "functors.hpp"
 #include <sstream>
 #include <fstream>
-#include <regex>
 #include <iterator>
 #include <algorithm>
 #include <iomanip>
@@ -11,13 +10,13 @@
 
 void shiryaeva::process_text_and_add(FrequencyDictionary &dict, const std::string &text)
 {
-  const std::regex re("([A-Za-z]+)");
-  std::sregex_token_iterator it(text.begin(), text.end(), re, 1);
-  std::sregex_token_iterator end;
   std::vector< std::string > words;
-  std::copy(it, end, std::back_inserter(words));
 
-  std::transform(words.begin(), words.end(), words.begin(),ProcessWord{dict});
+  std::istringstream iss(text);
+  std::copy(std::istream_iterator< std::string >(iss), std::istream_iterator< std::string >(), std::back_inserter(words));
+
+  WordInserter inserter{dict};
+  std::copy(words.begin(), words.end(), std::back_inserter(inserter));
 }
 
 void shiryaeva::create_dict(Dictionaries &dicts, std::istream &args, std::ostream &out)
@@ -104,7 +103,7 @@ void shiryaeva::get_freq(Dictionaries &dicts, std::istream &args, std::ostream &
   }
 
   std::string normalized_word = normalize_word(word);
-  std::size_t f = it->second.get_freq(normalized_word);
+  size_t f = it->second.get_freq(normalized_word);
 
   if (f == 0)
   {
@@ -195,7 +194,8 @@ void shiryaeva::filter_by_freq(Dictionaries &dicts, std::istream &args, std::ost
   }
   else
   {
-    std::transform(result.begin(), result.end(), std::ostream_iterator< std::string >(out), Printer{});
+    PrinterInserter printer{out};
+    std::copy(result.begin(), result.end(), std::back_inserter(printer));
   }
 }
 
@@ -232,7 +232,8 @@ void shiryaeva::exclude_by_freq(Dictionaries &dicts, std::istream &args, std::os
   }
   else
   {
-    std::transform(result.begin(), result.end(), std::ostream_iterator< std::string >(out), Printer{});
+    PrinterInserter printer{out};
+    std::copy(result.begin(), result.end(), std::back_inserter(printer));
   }
 }
 
@@ -256,7 +257,8 @@ void shiryaeva::display_all(Dictionaries &dicts, std::istream &args, std::ostrea
     return;
   }
 
-  std::transform(it->second.dict.begin(), it->second.dict.end(), std::ostream_iterator< std::string >(out), Printer{});
+  PrinterInserter printer{out};
+  std::copy(it->second.dict.begin(), it->second.dict.end(), std::back_inserter(printer));
 }
 
 void shiryaeva::clear_dict(Dictionaries &dicts, std::istream &args, std::ostream &out)
@@ -309,9 +311,8 @@ void shiryaeva::merge_dicts(Dictionaries &dicts, std::istream &args, std::ostrea
   FrequencyDictionary merged;
   merged = it1->second;
 
-  std::vector< std::string > all_words;
-  std::transform(it2->second.dict.begin(), it2->second.dict.end(), std::back_inserter(all_words), GetKey{});
-  std::transform(all_words.begin(), all_words.end(), all_words.begin(), MergeWord{merged, it2->second});
+  MergeInserter merger{merged};
+  std::copy(it2->second.dict.begin(), it2->second.dict.end(), std::back_inserter(merger));
 
   dicts[result_dict] = merged;
   out << "Словари \"" << dict1 << "\" и \"" << dict2 << "\" объединены в \"" << result_dict << "\"\n";
@@ -345,5 +346,6 @@ void shiryaeva::most_common(Dictionaries &dicts, std::istream &args, std::ostrea
     vec.resize(3);
   }
 
-  std::transform(vec.begin(), vec.end(), std::ostream_iterator< std::string >(out), Printer{});
+  PrinterInserter printer{out};
+  std::copy(vec.begin(), vec.end(), std::back_inserter(printer));
 }

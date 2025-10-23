@@ -1,6 +1,5 @@
 #include "functors.hpp"
 
-
 char shiryaeva::tolower_char(unsigned char c)
 {
   return static_cast< char >(std::tolower(c));
@@ -27,16 +26,6 @@ bool shiryaeva::ExcludeFreqFilter::operator()(const std::pair< const std::string
   return rel_freq < min_rel || rel_freq > max_rel;
 }
 
-bool shiryaeva::MinFreqFilter::operator()(const std::pair< const std::string, size_t > &p) const
-{
-  return p.second >= minf;
-}
-
-std::string shiryaeva::MaxFreqFilter::operator()(const std::pair< const std::string, size_t > &p) const
-{
-  return (p.second > maxf) ? p.first : std::string{};
-}
-
 bool shiryaeva::Cmp::operator()(const std::pair<std::string, size_t>& a, const std::pair< std::string, size_t >& b) const
 {
   if (a.second != b.second) return a.second > b.second;
@@ -48,38 +37,20 @@ std::string shiryaeva::Printer::operator()(const std::pair< std::string, size_t 
   return "\"" + p.first + "\" - " + std::to_string(p.second) + "\n";
 }
 
-size_t shiryaeva::AddFreq::operator()(size_t acc, const std::pair<const std::string, size_t>& p) const
+void shiryaeva::WordInserter::push_back(const std::string& word)
 {
-  return acc + p.second;
+  dict.add_word(normalize_word(word));
 }
 
-void shiryaeva::Adder::operator()(const std::string &w) const
+void shiryaeva::PrinterInserter::push_back(const std::pair<std::string, size_t>& pair)
 {
-  d.add_word(normalize_word(w));
+  out << Printer{}(pair);
 }
 
-std::string shiryaeva::GetKey::operator()(const std::pair<const std::string, size_t>& p) const
+void shiryaeva::MergeInserter::push_back(const std::pair<const std::string, size_t>& pair)
 {
-  return p.first;
-}
-
-std::string shiryaeva::ProcessWord::operator()(const std::string& w) const
-{
-  Adder{dict}(w);
-  return w;
-}
-
- std::string shiryaeva::MergeWord::operator()(const std::string& word) const
-{
-  size_t count = source.dict.at(word);
-
+  const std::string& word = pair.first;
+  size_t count = pair.second;
   target.dict[word] += count;
   target.total_words += count;
-  return word;
-}
-
-std::string shiryaeva::RemoveWord::operator()(const std::string& key) const
-{
-  dict.dict.erase(key);
-  return key;
 }

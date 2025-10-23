@@ -31,12 +31,18 @@ int main()
   std::string line;
   while (std::getline(std::cin, line))
   {
-    if (line.empty()) continue;
+    if (line.empty())
+    {
+      continue;
+    }
 
     std::istringstream full(line);
     std::string cmd;
     full >> cmd;
-    if (cmd.empty()) continue;
+    if (cmd.empty())
+    {
+      continue;
+    }
 
     std::string rest;
     std::getline(full, rest);

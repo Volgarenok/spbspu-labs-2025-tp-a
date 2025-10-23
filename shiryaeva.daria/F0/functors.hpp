@@ -6,6 +6,7 @@
 #include <utility>
 #include <algorithm>
 #include <cctype>
+#include <iostream>
 
 namespace shiryaeva
 {
@@ -26,18 +27,6 @@ namespace shiryaeva
     bool operator()(const std::pair< const std::string, size_t > &p) const;
   };
 
-  struct MinFreqFilter
-  {
-    size_t minf;
-    bool operator()(const std::pair< const std::string, size_t > &p) const;
-  };
-
-  struct MaxFreqFilter
-  {
-    size_t maxf;
-    std::string operator()(const std::pair< const std::string, size_t > &p) const;
-  };
-
   struct Cmp
   {
     bool operator()(const std::pair< std::string, size_t >& a, const std::pair< std::string, size_t >& b) const;
@@ -48,39 +37,25 @@ namespace shiryaeva
     std::string operator()(const std::pair< std::string, size_t >& p) const;
   };
 
-  struct AddFreq
+  struct WordInserter
   {
-    size_t operator()(size_t acc, const std::pair< const std::string, size_t >& p) const;
-  };
-
-  struct Adder
-  {
-    FrequencyDictionary &d;
-    void operator()(const std::string &w) const;
-  };
-
-  struct GetKey
-  {
-    std::string operator()(const std::pair< const std::string, size_t >& p) const;
-  };
-
-  struct ProcessWord
-  {
+    using value_type = std::string;
     FrequencyDictionary &dict;
-    std::string operator()(const std::string& w) const;
+    void push_back(const std::string& word);
   };
 
-  struct MergeWord
+  struct PrinterInserter
   {
+    using value_type = std::pair<std::string, size_t>;
+    std::ostream &out;
+    void push_back(const std::pair<std::string, size_t>& pair);
+  };
+
+  struct MergeInserter
+  {
+    using value_type = std::pair<const std::string, size_t>;
     FrequencyDictionary &target;
-    const FrequencyDictionary &source;
-    std::string operator()(const std::string& word) const;
-  };
-
-  struct RemoveWord
-  {
-    FrequencyDictionary &dict;
-    std::string operator()(const std::string& key) const;
+    void push_back(const std::pair<const std::string, size_t>& pair);
   };
 }
 
