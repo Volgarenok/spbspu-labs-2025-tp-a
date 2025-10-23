@@ -2,17 +2,17 @@
 #include <iomanip>
 #include <string>
 #include <cmath>
-#include <sstream>
 #include <functional>
 #include <numeric>
+#include <iterator>
 #include "streamGuard.hpp"
 #include "commands.hpp"
 
 namespace ivanova
 {
-  struct EvenAreaSum
+  class EvenAreaSum
   {
-    double sum = 0.0;
+  public:
     void operator()(const Polygon& poly)
     {
       if (poly.points.size() % 2 == 0)
@@ -20,11 +20,17 @@ namespace ivanova
         sum += calculateArea(poly);
       }
     }
+    double getSum() const
+    {
+      return sum;
+    }
+  private:
+    double sum = 0.0;
   };
 
-  struct OddAreaSum
+  class OddAreaSum
   {
-    double sum = 0.0;
+  public:
     void operator()(const Polygon& poly)
     {
       if (poly.points.size() % 2 == 1)
@@ -32,12 +38,20 @@ namespace ivanova
         sum += calculateArea(poly);
       }
     }
+    double getSum() const
+    {
+      return sum;
+    }
+  private:
+    double sum = 0.0;
   };
 
-  struct NumVerticesAreaSum
+  class NumVerticesAreaSum
   {
-    size_t num;
-    double sum = 0.0;
+  public:
+    explicit NumVerticesAreaSum(size_t n):
+      num(n)
+    {}
     void operator()(const Polygon& poly)
     {
       if (poly.points.size() == num)
@@ -45,36 +59,51 @@ namespace ivanova
         sum += calculateArea(poly);
       }
     }
+    double getSum() const
+    {
+      return sum;
+    }
+  private:
+    size_t num;
+    double sum = 0.0;
   };
 
-  struct TotalAreaSum
+  class TotalAreaSum
   {
-    double sum = 0.0;
+  public:
     void operator()(const Polygon& poly)
     {
       sum += calculateArea(poly);
     }
+    double getSum() const
+    {
+      return sum;
+    }
+  private:
+    double sum = 0.0;
   };
 
-  struct AreaComparator
+  class AreaComparator
   {
+  public:
     bool operator()(const Polygon& a, const Polygon& b) const
     {
       return calculateArea(a) < calculateArea(b);
     }
   };
 
-  struct VertexCountComparator
+  class VertexCountComparator
   {
+  public:
     bool operator()(const Polygon& a, const Polygon& b) const
     {
       return a.points.size() < b.points.size();
     }
   };
 
-  struct EvenCount
+  class EvenCount
   {
-    size_t count = 0;
+  public:
     void operator()(const Polygon& poly)
     {
       if (poly.points.size() >= 3 && poly.points.size() % 2 == 0)
@@ -82,11 +111,17 @@ namespace ivanova
         count++;
       }
     }
+    size_t getCount() const
+    {
+      return count;
+    }
+  private:
+    size_t count = 0;
   };
 
-  struct OddCount
+  class OddCount
   {
-    size_t count = 0;
+  public:
     void operator()(const Polygon& poly)
     {
       if (poly.points.size() >= 3 && poly.points.size() % 2 == 1)
@@ -94,12 +129,20 @@ namespace ivanova
         count++;
       }
     }
+    size_t getCount() const
+    {
+      return count;
+    }
+  private:
+    size_t count = 0;
   };
 
-  struct NumVerticesCount
+  class NumVerticesCount
   {
-    size_t num;
-    size_t count = 0;
+  public:
+    explicit NumVerticesCount(size_t n):
+      num(n)
+    {}
     void operator()(const Polygon& poly)
     {
       if (poly.points.size() >= 3 && poly.points.size() == num)
@@ -107,6 +150,13 @@ namespace ivanova
         count++;
       }
     }
+    size_t getCount() const
+    {
+      return count;
+    }
+  private:
+    size_t num;
+    size_t count = 0;
   };
 
   void area(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
@@ -121,13 +171,13 @@ namespace ivanova
     {
       EvenAreaSum accumulator;
       std::for_each(polygons.begin(), polygons.end(), std::ref(accumulator));
-      out << accumulator.sum << '\n';
+      out << accumulator.getSum() << '\n';
     }
     else if (param == "ODD")
     {
       OddAreaSum accumulator;
       std::for_each(polygons.begin(), polygons.end(), std::ref(accumulator));
-      out << accumulator.sum << '\n';
+      out << accumulator.getSum() << '\n';
     }
     else if (param == "MEAN")
     {
@@ -137,32 +187,32 @@ namespace ivanova
       }
       TotalAreaSum accumulator;
       std::for_each(polygons.begin(), polygons.end(), std::ref(accumulator));
-      out << (accumulator.sum / polygons.size()) << '\n';
+      out << (accumulator.getSum() / polygons.size()) << '\n';
     }
     else
     {
       size_t numVertices = 0;
-      try
-      {
-        numVertices = std::stoul(param);
-      }
-      catch (const std::invalid_argument&)
-      {
-        throw std::invalid_argument("<INVALID COMMAND>");
-      }
-      catch (const std::out_of_range&)
-      {
-        throw std::invalid_argument("<INVALID COMMAND>");
-      }
-      
+      auto it = param.begin();
+      auto end = param.end();
+
+      numVertices = std::accumulate(it, end, 0UL,
+        [](size_t acc, char c) -> size_t
+        {
+          if (c < '0' || c > '9')
+          {
+            throw std::invalid_argument("<INVALID COMMAND>");
+          }
+          return acc * 10 + (c - '0');
+        });
+
       if (numVertices < 3)
       {
         throw std::invalid_argument("<INVALID COMMAND>");
       }
-      
-      NumVerticesAreaSum accumulator{numVertices};
+
+      NumVerticesAreaSum accumulator(numVertices);
       std::for_each(polygons.begin(), polygons.end(), std::ref(accumulator));
-      out << accumulator.sum << '\n';
+      out << accumulator.getSum() << '\n';
     }
   }
 
@@ -232,170 +282,166 @@ namespace ivanova
     {
       EvenCount counter;
       std::for_each(polygons.begin(), polygons.end(), std::ref(counter));
-      out << counter.count << '\n';
+      out << counter.getCount() << '\n';
     }
     else if (param == "ODD")
     {
       OddCount counter;
       std::for_each(polygons.begin(), polygons.end(), std::ref(counter));
-      out << counter.count << '\n';
+      out << counter.getCount() << '\n';
     }
     else
     {
       size_t numVertices = 0;
-      try
-      {
-        numVertices = std::stoul(param);
-      }
-      catch (const std::invalid_argument&)
-      {
-        throw std::invalid_argument("<INVALID COMMAND>");
-      }
-      catch (const std::out_of_range&)
-      {
-        throw std::invalid_argument("<INVALID COMMAND>");
-      }
-      
+      auto it = param.begin();
+      auto end = param.end();
+
+      numVertices = std::accumulate(it, end, 0UL,
+        [](size_t acc, char c) -> size_t
+        {
+          if (c < '0' || c > '9')
+          {
+            throw std::invalid_argument("<INVALID COMMAND>");
+          }
+          return acc * 10 + (c - '0');
+        });
+
       if (numVertices < 3)
       {
         throw std::invalid_argument("<INVALID COMMAND>");
       }
-      
-      NumVerticesCount counter{numVertices};
+
+      NumVerticesCount counter(numVertices);
       std::for_each(polygons.begin(), polygons.end(), std::ref(counter));
-      out << counter.count << '\n';
+      out << counter.getCount() << '\n';
     }
   }
 
+  class EchoProcessor
+  {
+  public:
+    EchoProcessor(const Polygon& target, std::vector< Polygon >& result):
+      target_(target),
+      result_(result),
+      count_(0)
+    {}
+    void operator()(const Polygon& poly)
+    {
+      result_.push_back(poly);
+      if (poly == target_)
+      {
+        result_.push_back(target_);
+        count_++;
+      }
+    }
+    size_t getCount() const
+    {
+      return count_;
+    }
+  private:
+    const Polygon& target_;
+    std::vector< Polygon >& result_;
+    size_t count_;
+  };
+
   void echo(std::istream& in, std::ostream& out, std::vector< Polygon >& polygons)
   {
-    std::string line;
-    std::getline(in, line);
-
-    if (line.empty())
-    {
-      throw std::invalid_argument("<INVALID COMMAND>");
-    }
-
-    std::istringstream iss(line);
     Polygon target;
-    iss >> target;
-
-    if (!iss || target.points.size() < 3 || !iss.eof())
+    if (!(in >> target) || target.points.size() < 3)
     {
       throw std::invalid_argument("<INVALID COMMAND>");
     }
-
-    struct EchoProcessor
-    {
-      const Polygon& target_;
-      std::vector< Polygon >& result_;
-      size_t count_ = 0;
-
-      EchoProcessor(const Polygon& target, std::vector< Polygon >& result):
-        target_(target),
-        result_(result)
-      {}
-
-      void operator()(const Polygon& poly)
-      {
-        result_.push_back(poly);
-        if (poly == target_)
-        {
-          result_.push_back(target_);
-          count_++;
-        }
-      }
-    };
 
     std::vector< Polygon > result;
     EchoProcessor processor(target, result);
     std::for_each(polygons.begin(), polygons.end(), std::ref(processor));
     polygons = std::move(result);
-    out << processor.count_ << '\n';
+    out << processor.getCount() << '\n';
   }
 
-  double distance(const Point& a, const Point& b)
+  class DistanceCalculator
   {
-    return std::sqrt(std::pow(b.x - a.x, 2) + std::pow(b.y - a.y, 2));
-  }
-
-  bool areCompatible(const Polygon& a, const Polygon& b)
-  {
-    if (a.points.size() != b.points.size())
+  public:
+    double operator()(const Point& a, const Point& b) const
     {
-      return false;
+      double dx = b.x - a.x;
+      double dy = b.y - a.y;
+      return std::sqrt(dx * dx + dy * dy);
     }
+  };
 
-    size_t n = a.points.size();
-
-    for (size_t shift = 0; shift < n; ++shift)
+  class CompatibilityChecker
+  {
+  public:
+    bool operator()(const Polygon& a, const Polygon& b) const
     {
-      bool compatible = true;
-
-      for (size_t i = 0; i < n && compatible; ++i)
+      if (a.points.size() != b.points.size())
       {
-        size_t j = (i + 1) % n;
-        size_t i_shift = (i + shift) % n;
-        size_t j_shift = (j + shift) % n;
+        return false;
+      }
 
-        double dist_a = distance(a.points[i], a.points[j]);
-        double dist_b = distance(b.points[i_shift], b.points[j_shift]);
+      std::vector< double > a_distances = calculateDistances(a);
+      std::vector< double > b_distances = calculateDistances(b);
 
-        if (std::abs(dist_a - dist_b) > 1e-6)
+      return std::search(a_distances.begin(), a_distances.end(),
+        b_distances.begin(), b_distances.end(),
+        [](double d1, double d2)
         {
-          compatible = false;
-        }
-      }
-
-      if (compatible)
-      {
-        return true;
-      }
+          return std::abs(d1 - d2) < 1e-6;
+        }) != a_distances.end();
     }
 
-    return false;
-  }
+  private:
+    std::vector< double > calculateDistances(const Polygon& poly) const
+    {
+      std::vector< double > distances;
+      distances.reserve(poly.points.size());
+
+      DistanceCalculator dist_calc;
+      for (size_t i = 0; i < poly.points.size(); ++i)
+      {
+        size_t next = (i + 1) % poly.points.size();
+        distances.push_back(dist_calc(poly.points[i], poly.points[next]));
+      }
+
+      return distances;
+    }
+  };
+
+  class SameCounter
+  {
+  public:
+    explicit SameCounter(const Polygon& target):
+      target_(target),
+      count_(0)
+    {}
+    void operator()(const Polygon& poly)
+    {
+      CompatibilityChecker checker;
+      if (checker(poly, target_))
+      {
+        count_++;
+      }
+    }
+    size_t getCount() const
+    {
+      return count_;
+    }
+  private:
+    const Polygon target_;
+    size_t count_;
+  };
 
   void same(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
   {
-    std::string line;
-    std::getline(in, line);
-
-    if (line.empty())
-    {
-      throw std::invalid_argument("<INVALID COMMAND>");
-    }
-
-    std::istringstream iss(line);
     Polygon target;
-    iss >> target;
-
-    if (!iss || target.points.size() < 3 || !iss.eof())
+    if (!(in >> target) || target.points.size() < 3)
     {
       throw std::invalid_argument("<INVALID COMMAND>");
     }
-
-    struct SameCounter
-    {
-      const Polygon target_;
-      size_t count_ = 0;
-
-      SameCounter(const Polygon& target):
-        target_(target)
-      {}
-
-      void operator()(const Polygon& poly)
-      {
-        if (areCompatible(poly, target_))
-        {
-          count_++;
-        }
-      }
-    };
 
     SameCounter counter(target);
     std::for_each(polygons.begin(), polygons.end(), std::ref(counter));
-    out << counter.count_ << '\n';
+    out << counter.getCount() << '\n';
   }
 }
