@@ -5,6 +5,7 @@
 #include <functional>
 #include <numeric>
 #include <iterator>
+#include <vector>
 #include "streamGuard.hpp"
 #include "commands.hpp"
 
@@ -106,7 +107,7 @@ namespace ivanova
   public:
     void operator()(const Polygon& poly)
     {
-      if (poly.points.size() >= 3 && poly.points.size() % 2 == 0)
+      if (poly.points.size() % 2 == 0)
       {
         count++;
       }
@@ -124,7 +125,7 @@ namespace ivanova
   public:
     void operator()(const Polygon& poly)
     {
-      if (poly.points.size() >= 3 && poly.points.size() % 2 == 1)
+      if (poly.points.size() % 2 == 1)
       {
         count++;
       }
@@ -145,7 +146,7 @@ namespace ivanova
     {}
     void operator()(const Polygon& poly)
     {
-      if (poly.points.size() >= 3 && poly.points.size() == num)
+      if (poly.points.size() == num)
       {
         count++;
       }
@@ -370,6 +371,22 @@ namespace ivanova
     }
   };
 
+  class PolygonDistanceCalculator
+  {
+  public:
+    explicit PolygonDistanceCalculator(const Polygon& poly):
+      poly_(poly)
+    {}
+    double operator()(size_t index) const
+    {
+      size_t next_index = (index + 1) % poly_.points.size();
+      DistanceCalculator dist_calc;
+      return dist_calc(poly_.points[index], poly_.points[next_index]);
+    }
+  private:
+    const Polygon& poly_;
+  };
+
   class CompatibilityChecker
   {
   public:
@@ -380,8 +397,23 @@ namespace ivanova
         return false;
       }
 
-      std::vector< double > a_distances = calculateDistances(a);
-      std::vector< double > b_distances = calculateDistances(b);
+      std::vector< double > a_distances(a.points.size());
+      std::vector< double > b_distances(b.points.size());
+
+      PolygonDistanceCalculator a_calc(a);
+      PolygonDistanceCalculator b_calc(b);
+
+      std::generate(a_distances.begin(), a_distances.end(),
+        [&a_calc, index = 0UL]() mutable
+        {
+          return a_calc(index++);
+        });
+
+      std::generate(b_distances.begin(), b_distances.end(),
+        [&b_calc, index = 0UL]() mutable
+        {
+          return b_calc(index++);
+        });
 
       return std::search(a_distances.begin(), a_distances.end(),
         b_distances.begin(), b_distances.end(),
@@ -389,22 +421,6 @@ namespace ivanova
         {
           return std::abs(d1 - d2) < 1e-6;
         }) != a_distances.end();
-    }
-
-  private:
-    std::vector< double > calculateDistances(const Polygon& poly) const
-    {
-      std::vector< double > distances;
-      distances.reserve(poly.points.size());
-
-      DistanceCalculator dist_calc;
-      for (size_t i = 0; i < poly.points.size(); ++i)
-      {
-        size_t next = (i + 1) % poly.points.size();
-        distances.push_back(dist_calc(poly.points[i], poly.points[next]));
-      }
-
-      return distances;
     }
   };
 
