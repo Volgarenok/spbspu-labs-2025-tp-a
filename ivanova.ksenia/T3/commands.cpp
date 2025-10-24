@@ -5,7 +5,7 @@
 #include <functional>
 #include <numeric>
 #include <iterator>
-#include <vector>
+#include <cctype>
 #include "streamGuard.hpp"
 #include "commands.hpp"
 
@@ -160,6 +160,24 @@ namespace ivanova
     size_t count = 0;
   };
 
+  class IsDigit
+  {
+  public:
+    bool operator()(char c) const
+    {
+      return std::isdigit(static_cast<unsigned char>(c));
+    }
+  };
+
+  class AccumulateDigit
+  {
+  public:
+    size_t operator()(size_t acc, char c) const
+    {
+      return acc * 10 + (c - '0');
+    }
+  };
+
   void area(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
   {
     std::string param;
@@ -192,19 +210,12 @@ namespace ivanova
     }
     else
     {
-      size_t numVertices = 0;
-      auto it = param.begin();
-      auto end = param.end();
-
-      numVertices = std::accumulate(it, end, 0UL,
-        [](size_t acc, char c) -> size_t
-        {
-          if (c < '0' || c > '9')
-          {
-            throw std::invalid_argument("<INVALID COMMAND>");
-          }
-          return acc * 10 + (c - '0');
-        });
+      if (!std::all_of(param.begin(), param.end(), IsDigit()))
+      {
+        throw std::invalid_argument("<INVALID COMMAND>");
+      }
+      
+      size_t numVertices = std::accumulate(param.begin(), param.end(), 0UL, AccumulateDigit());
 
       if (numVertices < 3)
       {
@@ -293,19 +304,12 @@ namespace ivanova
     }
     else
     {
-      size_t numVertices = 0;
-      auto it = param.begin();
-      auto end = param.end();
-
-      numVertices = std::accumulate(it, end, 0UL,
-        [](size_t acc, char c) -> size_t
-        {
-          if (c < '0' || c > '9')
-          {
-            throw std::invalid_argument("<INVALID COMMAND>");
-          }
-          return acc * 10 + (c - '0');
-        });
+      if (!std::all_of(param.begin(), param.end(), IsDigit()))
+      {
+        throw std::invalid_argument("<INVALID COMMAND>");
+      }
+      
+      size_t numVertices = std::accumulate(param.begin(), param.end(), 0UL, AccumulateDigit());
 
       if (numVertices < 3)
       {
@@ -371,20 +375,32 @@ namespace ivanova
     }
   };
 
-  class PolygonDistanceCalculator
+  class DoubleApproxEqual
   {
   public:
-    explicit PolygonDistanceCalculator(const Polygon& poly):
-      poly_(poly)
-    {}
-    double operator()(size_t index) const
+    bool operator()(double d1, double d2) const
     {
-      size_t next_index = (index + 1) % poly_.points.size();
-      DistanceCalculator dist_calc;
-      return dist_calc(poly_.points[index], poly_.points[next_index]);
+      return std::abs(d1 - d2) < 1e-6;
+    }
+  };
+
+  class DistanceGenerator
+  {
+  public:
+    DistanceGenerator(const Polygon& poly):
+      poly_(poly),
+      index_(0)
+    {}
+    double operator()()
+    {
+      size_t next = (index_ + 1) % poly_.points.size();
+      double dist = DistanceCalculator()(poly_.points[index_], poly_.points[next]);
+      index_++;
+      return dist;
     }
   private:
     const Polygon& poly_;
+    size_t index_;
   };
 
   class CompatibilityChecker
@@ -397,30 +413,22 @@ namespace ivanova
         return false;
       }
 
-      std::vector< double > a_distances(a.points.size());
-      std::vector< double > b_distances(b.points.size());
-
-      PolygonDistanceCalculator a_calc(a);
-      PolygonDistanceCalculator b_calc(b);
-
-      std::generate(a_distances.begin(), a_distances.end(),
-        [&a_calc, index = 0UL]() mutable
-        {
-          return a_calc(index++);
-        });
-
-      std::generate(b_distances.begin(), b_distances.end(),
-        [&b_calc, index = 0UL]() mutable
-        {
-          return b_calc(index++);
-        });
+      std::vector< double > a_distances = calculateDistances(a);
+      std::vector< double > b_distances = calculateDistances(b);
 
       return std::search(a_distances.begin(), a_distances.end(),
         b_distances.begin(), b_distances.end(),
-        [](double d1, double d2)
-        {
-          return std::abs(d1 - d2) < 1e-6;
-        }) != a_distances.end();
+        DoubleApproxEqual()) != a_distances.end();
+    }
+
+  private:
+    std::vector< double > calculateDistances(const Polygon& poly) const
+    {
+      std::vector< double > distances;
+      distances.reserve(poly.points.size());
+      DistanceGenerator generator(poly);
+      std::generate_n(std::back_inserter(distances), poly.points.size(), generator);
+      return distances;
     }
   };
 
