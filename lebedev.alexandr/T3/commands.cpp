@@ -172,6 +172,11 @@ namespace
     double d3 = cross(b1, b2, a1);
     double d4 = cross(b1, b2, a2);
 
+    if ((d1 * d2 < 0) && (d3 * d4 < 0))
+    {
+      return true;
+    }
+
     if ((d1 == 0 && isPointOnSegment(a1, a2, b1)) || (d2 == 0 && isPointOnSegment(a1, a2, b2))
         || (d3 == 0 && isPointOnSegment(b1, b2, a1)) || (d4 == 0 && isPointOnSegment(b1, b2, a2)))
     {
