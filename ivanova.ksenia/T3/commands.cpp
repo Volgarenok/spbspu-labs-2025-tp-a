@@ -16,7 +16,7 @@ namespace ivanova
   public:
     void operator()(const Polygon& poly)
     {
-      if (poly.points.size() % 2 == 0)
+      if (poly.points.size() >= 3 && poly.points.size() % 2 == 0)
       {
         sum += calculateArea(poly);
       }
@@ -34,7 +34,7 @@ namespace ivanova
   public:
     void operator()(const Polygon& poly)
     {
-      if (poly.points.size() % 2 == 1)
+      if (poly.points.size() >= 3 && poly.points.size() % 2 == 1)
       {
         sum += calculateArea(poly);
       }
@@ -55,7 +55,7 @@ namespace ivanova
     {}
     void operator()(const Polygon& poly)
     {
-      if (poly.points.size() == num)
+      if (poly.points.size() >= 3 && poly.points.size() == num)
       {
         sum += calculateArea(poly);
       }
@@ -74,7 +74,10 @@ namespace ivanova
   public:
     void operator()(const Polygon& poly)
     {
-      sum += calculateArea(poly);
+      if (poly.points.size() >= 3)
+      {
+        sum += calculateArea(poly);
+      }
     }
     double getSum() const
     {
@@ -107,7 +110,7 @@ namespace ivanova
   public:
     void operator()(const Polygon& poly)
     {
-      if (poly.points.size() % 2 == 0)
+      if (poly.points.size() >= 3 && poly.points.size() % 2 == 0)
       {
         count++;
       }
@@ -125,7 +128,7 @@ namespace ivanova
   public:
     void operator()(const Polygon& poly)
     {
-      if (poly.points.size() % 2 == 1)
+      if (poly.points.size() >= 3 && poly.points.size() % 2 == 1)
       {
         count++;
       }
@@ -146,7 +149,7 @@ namespace ivanova
     {}
     void operator()(const Polygon& poly)
     {
-      if (poly.points.size() == num)
+      if (poly.points.size() >= 3 && poly.points.size() == num)
       {
         count++;
       }
@@ -178,6 +181,15 @@ namespace ivanova
     }
   };
 
+  class ValidPolygonFilter
+  {
+  public:
+    bool operator()(const Polygon& poly) const
+    {
+      return poly.points.size() >= 3;
+    }
+  };
+
   void area(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
   {
     std::string param;
@@ -200,13 +212,17 @@ namespace ivanova
     }
     else if (param == "MEAN")
     {
-      if (polygons.empty())
+      std::vector< Polygon > validPolygons;
+      std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(validPolygons), ValidPolygonFilter());
+
+      if (validPolygons.empty())
       {
         throw std::invalid_argument("<INVALID COMMAND>");
       }
+
       TotalAreaSum accumulator;
-      std::for_each(polygons.begin(), polygons.end(), std::ref(accumulator));
-      out << (accumulator.getSum() / polygons.size()) << '\n';
+      std::for_each(validPolygons.begin(), validPolygons.end(), std::ref(accumulator));
+      out << (accumulator.getSum() / validPolygons.size()) << '\n';
     }
     else
     {
@@ -233,7 +249,10 @@ namespace ivanova
     std::string param;
     in >> param;
 
-    if (polygons.empty())
+    std::vector< Polygon > validPolygons;
+    std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(validPolygons), ValidPolygonFilter());
+
+    if (validPolygons.empty())
     {
       throw std::invalid_argument("<INVALID COMMAND>");
     }
@@ -242,12 +261,12 @@ namespace ivanova
 
     if (param == "AREA")
     {
-      auto maxIt = std::max_element(polygons.begin(), polygons.end(), AreaComparator());
+      auto maxIt = std::max_element(validPolygons.begin(), validPolygons.end(), AreaComparator());
       out << std::fixed << std::setprecision(1) << calculateArea(*maxIt) << '\n';
     }
     else if (param == "VERTEXES")
     {
-      auto maxIt = std::max_element(polygons.begin(), polygons.end(), VertexCountComparator());
+      auto maxIt = std::max_element(validPolygons.begin(), validPolygons.end(), VertexCountComparator());
       out << maxIt->points.size() << '\n';
     }
     else
@@ -261,7 +280,10 @@ namespace ivanova
     std::string param;
     in >> param;
 
-    if (polygons.empty())
+    std::vector< Polygon > validPolygons;
+    std::copy_if(polygons.begin(), polygons.end(), std::back_inserter(validPolygons), ValidPolygonFilter());
+
+    if (validPolygons.empty())
     {
       throw std::invalid_argument("<INVALID COMMAND>");
     }
@@ -271,12 +293,12 @@ namespace ivanova
 
     if (param == "AREA")
     {
-      auto minIt = std::min_element(polygons.begin(), polygons.end(), AreaComparator());
+      auto minIt = std::min_element(validPolygons.begin(), validPolygons.end(), AreaComparator());
       out << calculateArea(*minIt) << '\n';
     }
     else if (param == "VERTEXES")
     {
-      auto minIt = std::min_element(polygons.begin(), polygons.end(), VertexCountComparator());
+      auto minIt = std::min_element(validPolygons.begin(), validPolygons.end(), VertexCountComparator());
       out << minIt->points.size() << '\n';
     }
     else
@@ -384,24 +406,73 @@ namespace ivanova
     }
   };
 
-  class PolygonDistanceGenerator
+  class IndexedDistanceCalculator
   {
   public:
-    explicit PolygonDistanceGenerator(const Polygon& poly):
+    IndexedDistanceCalculator(const Polygon& poly, size_t idx):
       poly_(poly),
-      index_(0)
+      index_(idx)
     {}
-    double operator()()
+    double operator()() const
     {
       size_t next_index = (index_ + 1) % poly_.points.size();
       DistanceCalculator dist_calc;
-      double distance = dist_calc(poly_.points[index_], poly_.points[next_index]);
-      index_ = (index_ + 1) % poly_.points.size();
-      return distance;
+      return dist_calc(poly_.points[index_], poly_.points[next_index]);
     }
   private:
     const Polygon& poly_;
     size_t index_;
+  };
+
+  class PolygonDistanceGenerator
+  {
+  public:
+    explicit PolygonDistanceGenerator(const Polygon& poly):
+      poly_(poly)
+    {}
+    
+    class Iterator
+    {
+    public:
+      Iterator(const Polygon& poly, size_t index):
+        poly_(poly),
+        index_(index)
+      {}
+      
+      double operator*() const
+      {
+        IndexedDistanceCalculator calc(poly_, index_);
+        return calc();
+      }
+      
+      Iterator& operator++()
+      {
+        index_++;
+        return *this;
+      }
+      
+      bool operator!=(const Iterator& other) const
+      {
+        return index_ != other.index_;
+      }
+      
+    private:
+      const Polygon& poly_;
+      size_t index_;
+    };
+    
+    Iterator begin() const
+    {
+      return Iterator(poly_, 0);
+    }
+    
+    Iterator end() const
+    {
+      return Iterator(poly_, poly_.points.size());
+    }
+    
+  private:
+    const Polygon& poly_;
   };
 
   class CompatibilityChecker
@@ -414,14 +485,14 @@ namespace ivanova
         return false;
       }
 
-      std::vector< double > a_distances(a.points.size());
-      std::vector< double > b_distances(b.points.size());
+      std::vector< double > a_distances;
+      std::vector< double > b_distances;
 
       PolygonDistanceGenerator a_generator(a);
       PolygonDistanceGenerator b_generator(b);
 
-      std::generate(a_distances.begin(), a_distances.end(), std::ref(a_generator));
-      std::generate(b_distances.begin(), b_distances.end(), std::ref(b_generator));
+      std::copy(a_generator.begin(), a_generator.end(), std::back_inserter(a_distances));
+      std::copy(b_generator.begin(), b_generator.end(), std::back_inserter(b_distances));
 
       return std::search(a_distances.begin(), a_distances.end(),
         b_distances.begin(), b_distances.end(),
@@ -464,5 +535,40 @@ namespace ivanova
     SameCounter counter(target);
     std::for_each(polygons.begin(), polygons.end(), std::ref(counter));
     out << counter.getCount() << '\n';
+  }
+
+  void inframe(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
+  {
+    throw std::invalid_argument("<INVALID COMMAND>");
+  }
+
+  void intersections(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
+  {
+    throw std::invalid_argument("<INVALID COMMAND>");
+  }
+
+  void maxseq(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
+  {
+    throw std::invalid_argument("<INVALID COMMAND>");
+  }
+
+  void perms(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
+  {
+    throw std::invalid_argument("<INVALID COMMAND>");
+  }
+
+  void rects(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
+  {
+    throw std::invalid_argument("<INVALID COMMAND>");
+  }
+
+  void rightshapes(std::istream& in, std::ostream& out, const std::vector< Polygon >& polygons)
+  {
+    throw std::invalid_argument("<INVALID COMMAND>");
+  }
+
+  void rmecho(std::istream& in, std::ostream& out, std::vector< Polygon >& polygons)
+  {
+    throw std::invalid_argument("<INVALID COMMAND>");
   }
 }
