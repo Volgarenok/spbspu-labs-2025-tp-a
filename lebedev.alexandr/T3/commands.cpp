@@ -180,40 +180,8 @@ namespace
     return false;
   }
 
-  // bool comparePoints(const lebedev::Point &a, const lebedev::Point &b)
-  // {
-  //   if (a.x != b.x)
-  //   {
-  //     return a.x < b.x;
-  //   }
-  //   return a.y < b.y;
-  // }
-
-  // lebedev::Polygon sortPolygonPoints(const lebedev::Polygon &poly)
-  // {
-  //   lebedev::Polygon result = poly;
-  //   std::sort(result.points.begin(), result.points.end(), comparePoints);
-  //   return result;
-  // }
-
-  // bool arePolygonsSame(const lebedev::Polygon &a, const lebedev::Polygon &b)
-  // {
-  //   if (a.points.size() != b.points.size())
-  //   {
-  //     return false;
-  //   }
-  //   lebedev::Polygon poly1 = sortPolygonPoints(a);
-  //   lebedev::Polygon poly2 = sortPolygonPoints(b);
-  //   return poly1.points == poly2.points;
-  // }
-
   bool polygonsIntersect(const lebedev::Polygon &a, const lebedev::Polygon &b)
   {
-    // if (arePolygonsSame(a, b))
-    // {
-    //   return true;
-    // }
-
     for (size_t i = 0; i < a.points.size(); ++i)
     {
       lebedev::Point a1 = a.points[i];
@@ -351,16 +319,20 @@ void lebedev::printIntersections(std::istream &in, std::ostream &out, const std:
 {
   Polygon polygon;
   in >> polygon;
-  if (!in)
+
+  if (!in || in.peek() != '\n')
   {
-    out << "<INVALID COMMAND>\n";
-    return;
+    throw std::logic_error("invalid input");
   }
-  auto temp = [&](const Polygon &p)
+  if (polygon.points.size() < 3)
+  {
+    throw std::logic_error("not enough points");
+  }
+
+  auto intersects = [&](const Polygon &p)
   {
     return polygonsIntersect(p, polygon);
   };
-
-  size_t count = std::count_if(polygons.begin(), polygons.end(), temp);
+  size_t count = std::count_if(polygons.begin(), polygons.end(), intersects);
   out << count << "\n";
 }
