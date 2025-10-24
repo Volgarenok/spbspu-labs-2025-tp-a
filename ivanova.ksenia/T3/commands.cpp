@@ -384,19 +384,20 @@ namespace ivanova
     }
   };
 
-  class DistanceGenerator
+  class PolygonDistanceGenerator
   {
   public:
-    DistanceGenerator(const Polygon& poly):
+    explicit PolygonDistanceGenerator(const Polygon& poly):
       poly_(poly),
       index_(0)
     {}
     double operator()()
     {
-      size_t next = (index_ + 1) % poly_.points.size();
-      double dist = DistanceCalculator()(poly_.points[index_], poly_.points[next]);
-      index_++;
-      return dist;
+      size_t next_index = (index_ + 1) % poly_.points.size();
+      DistanceCalculator dist_calc;
+      double distance = dist_calc(poly_.points[index_], poly_.points[next_index]);
+      index_ = (index_ + 1) % poly_.points.size();
+      return distance;
     }
   private:
     const Polygon& poly_;
@@ -413,22 +414,18 @@ namespace ivanova
         return false;
       }
 
-      std::vector< double > a_distances = calculateDistances(a);
-      std::vector< double > b_distances = calculateDistances(b);
+      std::vector< double > a_distances(a.points.size());
+      std::vector< double > b_distances(b.points.size());
+
+      PolygonDistanceGenerator a_generator(a);
+      PolygonDistanceGenerator b_generator(b);
+
+      std::generate(a_distances.begin(), a_distances.end(), std::ref(a_generator));
+      std::generate(b_distances.begin(), b_distances.end(), std::ref(b_generator));
 
       return std::search(a_distances.begin(), a_distances.end(),
         b_distances.begin(), b_distances.end(),
         DoubleApproxEqual()) != a_distances.end();
-    }
-
-  private:
-    std::vector< double > calculateDistances(const Polygon& poly) const
-    {
-      std::vector< double > distances;
-      distances.reserve(poly.points.size());
-      DistanceGenerator generator(poly);
-      std::generate_n(std::back_inserter(distances), poly.points.size(), generator);
-      return distances;
     }
   };
 
