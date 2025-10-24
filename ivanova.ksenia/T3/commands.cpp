@@ -214,7 +214,7 @@ namespace ivanova
       {
         throw std::invalid_argument("<INVALID COMMAND>");
       }
-      
+
       size_t numVertices = std::accumulate(param.begin(), param.end(), 0UL, AccumulateDigit());
 
       if (numVertices < 3)
@@ -308,7 +308,7 @@ namespace ivanova
       {
         throw std::invalid_argument("<INVALID COMMAND>");
       }
-      
+
       size_t numVertices = std::accumulate(param.begin(), param.end(), 0UL, AccumulateDigit());
 
       if (numVertices < 3)
