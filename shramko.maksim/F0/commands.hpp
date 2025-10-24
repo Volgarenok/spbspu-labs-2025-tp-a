@@ -24,4 +24,8 @@ void minfreq(const std::vector< std::string >& args, DictionaryManager& dm, std:
 void maxfreq(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os);
 void median(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os);
 
+bool validateArgCount(const std::vector<std::string>& args, size_t min_count, size_t max_count, std::ostream& os);
+bool parseInt(const std::string& s, int& value, std::ostream& os);
+bool parsePositiveInt(const std::string& s, int& value, std::ostream& os);
+
 #endif

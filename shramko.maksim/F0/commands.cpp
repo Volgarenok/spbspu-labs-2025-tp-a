@@ -32,11 +32,48 @@ namespace shramko
   }
 }
 
-void create(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
+bool validateArgCount(const std::vector<std::string>& args, size_t min_count, size_t max_count, std::ostream& os)
 {
-  if (args.size() != 1)
+  if (args.size() < min_count || args.size() > max_count)
   {
     os << "INVALID COMMAND\n";
+    return false;
+  }
+  return true;
+}
+
+bool parseInt(const std::string& s, int& value, std::ostream& os)
+{
+  try
+  {
+    value = std::stoi(s);
+    return true;
+  }
+  catch (...)
+  {
+    os << "INVALID COMMAND\n";
+    return false;
+  }
+}
+
+bool parsePositiveInt(const std::string& s, int& value, std::ostream& os)
+{
+  if (!parseInt(s, value, os))
+  {
+    return false;
+  }
+  if (value <= 0)
+  {
+    os << "INVALID COMMAND\n";
+    return false;
+  }
+  return true;
+}
+
+void create(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
+{
+  if (!validateArgCount(args, 1, 1, os))
+  {
     return;
   }
   std::string name = args[0];
@@ -52,9 +89,8 @@ void create(const std::vector< std::string >& args, DictionaryManager& dm, std::
 
 void add(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
 {
-  if (args.size() != 2 && args.size() != 3)
+  if (!validateArgCount(args, 2, 3, os))
   {
-    os << "INVALID COMMAND\n";
     return;
   }
   std::string dict_name = args[0];
@@ -68,13 +104,9 @@ void add(const std::vector< std::string >& args, DictionaryManager& dm, std::ost
       os << "INVALID COMMAND\n";
       return;
     }
-    try
+    std::string num_str = freq_part.substr(5);
+    if (!parseInt(num_str, freq, os))
     {
-      freq = std::stoi(freq_part.substr(5));
-    }
-    catch (...)
-    {
-      os << "INVALID COMMAND\n";
       return;
     }
   }
@@ -90,9 +122,8 @@ void add(const std::vector< std::string >& args, DictionaryManager& dm, std::ost
 
 void increment(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
 {
-  if (args.size() != 2 && args.size() != 3)
+  if (!validateArgCount(args, 2, 3, os))
   {
-    os << "INVALID COMMAND\n";
     return;
   }
   std::string dict_name = args[0];
@@ -106,13 +137,9 @@ void increment(const std::vector< std::string >& args, DictionaryManager& dm, st
       os << "INVALID COMMAND\n";
       return;
     }
-    try
+    std::string num_str = by_part.substr(3);
+    if (!parseInt(num_str, by, os))
     {
-      by = std::stoi(by_part.substr(3));
-    }
-    catch (...)
-    {
-      os << "INVALID COMMAND\n";
       return;
     }
   }
@@ -128,9 +155,8 @@ void increment(const std::vector< std::string >& args, DictionaryManager& dm, st
 
 void search(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
 {
-  if (args.size() != 2)
+  if (!validateArgCount(args, 2, 2, os))
   {
-    os << "INVALID COMMAND\n";
     return;
   }
   std::string dict_name = args[0];
@@ -148,9 +174,8 @@ void search(const std::vector< std::string >& args, DictionaryManager& dm, std::
 
 void delete_(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
 {
-  if (args.size() != 2)
+  if (!validateArgCount(args, 2, 2, os))
   {
-    os << "INVALID COMMAND\n";
     return;
   }
   std::string dict_name = args[0];
@@ -167,9 +192,8 @@ void delete_(const std::vector< std::string >& args, DictionaryManager& dm, std:
 
 void dump(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
 {
-  if (args.size() != 1)
+  if (!validateArgCount(args, 1, 1, os))
   {
-    os << "INVALID COMMAND\n";
     return;
   }
   std::string dict_name = args[0];
@@ -189,26 +213,15 @@ void dump(const std::vector< std::string >& args, DictionaryManager& dm, std::os
 
 void top(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
 {
-  if (args.size() != 2)
+  if (!validateArgCount(args, 2, 2, os))
   {
-    os << "INVALID COMMAND\n";
     return;
   }
   std::string dict_name = args[0];
   std::string n_str = args[1];
   int n = 0;
-  try
+  if (!parsePositiveInt(n_str, n, os))
   {
-    n = std::stoi(n_str);
-  }
-  catch (...)
-  {
-    os << "INVALID COMMAND\n";
-    return;
-  }
-  if (n <= 0)
-  {
-    os << "INVALID COMMAND\n";
     return;
   }
   const auto* dict = dm.getDict(dict_name);
@@ -235,26 +248,15 @@ void top(const std::vector< std::string >& args, DictionaryManager& dm, std::ost
 
 void bot(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
 {
-  if (args.size() != 2)
+  if (!validateArgCount(args, 2, 2, os))
   {
-    os << "INVALID COMMAND\n";
     return;
   }
   std::string dict_name = args[0];
   std::string n_str = args[1];
   int n = 0;
-  try
+  if (!parsePositiveInt(n_str, n, os))
   {
-    n = std::stoi(n_str);
-  }
-  catch (...)
-  {
-    os << "INVALID COMMAND\n";
-    return;
-  }
-  if (n <= 0)
-  {
-    os << "INVALID COMMAND\n";
     return;
   }
   const auto* dict = dm.getDict(dict_name);
@@ -281,21 +283,15 @@ void bot(const std::vector< std::string >& args, DictionaryManager& dm, std::ost
 
 void minfreq(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
 {
-  if (args.size() != 2)
+  if (!validateArgCount(args, 2, 2, os))
   {
-    os << "INVALID COMMAND\n";
     return;
   }
   std::string dict_name = args[0];
   std::string min_str = args[1];
   int min_val = 0;
-  try
+  if (!parseInt(min_str, min_val, os))
   {
-    min_val = std::stoi(min_str);
-  }
-  catch (...)
-  {
-    os << "INVALID COMMAND\n";
     return;
   }
   const auto* dict = dm.getDict(dict_name);
@@ -323,21 +319,15 @@ void minfreq(const std::vector< std::string >& args, DictionaryManager& dm, std:
 
 void maxfreq(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
 {
-  if (args.size() != 2)
+  if (!validateArgCount(args, 2, 2, os))
   {
-    os << "INVALID COMMAND\n";
     return;
   }
   std::string dict_name = args[0];
   std::string max_str = args[1];
   int max_val = 0;
-  try
+  if (!parseInt(max_str, max_val, os))
   {
-    max_val = std::stoi(max_str);
-  }
-  catch (...)
-  {
-    os << "INVALID COMMAND\n";
     return;
   }
   const auto* dict = dm.getDict(dict_name);
@@ -365,9 +355,8 @@ void maxfreq(const std::vector< std::string >& args, DictionaryManager& dm, std:
 
 void median(const std::vector< std::string >& args, DictionaryManager& dm, std::ostream& os)
 {
-  if (args.size() != 1)
+  if (!validateArgCount(args, 1, 1, os))
   {
-    os << "INVALID COMMAND\n";
     return;
   }
   std::string dict_name = args[0];
