@@ -221,4 +221,134 @@ namespace ivanova
   {
     std::copy(src.begin(), src.end(), std::ostream_iterator< Polygon >(out, "\n"));
   }
+
+    double area(const std::vector < Polygon >& src, const std::string& param)
+  {
+    if (param == "EVEN")
+    {
+      return std::accumulate(src.begin(), src.end(), 0.0, areaEvenAcc);
+    }
+    if (param == "ODD")
+    {
+      return std::accumulate(src.begin(), src.end(), 0.0, areaOddAcc);
+    }
+    if (param == "MEAN")
+    {
+      if (src.empty())
+      {
+        throw std::invalid_argument("<INVALID COMMAND>");
+      }
+      return std::accumulate(src.begin(), src.end(), 0.0, areaAcc) / src.size();
+    }
+    throw std::invalid_argument("<INVALID COMMAND>");
+  }
+
+  double area(const std::vector < Polygon >& src, std::size_t param)
+  {
+    return std::transform_reduce(
+      src.begin(), src.end(),
+      0.0,
+      std::plus<>(),
+      std::bind(areaWithVerexes, std::placeholders::_1, param)
+    );
+  }
+
+  double maxArea(const std::vector < Polygon >& src)
+  {
+    if (src.empty())
+    {
+      throw std::invalid_argument("<INVALID COMMAND>");
+    }
+    auto it = std::max_element(src.begin(), src.end(), areaLess);
+    return it->area();
+  }
+
+  double minArea(const std::vector < Polygon >& src)
+  {
+    if (src.empty())
+    {
+      throw std::invalid_argument("<INVALID COMMAND>");
+    }
+    auto it = std::min_element(src.begin(), src.end(), areaLess);
+    return it->area();
+  }
+
+  std::size_t maxVertexes(const std::vector < Polygon >& src)
+  {
+    if (src.empty())
+    {
+      throw std::invalid_argument("<INVALID COMMAND>");
+    }
+    auto it = std::max_element(src.begin(), src.end(), vertexesLess);
+    return it->size();
+  }
+
+  std::size_t minVertexes(const std::vector < Polygon >& src)
+  {
+    if (src.empty())
+    {
+      throw std::invalid_argument("<INVALID COMMAND>");
+    }
+    auto it = std::min_element(src.begin(), src.end(), vertexesLess);
+    return it->size();
+  }
+
+  std::size_t count(const std::vector < Polygon >& src, const std::string& param)
+  {
+    if (param == "EVEN")
+    {
+      return std::count_if(
+        src.begin(), src.end(),
+        std::bind(std::equal_to<std::size_t>(),
+                  std::bind(sizeMod, std::placeholders::_1, static_cast<std::size_t>(2)),
+                  static_cast<std::size_t>(0))
+      );
+    }
+    if (param == "ODD")
+    {
+      return std::count_if(
+        src.begin(), src.end(),
+        std::bind(std::equal_to<std::size_t>(),
+                  std::bind(sizeMod, std::placeholders::_1, static_cast<std::size_t>(2)),
+                  static_cast<std::size_t>(1))
+      );
+    }
+    throw std::invalid_argument("<INVALID COMMAND>");
+  }
+
+  std::size_t count(const std::vector < Polygon >& src, std::size_t param)
+  {
+    return std::count_if(
+      src.begin(), src.end(),
+      std::bind(std::equal_to< std::size_t >(),
+                std::bind(&Polygon::size, std::placeholders::_1),
+                param)
+    );
+  }
+
+  std::size_t echo(std::vector < Polygon >& src, const Polygon& target)
+  {
+    auto count = std::count(src.begin(), src.end(), target);
+    if (count == 0)
+    {
+      return 0;
+    }
+    std::vector< Polygon > result;
+    result.reserve(src.size() + count);
+    result = std::accumulate(
+      src.begin(), src.end(),
+      result,
+      std::bind(echoAccumulate, std::placeholders::_1, std::placeholders::_2, target)
+    );
+    src = std::move(result);
+    return count;
+  }
+
+  std::size_t same(const std::vector < Polygon >& src, const Polygon& target)
+  {
+    return std::count_if(
+      src.begin(), src.end(),
+      std::bind(isOverlayable, std::placeholders::_1, target)
+    );
+  }
 }
