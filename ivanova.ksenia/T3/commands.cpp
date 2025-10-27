@@ -175,7 +175,7 @@ namespace ivanova
   {
     std::string param;
     in >> param;
-
+  
     std::size_t answer = 0;
     if (param == "EVEN" || param == "ODD")
     {
@@ -200,7 +200,7 @@ namespace ivanova
   void echoCommand(std::istream& in, std::ostream& out, std::vector< Polygon >& src)
   {
     Polygon target;
-    if (!(in >> target) || target.size() < 3)
+    if (!(in >> target) || target.size() < 3 || in.peek() != '\n')
     {
       throw std::invalid_argument("<INVALID COMMAND>");
     }
@@ -210,7 +210,7 @@ namespace ivanova
   void sameCommand(std::istream& in, std::ostream& out, const std::vector< Polygon >& src)
   {
     Polygon target;
-    if (!(in >> target) || target.size() < 3)
+    if (!(in >> target) || target.size() < 3 || in.peek() != '\n')
     {
       throw std::invalid_argument("<INVALID COMMAND>");
     }
