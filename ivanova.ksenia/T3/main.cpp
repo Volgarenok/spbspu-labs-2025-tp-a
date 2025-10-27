@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
   std::vector< Polygon > data;
   readPolygons(fin, data);
   fin.close();
-  
+
   std::map< std::string, std::function< void() > > commands;
   commands["AREA"] = std::bind(ivanova::areaCommand, std::ref(std::cin), std::ref(std::cout), std::cref(data));
   commands["MAX"] = std::bind(ivanova::maxCommand, std::ref(std::cin), std::ref(std::cout), std::cref(data));
