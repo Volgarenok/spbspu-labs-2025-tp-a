@@ -106,7 +106,7 @@ namespace zholobov {
   };
 
   struct DictionariesUnion {
-    Dictionaries& dictionaries;
+    const Dictionaries& dictionaries;
     std::map< Word, std::set< Word > >& temp;
     void operator()(const Word& name)
     {
@@ -127,7 +127,7 @@ namespace zholobov {
   };
 
   struct KeysInserter {
-    std::set< Word > keys;
+    std::set< Word >& keys;
     void operator()(const Dictionary::value_type& item)
     {
       keys.insert(item.first);
@@ -147,6 +147,29 @@ namespace zholobov {
       std::set_intersection(keys.cbegin(), keys.cend(), newKeys.cbegin(), newKeys.cend(),
           std::inserter(unionKeys, unionKeys.end()));
       keys.swap(unionKeys);
+    }
+  };
+
+  struct DictionariesIntersect {
+    const Dictionaries& dictionaries;
+    const std::set< Word >& commonKeys;
+    std::map< Word, std::set< Word > >& temp;
+    void operator()(const Word& name)
+    {
+      const auto it = dictionaries.find(name);
+      const Dictionary& dict = it->second;
+      std::for_each(commonKeys.cbegin(), commonKeys.cend(),
+          std::bind(&DictionariesIntersect::process, this, std::placeholders::_1, dict));
+    }
+
+  private:
+    void process(const Word& key, const Dictionary& dict)
+    {
+      const auto it = dict.find(key);
+      if (it != dict.cend()) {
+        auto& translations = temp[key];
+        translations.insert(it->second.cbegin(), it->second.cend());
+      }
     }
   };
 
@@ -273,7 +296,7 @@ void zholobov::cmdDictImport(std::istream& in, std::ostream& out, Dictionaries& 
   fin >> importedDict;
 
   DictImporter dictImporter{dict};
-  std::for_each(importedDict.begin(), importedDict.end(), dictImporter);
+  std::for_each(importedDict.begin(), importedDict.end(), std::ref(dictImporter));
 
   out << "<" << dictImporter.imported << " TRANSLATIONS IMPORTED>.";
   if (dictImporter.dropped != 0) {
@@ -626,7 +649,7 @@ void zholobov::cmdIntersect(std::istream& in, std::ostream& out, Dictionaries& d
   std::for_each(argsIt, args.cend(), KeysIntersector{commonKeys, dictionaries});
 
   std::map< Word, std::set< Word > > temp;
-  std::for_each(commonKeys.cbegin(), commonKeys.cend(), DictionariesUnion{dictionaries, temp});
+  std::for_each(argsIt, args.cend(), DictionariesIntersect{dictionaries, commonKeys, temp});
 
   Dictionary result;
   std::for_each(temp.cbegin(), temp.cend(), WordsInserter{result});

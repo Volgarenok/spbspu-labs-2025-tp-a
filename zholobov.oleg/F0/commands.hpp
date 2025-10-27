@@ -11,7 +11,6 @@ namespace zholobov {
 
   using Word = std::string;
   using Words = std::list< Word >;
-  using Tokens = Words;
   using Dictionary = std::map< Word, Words >;
   using Dictionaries = std::map< std::string, Dictionary >;
 
