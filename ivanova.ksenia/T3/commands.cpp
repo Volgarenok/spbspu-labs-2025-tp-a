@@ -175,7 +175,7 @@ namespace ivanova
   {
     std::string param;
     in >> param;
-
+  
     std::size_t answer = 0;
     if (param == "EVEN" || param == "ODD")
     {
@@ -222,7 +222,7 @@ namespace ivanova
     std::copy(src.begin(), src.end(), std::ostream_iterator< Polygon >(out, "\n"));
   }
 
-    double area(const std::vector < Polygon >& src, const std::string& param)
+  double area(const std::vector < Polygon >& src, const std::string& param)
   {
     if (param == "EVEN")
     {
@@ -245,11 +245,11 @@ namespace ivanova
 
   double area(const std::vector < Polygon >& src, std::size_t param)
   {
-    return std::transform_reduce(
-      src.begin(), src.end(),
-      0.0,
-      std::plus<>(),
-      std::bind(areaWithVerexes, std::placeholders::_1, param)
+    return std::accumulate(
+      src.begin(), src.end(), 0.0,
+      std::bind(std::plus<double>(),
+                std::placeholders::_1,
+                std::bind(areaWithVerexes, std::placeholders::_2, param))
     );
   }
 
@@ -351,4 +351,5 @@ namespace ivanova
       std::bind(isOverlayable, std::placeholders::_1, target)
     );
   }
+
 }
