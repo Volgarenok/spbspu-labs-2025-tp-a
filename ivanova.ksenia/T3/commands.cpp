@@ -175,7 +175,7 @@ namespace ivanova
   {
     std::string param;
     in >> param;
-  
+
     std::size_t answer = 0;
     if (param == "EVEN" || param == "ODD")
     {
