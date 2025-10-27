@@ -13,6 +13,99 @@
 
 namespace ivanova
 {
+  static bool isDigit(char c)
+  {
+    return std::isdigit(c);
+  }
+
+  static double areaEvenAcc(double acc, const Polygon& p)
+  {
+    return acc + (p.size() % 2 == 0 ? p.area() : 0.0);
+  }
+
+  static double areaOddAcc(double acc, const Polygon& p)
+  {
+    return acc + (p.size() % 2 != 0 ? p.area() : 0.0);
+  }
+
+  static double areaAcc(double acc, const Polygon& p)
+  {
+    return acc + p.area();
+  }
+
+  static double areaWithVerexes(const Polygon& p, std::size_t vertexes)
+  {
+    return (p.size() == vertexes) ? p.area() : 0.0;
+  }
+
+  static bool areaLess(const Polygon& a, const Polygon& b)
+  {
+    return a.area() < b.area();
+  }
+
+  static bool vertexesLess(const Polygon& a, const Polygon& b)
+  {
+    return a.size() < b.size();
+  }
+
+  static std::size_t sizeMod(const Polygon& p, std::size_t mod)
+  {
+    return std::modulus<std::size_t>()(p.size(), mod);
+  }
+
+  static std::vector< Polygon > echoAccumulate(std::vector< Polygon > acc, const Polygon& p, const Polygon& target)
+  {
+    acc.push_back(p);
+    if (p == target)
+    {
+      acc.push_back(p);
+    }
+    return acc;
+  }
+
+  static std::vector< Point > edgeVectors(const Polygon& p)
+  {
+    std::vector<Point> rotated = p.points;
+    std::rotate(rotated.begin(), rotated.begin() + 1, rotated.end());
+
+    std::vector<Point> edges;
+    edges.resize(p.size());
+    std::transform(
+      p.points.begin(), p.points.end(),
+      rotated.begin(),
+      edges.begin(),
+      std::minus<Point>()
+    );
+    return edges;
+  }
+
+  static bool isOverlayable(const Polygon& a, const Polygon& b)
+  {
+    if (a.size() != b.size())
+    {
+      return false;
+    }
+    if (a.size() <= 1)
+    {
+      return true;
+    }
+
+    auto edgesA = edgeVectors(a);
+    auto edgesB = edgeVectors(b);
+    std::vector<Point> doubled;
+    doubled.reserve(edgesA.size() * 2);
+    doubled.insert(doubled.end(), edgesA.begin(), edgesA.end());
+    doubled.insert(doubled.end(), edgesA.begin(), edgesA.end());
+
+    if (std::search(doubled.begin(), doubled.end(), edgesB.begin(), edgesB.end()) != doubled.end())
+    {
+      return true;
+    }
+    std::transform(doubled.begin(), doubled.end(), doubled.begin(), std::negate<Point>());
+    std::reverse(doubled.begin(), doubled.end());
+    return std::search(doubled.begin(), doubled.end(), edgesB.begin(), edgesB.end()) != doubled.end();
+  }
+
   void areaCommand(std::istream& in, std::ostream& out, const std::vector< Polygon >& data)
   {
     std::string param;
