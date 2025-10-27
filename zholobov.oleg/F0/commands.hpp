@@ -11,32 +11,31 @@ namespace zholobov {
 
   using Word = std::string;
   using Words = std::list< Word >;
+  using Tokens = Words;
   using Dictionary = std::map< Word, Words >;
   using Dictionaries = std::map< std::string, Dictionary >;
 
-  struct InvalidParams: public std::exception {};
-
   void printHelp(std::ostream& out);
 
-  void cmdDictCreate(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdDictRemove(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdDictImport(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdDictExport(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdDictCount(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdDictList(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdDictPrintWords(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdDictPrintTranslations(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdDictClear(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdAddWord(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdRemoveWord(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdCountWords(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdAddTranslation(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdRemoveTranslation(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdChangeWord(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdTranslateWord(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdUnion(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdIntersect(Dictionaries& dictionaries, const std::vector< std::string >& args);
-  void cmdRare(Dictionaries& dictionaries, const std::vector< std::string >& args);
+  void cmdDictCreate(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdDictRemove(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdDictImport(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdDictExport(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdDictCount(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdDictList(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdDictPrintWords(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdDictPrintTranslations(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdDictClear(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdAddWord(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdRemoveWord(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdCountWords(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdAddTranslation(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdRemoveTranslation(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdChangeWord(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdTranslateWord(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdUnion(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdIntersect(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
+  void cmdRare(std::istream& in, std::ostream& out, Dictionaries& dictionaries);
 
 }
 

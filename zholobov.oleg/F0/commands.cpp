@@ -2,10 +2,196 @@
 
 #include <algorithm>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <set>
 
 #include "utils.hpp"
+
+namespace {
+  constexpr char errorInvalidParams[] = "<INVALID PARAMS>";
+  constexpr char errorDictionaryExists[] = "<DICTIONARY ALREADY EXISTS>";
+  constexpr char errorInvalidDictionary[] = "<INVALID DICTIONARY>";
+  constexpr char errorNoDictionary[] = "<NO DICTIONARIES>";
+  constexpr char errorInvalidWord[] = "<INVALID WORD>";
+  constexpr char errorNewWordExists[] = "<NEW WORD EXISTS>";
+  constexpr char errorInvalidNumber[] = "<INVALID NUMBER>";
+  constexpr char errorTranslationExists[] = "<TRANSLATION EXISTS>";
+  constexpr char errorInvalidTranslation[] = "<INVALID TRANSLATION>";
+  constexpr char errorRemovedLastTransloation[] = "<REMOVED LAST TRANSLATION. WORD REMOVED>";
+}
+
+namespace zholobov {
+
+  void DictionaryCleaner(Dictionaries::value_type& entry)
+  {
+    entry.second.clear();
+  }
+
+  struct DictImporter {
+    Dictionary& dictionary;
+    size_t imported = 0;
+    size_t dropped = 0;
+
+    void operator()(const Dictionary::value_type& entry)
+    {
+      const Words& words = entry.second;
+      if (words.empty()) {
+        ++dropped;
+        return;
+      }
+      auto result = dictionary.insert(entry);
+      if (!result.second) {
+        auto it = result.first;
+        it->second.merge(Words{words});
+        it->second.sort();
+        it->second.unique();
+      } else {
+        ++imported;
+      }
+    }
+  };
+
+  struct DictionaryNamePrinter {
+    std::ostream& out;
+    void operator()(const Dictionaries::value_type& entry)
+    {
+      out << entry.first << "\n";
+    }
+  };
+
+  struct DictionaryWordsPrinter {
+    std::ostream& out;
+    void operator()(const Dictionary::value_type& entry)
+    {
+      out << entry.first << "\n";
+    }
+  };
+
+  struct DictionaryTranslationsPrinter {
+    std::ostream& out;
+    void operator()(const Dictionaries::value_type& entry)
+    {
+      out << entry.second;
+    }
+  };
+
+  struct DictionaryWordTranslator {
+    const Word& word;
+    std::set< Word >& translations;
+    void operator()(const Dictionaries::value_type& entry)
+    {
+      auto wit = entry.second.find(word);
+      if (wit != entry.second.end()) {
+        translations.insert(wit->second.begin(), wit->second.end());
+      }
+    }
+  };
+
+  struct IsDictionaryExists {
+    const Dictionaries& dictionaries;
+    bool operator()(const Word& name)
+    {
+      return (dictionaries.find(name) != dictionaries.end());
+    }
+  };
+
+  struct UnionWordAndTranslations {
+    std::map< Word, std::set< Word > >& temp;
+    void operator()(const Dictionary::value_type& entry)
+    {
+      auto& it = temp[entry.first];
+      it.insert(entry.second.cbegin(), entry.second.cend());
+    }
+  };
+
+  struct DictionariesUnion {
+    Dictionaries& dictionaries;
+    std::map< Word, std::set< Word > >& temp;
+    void operator()(const Word& name)
+    {
+      const auto it = dictionaries.find(name);
+      const Dictionary& dict = it->second;
+      std::for_each(dict.cbegin(), dict.cend(), UnionWordAndTranslations{temp});
+    }
+  };
+
+  struct WordsInserter {
+    Dictionary& target;
+    void operator()(const std::map< Word, std::set< Word > >::value_type& item)
+    {
+      target.insert(std::make_pair(
+          item.first,
+          std::list< Word >(item.second.begin(), item.second.end())));
+    }
+  };
+
+  struct KeysInserter {
+    std::set< Word > keys;
+    void operator()(const Dictionary::value_type& item)
+    {
+      keys.insert(item.first);
+    }
+  };
+
+  struct KeysIntersector {
+    std::set< Word >& keys;
+    const Dictionaries& dictionaries;
+    void operator()(const Word& dictName)
+    {
+      const auto it = dictionaries.find(dictName);
+      const auto& dictionary = it->second;
+      std::set< Word > newKeys;
+      std::for_each(dictionary.cbegin(), dictionary.cend(), KeysInserter{newKeys});
+      std::set< Word > unionKeys;
+      std::set_intersection(keys.cbegin(), keys.cend(), newKeys.cbegin(), newKeys.cend(),
+          std::inserter(unionKeys, unionKeys.end()));
+      keys.swap(unionKeys);
+    }
+  };
+
+  struct WordFrequencyCalculator {
+    const Dictionaries& dictionaries;
+    std::map< Word, size_t >& wordFrequency;
+
+    void operator()(const Word& dictName)
+    {
+      const auto& dict = dictionaries.at(dictName);
+      for_each(dict.cbegin(), dict.cend(),
+          std::bind(&WordFrequencyCalculator::incrementWordFrequency, this, std::placeholders::_1));
+    }
+
+  private:
+    void incrementWordFrequency(const Dictionary::value_type& item)
+    {
+      wordFrequency[item.first]++;
+    }
+  };
+
+  struct CollectRareWordsLessThanN {
+    const Dictionaries& dictionaries;
+    const std::map< Word, size_t >& wordFrequency;
+    std::map< Word, std::set< Word > >& target;
+    const size_t n;
+
+    void operator()(const Word& dictName)
+    {
+      const auto& dict = dictionaries.at(dictName);
+      std::for_each(dict.cbegin(), dict.cend(),
+          std::bind(&CollectRareWordsLessThanN::process, this, std::placeholders::_1));
+    }
+
+  private:
+    void process(const Dictionary::value_type& item)
+    {
+      if (wordFrequency.at(item.first) <= n) {
+        std::set< Word >& s = target[item.first];
+        s.insert(item.second.begin(), item.second.end());
+      }
+    }
+  };
+
+}
 
 void zholobov::printHelp(std::ostream& out)
 {
@@ -31,97 +217,93 @@ void zholobov::printHelp(std::ostream& out)
   out << "rare <N> <new_dict> <dict-1> [<dict-K> ...]\n";
 }
 
-void zholobov::cmdDictCreate(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdDictCreate(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() != 2) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (args.size() != 1) {
+    out << errorInvalidParams << "\n";
+    return;
   }
-  const std::string& name = args[1];
+  const std::string& name = args.front();
   if (dictionaries.count(name)) {
-    std::cout << "<DICTIONARY ALREADY EXISTS>\n";
+    out << errorDictionaryExists << "\n";
   } else {
     dictionaries[name] = Dictionary();
   }
 }
 
-void zholobov::cmdDictRemove(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdDictRemove(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() != 2) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (args.size() != 1) {
+    out << errorInvalidParams << "\n";
+    return;
   }
-  const std::string& name = args[1];
+  const std::string& name = args.front();
   if (!dictionaries.count(name)) {
-    std::cout << "<INVALID DICTIONARY>\n";
+    out << errorInvalidDictionary << "\n";
   } else {
     dictionaries.erase(name);
   }
 }
 
-void zholobov::cmdDictImport(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdDictImport(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() != 3) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (args.size() != 2) {
+    out << errorInvalidParams << "\n";
+    return;
   }
-  const std::string& dictName = args[1];
-  const std::string& fileName = args[2];
+  auto argsIt = args.cbegin();
+  const std::string& dictName = *argsIt++;
+  const std::string& fileName = *argsIt;
 
   Dictionary& dict = dictionaries[dictName];
 
   std::ifstream fin(fileName);
   if (!fin) {
-    std::cout << "<0 TRANSLATIONS IMPORTED>.\n";
+    out << "<0 TRANSLATIONS IMPORTED>.\n";
     return;
   }
 
-  int imported = 0;
-  int dropped = 0;
-  Words tokens;
-  while (fin >> tokens) {
-    if (tokens.empty()) {
-      continue;
-    }
+  Dictionary importedDict;
+  fin >> importedDict;
 
-    Word eng = tokens.front();
-    tokens.pop_front();
-    if (tokens.empty()) {
-      ++dropped;
-      continue;
-    }
+  DictImporter dictImporter{dict};
+  std::for_each(importedDict.begin(), importedDict.end(), dictImporter);
 
-    Words& entry = dict[eng];
-    for (auto it = tokens.cbegin(); it != tokens.cend(); ++it) {
-      if (std::find(entry.cbegin(), entry.cend(), *it) == entry.cend()) {
-        entry.push_back(*it);
-      }
-    }
-    ++imported;
+  out << "<" << dictImporter.imported << " TRANSLATIONS IMPORTED>.";
+  if (dictImporter.dropped != 0) {
+    out << " [" << dictImporter.dropped << " - DROPPED]";
   }
-
-  std::cout << "<" << imported << " TRANSLATIONS IMPORTED>.";
-  if (dropped != 0) {
-    std::cout << " [" << dropped << " - DROPPED]";
-  }
-  std::cout << '\n';
+  out << "\n";
 }
 
-void zholobov::cmdDictExport(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdDictExport(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (!(args.size() == 3 || args.size() == 4)) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (!(args.size() == 2 || args.size() == 3)) {
+    out << errorInvalidParams << "\n";
+    return;
   }
-  const std::string& dictName = args[1];
-  const std::string& fileName = args[2];
-  bool overwrite = ((args.size() == 4) && (args[3] == "overwrite"));
+  auto argsIt = args.cbegin();
+  const std::string& dictName = *argsIt++;
+  const std::string& fileName = *argsIt++;
+  bool overwrite = ((argsIt != args.cend()) && (*argsIt == "overwrite"));
 
   auto it = dictionaries.find(dictName);
   if (it == dictionaries.end()) {
-    std::cout << "<INVALID DICTIONARY>\n";
+    out << errorInvalidDictionary << "\n";
     return;
   }
 
   std::ifstream check(fileName);
   if (check && !overwrite) {
-    std::cout << "FILE EXISTS\n";
+    out << "FILE EXISTS\n";
     return;
   }
 
@@ -132,364 +314,366 @@ void zholobov::cmdDictExport(Dictionaries& dictionaries, const std::vector< std:
   fout << it->second;
 }
 
-void zholobov::cmdDictCount(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdDictCount(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() != 1) {
-    throw InvalidParams();
-  }
-  std::cout << dictionaries.size() << '\n';
-}
-
-void zholobov::cmdDictList(Dictionaries& dictionaries, const std::vector< std::string >& args)
-{
-  if (args.size() != 1) {
-    throw InvalidParams();
-  }
-  for (const auto& dict: dictionaries) {
-    std::cout << dict.first << '\n';
-  }
-}
-
-void zholobov::cmdDictPrintWords(Dictionaries& dictionaries, const std::vector< std::string >& args)
-{
-  if (args.size() != 2) {
-    throw InvalidParams();
-  }
-  const std::string& name = args[1];
-  auto it = dictionaries.find(name);
-  if (it == dictionaries.end()) {
-    std::cout << "<INVALID DICTIONARY>\n";
+  Words args;
+  in >> args;
+  if (args.size() != 0) {
+    out << errorInvalidParams << "\n";
     return;
   }
-  for (const auto& record: it->second) {
-    std::cout << record.first << '\n';
-  }
+  out << dictionaries.size() << '\n';
 }
 
-void zholobov::cmdDictPrintTranslations(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdDictList(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (!(args.size() == 1 || args.size() == 2)) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (args.size() != 0) {
+    out << errorInvalidParams << "\n";
+    return;
   }
-  if (args.size() == 2) {
-    auto it = dictionaries.find(args[1]);
+  if (dictionaries.size() == 0) {
+    out << errorNoDictionary << "\n";
+  }
+  DictionaryNamePrinter printer{out};
+  for_each(dictionaries.begin(), dictionaries.end(), printer);
+}
+
+void zholobov::cmdDictPrintWords(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
+{
+  Words args;
+  in >> args;
+  if (args.size() != 1) {
+    out << errorInvalidParams << "\n";
+    return;
+  }
+  const std::string& name = args.front();
+  auto it = dictionaries.find(name);
+  if (it == dictionaries.end()) {
+    out << errorInvalidDictionary << "\n";
+    return;
+  }
+
+  std::for_each(it->second.begin(), it->second.end(), DictionaryWordsPrinter{out});
+}
+
+void zholobov::cmdDictPrintTranslations(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
+{
+  Words args;
+  in >> args;
+  if (!(args.size() == 0 || args.size() == 1)) {
+    out << errorInvalidParams << "\n";
+    return;
+  }
+  if (args.size() == 1) {
+    auto it = dictionaries.find(args.front());
     if (it == dictionaries.end()) {
-      std::cout << "<INVALID DICTIONARY>\n";
+      out << errorInvalidDictionary << "\n";
       return;
     }
-    std::cout << it->second;
+    out << it->second;
   } else {
     if (dictionaries.empty()) {
-      std::cout << "<NO DICTIONARIES>\n";
+      out << errorNoDictionary << "\n";
       return;
     }
-    for (const auto& dict: dictionaries) {
-      std::cout << dict.second;
-    }
+
+    std::for_each(dictionaries.begin(), dictionaries.end(), DictionaryTranslationsPrinter{out});
   }
 }
 
-void zholobov::cmdDictClear(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdDictClear(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (!(args.size() == 1 || args.size() == 2)) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (!(args.size() == 0 || args.size() == 1)) {
+    out << errorInvalidParams << "\n";
+    return;
   }
-  if (args.size() == 2) {
-    auto it = dictionaries.find(args[1]);
+  if (args.size() == 1) {
+    auto it = dictionaries.find(args.front());
     if (it == dictionaries.end()) {
-      std::cout << "<INVALID DICTIONARY>\n";
+      out << errorInvalidDictionary << "\n";
       return;
     }
     it->second.clear();
   } else {
-    for (auto& dict: dictionaries) {
-      dict.second.clear();
-    }
+    std::for_each(dictionaries.begin(), dictionaries.end(), DictionaryCleaner);
   }
 }
 
-void zholobov::cmdAddWord(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdAddWord(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() != 4) {
-    throw InvalidParams();
-  }
-  auto it = dictionaries.find(args[1]);
-  if (it == dictionaries.end()) {
-    std::cout << "<INVALID DICTIONARY>\n";
-    return;
-  }
-  it->second[args[2]].push_back(args[3]);
-}
-
-void zholobov::cmdRemoveWord(Dictionaries& dictionaries, const std::vector< std::string >& args)
-{
+  Words args;
+  in >> args;
   if (args.size() != 3) {
-    throw InvalidParams();
-  }
-  auto it = dictionaries.find(args[1]);
-  if (it == dictionaries.end()) {
-    std::cout << "<INVALID DICTIONARY>\n";
+    out << errorInvalidParams << "\n";
     return;
   }
-  if (!it->second.erase(args[2])) {
-    std::cout << "<INVALID WORD>\n";
+  auto argsIt = args.cbegin();
+  const std::string& name = *argsIt++;
+  auto it = dictionaries.find(name);
+  if (it == dictionaries.end()) {
+    out << errorInvalidDictionary << "\n";
+    return;
   }
+  const std::string& word = *argsIt++;
+  const std::string& translation = *argsIt;
+  it->second[word].push_back(translation);
 }
 
-void zholobov::cmdCountWords(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdRemoveWord(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
+  Words args;
+  in >> args;
   if (args.size() != 2) {
-    throw InvalidParams();
+    out << errorInvalidParams << "\n";
+    return;
   }
-  auto it = dictionaries.find(args[1]);
+  auto argsIt = args.cbegin();
+  const std::string& name = *argsIt++;
+  auto it = dictionaries.find(name);
   if (it == dictionaries.end()) {
-    std::cout << "<INVALID DICTIONARY>\n";
+    out << errorInvalidDictionary << "\n";
     return;
   }
-  std::cout << it->second.size() << '\n';
+  const std::string& word = *argsIt;
+  if (!it->second.erase(word)) {
+    out << errorInvalidWord << "\n";
+  }
 }
 
-void zholobov::cmdAddTranslation(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdCountWords(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() != 4) {
-    throw InvalidParams();
-  }
-  auto dit = dictionaries.find(args[1]);
-  if (dit == dictionaries.end()) {
-    std::cout << "<INVALID DICTIONARY>\n";
+  Words args;
+  in >> args;
+  if (args.size() != 1) {
+    out << errorInvalidParams << "\n";
     return;
   }
-  auto wit = dit->second.find(args[2]);
-  if (wit == dit->second.end()) {
-    std::cout << "<INVALID WORD>\n";
+  auto it = dictionaries.find(args.front());
+  if (it == dictionaries.end()) {
+    out << errorInvalidDictionary << "\n";
     return;
   }
-
-  for (const auto& t: wit->second) {
-    if (t == args[3]) {
-      std::cout << "<TRANSLATION EXISTS>\n";
-      return;
-    }
-  }
-  wit->second.push_back(args[3]);
+  out << it->second.size() << '\n';
 }
 
-void zholobov::cmdRemoveTranslation(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdAddTranslation(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() != 4) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (args.size() != 3) {
+    out << errorInvalidParams << "\n";
+    return;
   }
-  auto dit = dictionaries.find(args[1]);
+  auto argsIt = args.cbegin();
+  const std::string& name = *argsIt++;
+  auto dit = dictionaries.find(name);
   if (dit == dictionaries.end()) {
-    std::cout << "<INVALID DICTIONARY>\n";
+    out << errorInvalidDictionary << "\n";
     return;
   }
-  auto wit = dit->second.find(args[2]);
+  const std::string& word = *argsIt++;
+  auto wit = dit->second.find(word);
   if (wit == dit->second.end()) {
-    std::cout << "<INVALID WORD>\n";
+    out << errorInvalidWord << "\n";
     return;
   }
+
+  const std::string& translation = *argsIt;
+
+  if (std::find(wit->second.begin(), wit->second.end(), translation) != wit->second.end()) {
+    out << errorTranslationExists << "\n";
+    return;
+  }
+  wit->second.push_back(translation);
+}
+
+void zholobov::cmdRemoveTranslation(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
+{
+  Words args;
+  in >> args;
+  if (args.size() != 3) {
+    out << errorInvalidParams << "\n";
+    return;
+  }
+  auto argsIt = args.cbegin();
+  const std::string& name = *argsIt++;
+  auto dit = dictionaries.find(name);
+  if (dit == dictionaries.end()) {
+    out << errorInvalidDictionary << "\n";
+    return;
+  }
+  const std::string& word = *argsIt++;
+  auto wit = dit->second.find(word);
+  if (wit == dit->second.end()) {
+    out << errorInvalidWord << "\n";
+    return;
+  }
+  const std::string& translation = *argsIt;
   auto& lst = wit->second;
-  auto lit = std::find(lst.begin(), lst.end(), args[3]);
+  auto lit = std::find(lst.begin(), lst.end(), translation);
   if (lit == lst.end()) {
-    std::cout << "<INVALID TRANSLATION>\n";
+    out << errorInvalidTranslation << "\n";
     return;
   }
   lst.erase(lit);
   if (lst.empty()) {
     dit->second.erase(wit);
-    std::cout << "<REMOVED LAST TRANSLATION. WORD REMOVED>\n";
+    out << errorRemovedLastTransloation << "\n";
   }
 }
 
-void zholobov::cmdChangeWord(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdChangeWord(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() != 4) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (args.size() != 3) {
+    out << errorInvalidParams << "\n";
+    return;
   }
-  auto dit = dictionaries.find(args[1]);
+  auto argsIt = args.cbegin();
+  const std::string& name = *argsIt++;
+  auto dit = dictionaries.find(name);
   if (dit == dictionaries.end()) {
-    std::cout << "<INVALID DICTIONARY>\n";
+    out << errorInvalidDictionary << "\n";
     return;
   }
-  auto wit = dit->second.find(args[2]);
+  const std::string& word = *argsIt++;
+  auto wit = dit->second.find(word);
   if (wit == dit->second.end()) {
-    std::cout << "<INVALID WORD>\n";
+    out << errorInvalidWord << "\n";
     return;
   }
-  if (dit->second.count(args[3])) {
-    std::cout << "<NEW WORD EXISTS>\n";
+  const std::string& newWord = *argsIt;
+  if (dit->second.count(newWord)) {
+    out << errorNewWordExists << "\n";
     return;
   }
-  dit->second[args[3]] = wit->second;
+  dit->second[newWord] = wit->second;
   dit->second.erase(wit);
 }
 
-void zholobov::cmdTranslateWord(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdTranslateWord(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() != 2) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (args.size() != 1) {
+    out << errorInvalidParams << "\n";
+    return;
   }
-  std::set< Word > uniq;
-  for (const auto& dict: dictionaries) {
-    auto wit = dict.second.find(args[1]);
-    if (wit != dict.second.end()) {
-      for (const auto& t: wit->second) {
-        uniq.insert(t);
-      }
-    }
-  }
-  if (uniq.empty()) {
-    std::cout << "<INVALID WORD>\n";
+  const std::string& word = args.front();
+  std::set< Word > translations;
+
+  std::for_each(dictionaries.begin(), dictionaries.end(), DictionaryWordTranslator{word, translations});
+
+  if (translations.empty()) {
+    out << errorInvalidWord << "\n";
     return;
   }
 
-  auto it = uniq.cbegin();
-  std::cout << *it;
-  for (++it; it != uniq.cend(); ++it) {
-    std::cout << " " << *it;
-  }
-  std::cout << '\n';
+  Words translationsWords(translations.cbegin(), translations.cend());
+  out << translationsWords << '\n';
 }
 
-void zholobov::cmdUnion(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdUnion(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() < 3) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (args.size() < 2) {
+    out << errorInvalidParams << "\n";
+    return;
   }
+  auto argsIt = args.cbegin();
+  const std::string& newName = *argsIt++;
 
-  const std::string& newName = args[1];
-
-  for (std::size_t i = 2; i < args.size(); ++i) {
-    if (dictionaries.find(args[i]) == dictionaries.end()) {
-      std::cout << "<INVALID DICTIONARY>\n";
-      return;
-    }
+  if (std::find_if_not(argsIt, args.cend(), IsDictionaryExists{dictionaries}) != args.end()) {
+    out << errorInvalidDictionary << "\n";
+    return;
   }
 
   std::map< Word, std::set< Word > > temp;
-  for (std::size_t i = 2; i < args.size(); ++i) {
-    const auto it = dictionaries.find(args[i]);
-    const Dictionary& src = it->second;
-    for (const auto& kv: src) {
-      std::set< Word >& s = temp[kv.first];
-      for (const auto& tr: kv.second) {
-        s.insert(tr);
-      }
-    }
-  }
+  std::for_each(argsIt, args.cend(), DictionariesUnion{dictionaries, temp});
 
   Dictionary result;
-  for (const auto& kv: temp) {
-    result[kv.first] = Words(kv.second.begin(), kv.second.end());
-  }
+  std::for_each(temp.cbegin(), temp.cend(), WordsInserter{result});
 
   dictionaries[newName] = std::move(result);
 }
 
-void zholobov::cmdIntersect(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdIntersect(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() < 3) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (args.size() < 2) {
+    out << errorInvalidParams << "\n";
+    return;
+  }
+  auto argsIt = args.cbegin();
+  const std::string& newName = *argsIt++;
+
+  if (std::find_if_not(argsIt, args.cend(), IsDictionaryExists{dictionaries}) != args.end()) {
+    out << errorInvalidDictionary << "\n";
+    return;
   }
 
-  const std::string& newName = args[1];
-
-  for (std::size_t i = 2; i < args.size(); ++i) {
-    if (dictionaries.find(args[i]) == dictionaries.end()) {
-      std::cout << "<INVALID DICTIONARY>\n";
-      return;
-    }
-  }
-
-  const auto firstIt = dictionaries.find(args[2]);
-  const Dictionary& firstDict = firstIt->second;
+  const std::string& firstDictName = *argsIt++;
+  const Dictionary& firstDict = dictionaries.find(firstDictName)->second;
   std::set< Word > commonKeys;
-  for (const auto& kv: firstDict) {
-    commonKeys.insert(kv.first);
-  }
+  std::for_each(firstDict.cbegin(), firstDict.cend(), KeysInserter{commonKeys});
+  std::for_each(argsIt, args.cend(), KeysIntersector{commonKeys, dictionaries});
 
-  for (std::size_t i = 3; i < args.size(); ++i) {
-    const auto it = dictionaries.find(args[i]);
-    const Dictionary& d = it->second;
-    std::set< Word > newCommon;
-    for (const auto& key: commonKeys) {
-      if (d.find(key) != d.end()) newCommon.insert(key);
-    }
-    commonKeys.swap(newCommon);
-    if (commonKeys.empty()) {
-      break;
-    }
-  }
+  std::map< Word, std::set< Word > > temp;
+  std::for_each(commonKeys.cbegin(), commonKeys.cend(), DictionariesUnion{dictionaries, temp});
 
   Dictionary result;
-  for (const auto& key: commonKeys) {
-    std::set< Word > uniq;
-    for (std::size_t i = 2; i < args.size(); ++i) {
-      const auto it = dictionaries.find(args[i]);
-      const Dictionary& d = it->second;
-      auto wit = d.find(key);
-      if (wit != d.end()) {
-        for (const auto& tr: wit->second) uniq.insert(tr);
-      }
-    }
-    result[key] = Words(uniq.begin(), uniq.end());
-  }
+  std::for_each(temp.cbegin(), temp.cend(), WordsInserter{result});
 
   dictionaries[newName] = std::move(result);
 }
 
-void zholobov::cmdRare(Dictionaries& dictionaries, const std::vector< std::string >& args)
+void zholobov::cmdRare(std::istream& in, std::ostream& out, Dictionaries& dictionaries)
 {
-  if (args.size() < 4) {
-    throw InvalidParams();
+  Words args;
+  in >> args;
+  if (args.size() < 3) {
+    out << errorInvalidParams << "\n";
+    return;
   }
+  auto argsIt = args.cbegin();
+  const std::string& strN = *argsIt++;
 
   int n = 0;
   try {
-    n = std::stoi(args[1]);
+    n = std::stoi(strN);
   } catch (...) {
-    std::cout << "<INVALID NUMBER>\n";
+    out << errorInvalidNumber << "\n";
     return;
   }
 
   if (n < 1) {
-    std::cout << "<INVALID NUMBER>\n";
+    out << errorInvalidNumber << "\n";
     return;
   }
 
-  const std::string& newName = args[2];
+  const std::string& newName = *argsIt++;
 
-  for (std::size_t i = 3; i < args.size(); ++i) {
-    if (dictionaries.find(args[i]) == dictionaries.end()) {
-      std::cout << "<INVALID DICTIONARY>\n";
-      return;
-    }
+  if (std::find_if_not(argsIt, args.cend(), IsDictionaryExists{dictionaries}) != args.end()) {
+    out << errorInvalidDictionary << "\n";
+    return;
   }
 
-  std::map< Word, int > wordFrequency;
-  for (std::size_t i = 3; i < args.size(); ++i) {
-    const auto& dict = dictionaries[args[i]];
-    for (const auto& kv: dict) {
-      wordFrequency[kv.first]++;
-    }
-  }
+  std::map< Word, size_t > wordFrequency;
+  std::for_each(argsIt, args.cend(), WordFrequencyCalculator{dictionaries, wordFrequency});
 
   std::map< Word, std::set< Word > > temp;
-  for (std::size_t i = 3; i < args.size(); ++i) {
-    const auto& dict = dictionaries[args[i]];
-    for (const auto& kv: dict) {
-      if (wordFrequency[kv.first] <= n) {
-        std::set< Word >& s = temp[kv.first];
-        s.insert(kv.second.begin(), kv.second.end());
-      }
-    }
-  }
+  std::for_each(argsIt, args.cend(),
+      CollectRareWordsLessThanN{dictionaries, wordFrequency, temp, static_cast< size_t >(n)});
 
   Dictionary result;
-  for (const auto& kv: temp) {
-    result[kv.first] = Words(kv.second.begin(), kv.second.end());
-  }
+  std::for_each(temp.cbegin(), temp.cend(), WordsInserter{result});
 
   dictionaries[newName] = std::move(result);
 }

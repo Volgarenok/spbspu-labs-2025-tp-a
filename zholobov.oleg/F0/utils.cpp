@@ -1,59 +1,108 @@
 #include "utils.hpp"
 
-std::vector< std::string > zholobov::splitTokens(const std::string& line)
-{
-  std::vector< std::string > tokens;
-  std::size_t pos = 0;
-  while (true) {
-    pos = line.find_first_not_of(" \t\r\n", pos);
-    if (pos == std::string::npos) {
-      break;
-    }
-    std::size_t end = line.find_first_of(" \t\r\n", pos);
-    tokens.push_back(line.substr(pos, end - pos));
-    if (end == std::string::npos) {
-      break;
-    }
-    pos = end + 1;
-  }
-  return tokens;
-}
+#include <algorithm>
+#include <iostream>
+#include <iterator>
 
-std::istream& operator>>(std::istream& in, zholobov::Words& words)
-{
-  words.clear();
-  std::string line;
-  if (!std::getline(in, line)) {
-    in.setstate(std::ios::eofbit);
+namespace zholobov {
+
+  namespace {
+
+    bool skipWsUntilNewLine(std::istream& input)
+    {
+      char c;
+      while (input.get(c)) {
+        if (c == '\n') {
+          return true;
+        }
+        if (!std::isspace(c)) {
+          input.putback(c);
+          return false;
+        }
+      }
+      return false;
+    }
+
+    struct DictionaryElementPrinter {
+      DictionaryElementPrinter(std::ostream& out):
+        out(out)
+      {}
+      void operator()(const Dictionary::value_type& elem)
+      {
+        out << elem.first;
+        if (!elem.second.empty()) {
+          out << " " << elem.second;
+        }
+        out << "\n";
+      }
+      std::ostream& out;
+    };
+
+  }
+
+  std::istream& operator>>(std::istream& in, Words& words)
+  {
+    words.clear();
+    std::istream::sentry s(in, true);
+    if (!s) {
+      return in;
+    }
+    if (skipWsUntilNewLine(in)) {
+      return in;
+    }
+    Word word;
+    while (in >> word) {
+      words.push_back(word);
+      if (skipWsUntilNewLine(in)) {
+        return in;
+      }
+    }
     return in;
   }
-  std::vector< std::string > toks = zholobov::splitTokens(line);
-  for (const auto& t: toks) {
-    words.push_back(t);
-  }
-  return in;
-}
 
-std::ostream& operator<<(std::ostream& out, const zholobov::Words& words)
-{
-  if (!words.empty()) {
-    auto it = words.cbegin();
-    out << *it++;
-    for (; it != words.cend(); ++it) {
-      out << " " << *it;
+  std::istream& operator>>(std::istream& in, Dictionary& dict)
+  {
+    dict.clear();
+    std::istream::sentry s(in, true);
+    if (!s) {
+      return in;
     }
-  }
-  return out;
-}
 
-std::ostream& operator<<(std::ostream& out, const zholobov::Dictionary& dict)
-{
-  for (const auto& entry: dict) {
-    out << entry.first;
-    if (!entry.second.empty()) {
-      out << " " << entry.second;
+    Word word;
+    Words translations;
+    while (in >> word >> translations) {
+      dict.emplace(word, translations);
     }
-    out << '\n';
+
+    return in;
   }
-  return out;
+
+  std::ostream& operator<<(std::ostream& out, const Words& words)
+  {
+    std::ostream::sentry s(out);
+    if (!s) {
+      return out;
+    }
+    if (!words.empty()) {
+      std::copy(words.begin(), std::prev(words.end()),
+          std::ostream_iterator< Word >(out, " "));
+      out << *words.rbegin();
+    }
+    return out;
+  }
+
+  std::ostream& operator<<(std::ostream& out, const Dictionary& dict)
+  {
+    std::ostream::sentry s(out);
+    if (!s) {
+      return out;
+    }
+
+    DictionaryElementPrinter printer(out);
+    if (!dict.empty()) {
+      std::for_each(dict.begin(), dict.end(), printer);
+    }
+
+    return out;
+  }
 }

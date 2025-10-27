@@ -1,6 +1,7 @@
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <limits>
 
 #include "commands.hpp"
 #include "utils.hpp"
@@ -15,14 +16,13 @@ int main(int argc, char* argv[])
   if (argc == 2) {
     if (std::strcmp(argv[1], "--help") == 0) {
       printHelp(std::cout);
-      std::cout << '\n';
       return 0;
     }
   }
 
   zholobov::Dictionaries dictionaries;
 
-  std::map< Word, std::function< void(zholobov::Dictionaries&, const std::vector< Word >&) > > keywords;
+  std::map< Word, std::function< void(std::istream&, std::ostream&, Dictionaries&) > > keywords;
 
   keywords["dict-create"] = cmdDictCreate;
   keywords["dict-remove"] = cmdDictRemove;
@@ -44,20 +44,17 @@ int main(int argc, char* argv[])
   keywords["intersect"] = cmdIntersect;
   keywords["rare"] = cmdRare;
 
-  std::string line;
-  while (std::getline(std::cin, line)) {
-    std::vector< std::string > tokens = splitTokens(line);
-    if (tokens.empty()) {
-      continue;
-    }
-
-    const std::string& cmd = tokens[0];
+  Word cmd;
+  while (std::cin >> cmd) {
     try {
-      keywords.at(cmd)(dictionaries, tokens);
-    } catch (const InvalidParams&) {
-      std::cout << "<ERROR IN PARAMETERS>\n";
+      if (!cmd.empty()) {
+        keywords.at(cmd)(std::cin, std::cout, dictionaries);
+      }
     } catch (const std::out_of_range&) {
       std::cout << "<INVALID COMMAND>\n";
+      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+    } catch (const std::exception& e) {
+      std::cerr << e.what() << '\n';
     }
   }
 
