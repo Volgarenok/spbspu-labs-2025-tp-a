@@ -1,36 +1,62 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <map>
+#include <algorithm>
+#include <exception>
+#include <fstream>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <limits>
-#include "polygon.hpp"
-#include "polygon_iterator.hpp"
+#include <map>
+#include <string>
+#include <stdexcept>
+#include <vector>
+#include <utility>
+
 #include "commands.hpp"
+#include "polygon.hpp"
 
-int main()
+using ivanova::Polygon;
+
+void readPolygons(std::istream& in, std::vector< Polygon >& data)
 {
-  using namespace ivanova;
+  using iIterator = std::istream_iterator< Polygon >;
 
-  std::vector< Polygon > polygons;
-  std::map< std::string, std::function< void(std::istream&, std::ostream&, std::vector< Polygon >&) > > commands;
+  while (!in.eof())
+  {
+    std::copy(iIterator(in), iIterator(), std::back_inserter(data));
+    if (!in)
+    {
+      in.clear();
+      in.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+    }
+  }
+}
 
-  commands["AREA"] = area;
-  commands["MAX"] = max;
-  commands["MIN"] = min;
-  commands["COUNT"] = count;
-  commands["ECHO"] = echo;
-  commands["SAME"] = same;
+int main(int argc, char* argv[])
+{
+  if (argc < 2)
+  {
+    std::cerr << "usage: " << argv[0] << " <filename>\n";
+    return 1;
+  }
 
-  std::copy(
-    PolygonIterator(std::cin),
-    PolygonIterator(),
-    std::back_inserter(polygons)
-  );
-
-  std::cin.clear();
-  std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+  std::fstream fin(argv[1]);
+  if (!fin.is_open())
+  {
+    std::cerr << "can't open file: '" << argv[1] << "'\n";
+    return 2;
+  }
+  std::vector< Polygon > data;
+  readPolygons(fin, data);
+  fin.close();
+  
+  std::map< std::string, std::function< void() > > commands;
+  commands["AREA"] = std::bind(ivanova::areaCommand, std::ref(std::cin), std::ref(std::cout), std::cref(data));
+  commands["MAX"] = std::bind(ivanova::maxCommand, std::ref(std::cin), std::ref(std::cout), std::cref(data));
+  commands["MIN"] = std::bind(ivanova::minCommand, std::ref(std::cin), std::ref(std::cout), std::cref(data));
+  commands["COUNT"] = std::bind(ivanova::countCommand, std::ref(std::cin), std::ref(std::cout), std::cref(data));
+  commands["ECHO"] = std::bind(ivanova::echoCommand, std::ref(std::cin), std::ref(std::cout), std::ref(data));
+  commands["SAME"] = std::bind(ivanova::sameCommand, std::ref(std::cin), std::ref(std::cout), std::cref(data));
+  commands["PRINT"] = std::bind(ivanova::printCommand, std::ref(std::cout), std::cref(data));
 
   std::string command;
   while (std::cin >> command)
@@ -40,7 +66,7 @@ int main()
       auto it = commands.find(command);
       if (it != commands.end())
       {
-        it->second(std::cin, std::cout, polygons);
+        it->second();
       }
       else
       {
@@ -54,6 +80,5 @@ int main()
       std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
     }
   }
-
   return 0;
 }
