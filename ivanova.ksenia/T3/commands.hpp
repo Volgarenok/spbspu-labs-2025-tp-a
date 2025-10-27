@@ -1,18 +1,36 @@
 #ifndef COMMANDS_HPP
 #define COMMANDS_HPP
 
-#include <vector>
+#include <cstddef>
 #include <iostream>
-#include "polygon.hpp"
+#include <string>
+#include <vector>
 
 namespace ivanova
 {
-  void area(std::istream& in, std::ostream& out, const std::vector < Polygon >& src);
-  void max(std::istream& in, std::ostream& out, const std::vector < Polygon >& src);
-  void min(std::istream& in, std::ostream& out, const std::vector < Polygon >& src);
-  void count(std::istream& in, std::ostream& out, const std::vector < Polygon >& src);
-  void echo(std::istream& in, std::ostream& out, std::vector < Polygon >& src);
-  void same(std::istream& in, std::ostream& out, const std::vector < Polygon >& src);
+  struct Polygon;
+}
+
+namespace ivanova
+{
+  void areaCommand(std::istream&, std::ostream&, const std::vector< Polygon >&);
+  void maxCommand(std::istream&, std::ostream&, const std::vector< Polygon >&);
+  void minCommand(std::istream&, std::ostream&, const std::vector< Polygon >&);
+  void countCommand(std::istream&, std::ostream&, const std::vector< Polygon >&);
+  void echoCommand(std::istream&, std::ostream&, std::vector< Polygon >&);
+  void sameCommand(std::istream&, std::ostream&, const std::vector< Polygon >&);
+  void printCommand(std::ostream&, const std::vector< Polygon>&);
+
+  double area(const std::vector < Polygon >&, const std::string&);
+  double area(const std::vector < Polygon >&, std::size_t);
+  double maxArea(const std::vector < Polygon >&);
+  double minArea(const std::vector < Polygon >&);
+  std::size_t maxVertexes(const std::vector < Polygon >&);
+  std::size_t minVertexes(const std::vector < Polygon >&);
+  std::size_t count(const std::vector < Polygon >&, const std::string&);
+  std::size_t count(const std::vector < Polygon >&, std::size_t);
+  std::size_t echo(std::vector < Polygon >&, const Polygon&);
+  std::size_t same(const std::vector < Polygon >&, const Polygon&);
 }
 
 #endif
